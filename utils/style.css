@@ -1,0 +1,96 @@
+@media (prefers-color-scheme: light) {
+    .st-cb {
+        color: rgb(49, 51, 63)
+    }
+
+    .st-dk {
+        -webkit-text-fill-color: rgb(49, 51, 63)
+    }
+
+    .st-dq {
+        -webkit-text-fill-color: rgb(49, 51, 63)
+    }
+
+    th {
+        color: black !important;
+        font-size: 1.2rem !important;
+        background-color: rgba(49, 51, 63, 0.05) !important;
+    }
+
+    td {
+        color: black !important;
+        font-size: 1.2rem !important
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .st-cb {
+        color: white
+    }
+
+    .st-dq {
+        -webkit-text-fill-color: white
+    }
+
+    .st-dk {
+        -webkit-text-fill-color: white
+    }
+
+    th {
+        color: white !important;
+        font-size: 1.2rem !important;
+        background-color: white !important;
+    }
+
+    td {
+        color: white !important;
+        font-size: 1.2rem !important
+    }
+}
+
+[data-testid=column] [data-testid=stVerticalBlock] {
+    gap: 0.1rem;
+}
+
+.st-cb {
+    cursor: text;
+}
+
+.streamlit-expanderHeader {
+    margin-left: 2%
+}
+
+.streamlit-expanderHeader p {
+    font-size: x-large !important;
+    cursor: pointer;
+}
+
+.streamlit-expanderContent {
+    margin-left: 3%;
+    margin-right: 3%;
+}
+
+footer {
+    visibility: hidden;
+}
+
+/* Increase main Font Sizes for readability */
+h3 {
+    font-size: 2rem !important;
+}
+
+h4 {
+    font-size: 1.3rem !important;
+}
+
+p {
+    font-size: 1.2rem !important;
+}
+
+li {
+    font-size: 1.2rem !important;
+}
+
+input {
+    font-size: 1.2rem !important;
+}

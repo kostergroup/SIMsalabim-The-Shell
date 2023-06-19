@@ -1,0 +1,7 @@
+streamlit
+pandas
+matplotlib
+numpy
+werkzeug
+chardet
+scipy

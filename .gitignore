@@ -1,0 +1,9 @@
+SIMsalabim/*
+*.zip
+Simulations/*
+!/Simulations/tmp*
+.pylintrc
+.vscode
+/temp_dev/*
+Pipfile
+Pipfile.lock
