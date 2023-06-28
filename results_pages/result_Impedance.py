@@ -110,7 +110,7 @@ def show_results_impedance(session_path, id_session):
                 title_nyq = 'Nyquist plot'
 
                 # Plot the nyquist plot with or without errorbars
-                utils_plot.create_UI_component_plot(data_freqZ, pars_nyq, par_x_nyq, xlabel_nyq, ylabel_nyq, 
+                fig2, ax2 = utils_plot.create_UI_component_plot(data_freqZ, pars_nyq, par_x_nyq, xlabel_nyq, ylabel_nyq, 
                                 title_nyq, 1, fig2, ax2, plt.colorbar, [col2_1, col2_2, col2_3], show_plot_param=False, show_yscale=True, show_xscale=True,
                                 weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq)
-                
+                st.pyplot(fig2, format='png')

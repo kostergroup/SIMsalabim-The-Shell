@@ -48,8 +48,8 @@ L_LTL = 14e-9                      * m, thickness left TL
 L_RTL = 30e-9                      * m, thickness right TL
 nk_LTL = Data_nk/nk_PEDOT.txt      * name of file with n,k values of the left TL, ignored when Gen_profile <> calc
 nk_RTL = Data_nk/nk_PCBM.txt       * name of file with n,k values of the right TL, ignored when Gen_profile <> calc
-Nc_LTL = 5e22                      * m^-3, DOS of left TL
-Nc_RTL = 5e22                      * m^-3, DOS of right TL
+Nc_LTL = 5e24                      * m^-3, DOS of left TL
+Nc_RTL = 5e24                      * m^-3, DOS of right TL
 doping_LTL = -1e22                 * m^-3, doping in left TL
                                    * if >0 p-type doping if <0 n-type doping
 doping_RTL = 1e22                  * m^-3, doping in right TL

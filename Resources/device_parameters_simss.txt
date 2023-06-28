@@ -48,8 +48,8 @@ L_LTL = 14e-9                      * m, thickness left TL
 L_RTL = 30e-9                      * m, thickness right TL
 nk_LTL = Data_nk/nk_PEDOT.txt      * name of file with n,k values of the left TL, ignored when Gen_profile <> calc
 nk_RTL = Data_nk/nk_PCBM.txt       * name of file with n,k values of the right TL, ignored when Gen_profile <> calc
-Nc_LTL = 5e22                      * m^-3, DOS of left TL
-Nc_RTL = 5e22                      * m^-3, DOS of right TL
+Nc_LTL = 5e24                      * m^-3, DOS of left TL
+Nc_RTL = 5e24                      * m^-3, DOS of right TL
 doping_LTL = -1e22                 * m^-3, doping in left TL
                                    * if >0 p-type doping if <0 n-type doping
 doping_RTL = 1e22                  * m^-3, doping in right TL
@@ -130,7 +130,7 @@ PreCond = 0                        * pre-conditioning, yes(1)/no(0)
 Vpre = 0.0                         * V, pre-conditioned voltage
 Vscan = 1                          * integer, 1 for forward sweep direction, -1 for reverse sweep
 Vmin = 0.0                         * V
-Vmax = 1.15                        * V
+Vmax = 1.18                        * V
 Vstep = 0.01                       * V
 Vacc = 0                           * V, point of accumulation of row of V's, note: Vacc should be
                                    * slightly larger than Vmax or slightly lower than Vmin
@@ -151,3 +151,4 @@ LimitDigits = 1                    * if 1, then number of digits in output is li
 OutputRatio = 1                    * Output to Var_file every OutputRatio voltages
 scPars_file = scPars.dat           * name of file with solar cell parameters
 log_file = log.txt                 * name of log file
+

@@ -15,7 +15,7 @@ utils_gen_web.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.03' # The Shell version
+version_theshell = '1.04' # The Shell version
 version_simsalabim = '4.52' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
@@ -34,7 +34,7 @@ zimt_devpar_file = 'device_parameters_zimt.txt'
 # Create and assign paths to a reusable session state. 
 # Note: When changing the name of the key of a session state, process the changed name in all occurences of the session state key
 st.session_state.key = 'SIMsalabim_version'
-st.session_state.key = 'TheSHell_version'
+st.session_state.key = 'TheShell_version'
 st.session_state.key = 'simulation_path'
 st.session_state.key = 'simss_path'
 st.session_state.key = 'simss_devpar_file'
@@ -66,7 +66,9 @@ st.session_state.key = 'optics_files'
 st.session_state.key = 'tj_file'
 st.session_state.key = 'tVG_file'
 st.session_state.key = 'hyst_pars'
+st.session_state.key = 'hyst_rms_error'
 st.session_state.key = 'impedance_pars'
+st.session_state.key = 'Exp_object'
 st.session_state.key = 'freqZ_file'
 st.session_state.key = 'imps_pars'
 st.session_state.key = 'freqY_file'
@@ -125,6 +127,13 @@ st.write('''Currently supported functionality in The Shell is:
 - Simulate an IMPS experiment
 ''')
 st.text(' ')
+
+st.write('To cite this work and SIMsalabim refer to the open-source version of the code published as:')
+
+st.info('M. Koopmans, V.M. Le Corre, and L.J.A. Koster, SIMsalabim: An open-source drift-diffusion simulator for semiconductor devices, J. Open Source Softw. 7, 3727 (2022).')
+
+st.write('The paper can be viewed [here](https://joss.theoj.org/papers/10.21105/joss.03727)')
+
 st.text('''
 
 Copyright Ⓒ 2023 | S. Heester, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.

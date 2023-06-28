@@ -95,6 +95,7 @@ else:
                     for key,value in impedance_par_obj.items():
                         fp_impedance.write('%s = %s\n' % (key, value))
 
+                st.session_state['Exp_object'] = impedance_par_obj
                 st.session_state['impedance_pars'] = impedance_pars_file
                 st.session_state['freqZ_file'] = 'freqZ.dat' # Currently a fixed name
         
@@ -196,6 +197,9 @@ else:
         """
         nk_file_list = []
         spectrum_file_list = []
+        # Placeholder item when nk/spectrum file is not found
+        nk_file_list.append('--none--')
+        spectrum_file_list.append('--none--')
         for dirpath, dirnames, filenames in os.walk(os.path.join(session_path,'Data_nk')):
             for filename in filenames:
                 nk_file_list.append(os.path.join('Data_nk',filename))
@@ -221,6 +225,12 @@ else:
         return filename_split[1]
 
     ######### UI layout ###############################################################################
+
+    # Create lists containing the names of available nk and spectrum files. Including user uploaded ones.
+    nk_file_list, spectrum_file_list = create_nk_spectrum_file_array()
+    # Sort them alphabetically
+    nk_file_list.sort(key=str.casefold)
+    spectrum_file_list.sort(key=str.casefold)
 
     with st.sidebar:
         # UI component to upload a generation profile
@@ -265,7 +275,7 @@ else:
         chk_devpar = st.checkbox("Upload device parameters")
         if chk_devpar:
             file_desc = "Select device parameters file to upload"
-            uploaded_file = utils_gen_web.upload_file(file_desc, [], '', True)
+            uploaded_file = utils_gen_web.upload_file(file_desc, [], '', 'zimt', nk_file_list, spectrum_file_list)
             if uploaded_file != None and uploaded_file != False:
                 # File uploaded to memory successfull, enable the button to store the file in the session folder.
                 st.button("Upload file", on_click=upload_devpar_file)
@@ -292,16 +302,10 @@ else:
             dev_par = utils_devpar.devpar_read_from_txt(fd)
         save_parameters()
 
-    # Create lists containing the names of available nk and spectrum files. Including user uploaded ones.
-    nk_file_list, spectrum_file_list = create_nk_spectrum_file_array()
-    # Sort them alphabetically
-    nk_file_list.sort(key=str.casefold)
-    spectrum_file_list.sort(key=str.casefold)
-
     with main_container_impedance.container():
         st.title("Impedance spectroscopy")
         st.write("""
-            Simulate an impedance spectroscopy experiment with SIMsalabim. The impedance is calculated at the applied voltage. 
+            Simulate an impedance spectroscopy experiment with SIMsalabim (ZimT). The impedance is calculated at the applied voltage. 
             A small one time pertubation at t=0 is introduced at this voltage, defined by the voltage step size. 
             The impedance is calculated using Fourier decomposition, based on the method desrcibed in *S.E. Laux, IEEE Trans. Electron Dev. 32 (10), 2028 (1985)*.
         """)
@@ -376,9 +380,13 @@ else:
                                 with col_val:
                                     # Handle exceptions/special cases.
                                     if item[1].startswith('nk_'): # nk file name, use a selectbox.
+                                        if item[2] not in nk_file_list:
+                                            item[2] = '--none--'
                                         item[2] = st.selectbox(item[1] + '_val', options=nk_file_list, format_func=format_func, index=nk_file_list.index(item[2].replace('../','')), label_visibility="collapsed")
                                     elif item[1] == 'spectrum': # spectrum file name, use a selectbox.
-                                        item[2] = st.selectbox(item[1] + '_val', options=spectrum_file_list, format_func=format_func, label_visibility="collapsed")
+                                        if item[2] not in spectrum_file_list:
+                                            item[2] = '--none--'
+                                        item[2] = st.selectbox(item[1] + '_val', options=spectrum_file_list, format_func=format_func, index=spectrum_file_list.index(item[2].replace('../','')), label_visibility="collapsed")
                                     elif item[1]== 'Pause_at_end':
                                         # This parameter must not be editable and forced to 0, otherwise the program will not exit/complete and hang forever.
                                         item[2] = 0

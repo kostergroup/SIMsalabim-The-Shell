@@ -205,7 +205,8 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
 
             else:
                 ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plt.plot)
-        st.pyplot(fig, format='png')
+        return fig,ax
+        # st.pyplot(fig, format='png')
 
 def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key, xlabel, ylabel_1, ylabel_2, title, fig, ax_1, ax_2, 
                              cols, show_plot_param=True, show_yscale_1=True, show_yscale_2 = True, 

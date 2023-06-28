@@ -20,12 +20,15 @@ def read_hysteresis_parameters(hyst_par, dev_par):
         Dictionary with hysteresis related parameters
     """
     hyst_par_obj = {}
-    hyst_par_obj['Vmin'] = hyst_par[0][1] 
-    hyst_par_obj['Vmax'] = hyst_par[1][1] 
-    hyst_par_obj['scan_speed'] = hyst_par[2][1] 
-    hyst_par_obj['direction'] = hyst_par[3][1] 
-    hyst_par_obj['steps'] = hyst_par[4][1]
-    hyst_par_obj['gen_rate'] = hyst_par[5][1] 
+    hyst_par_obj['scan_speed'] = hyst_par[0][1] 
+    hyst_par_obj['direction'] = hyst_par[1][1] 
+    hyst_par_obj['gen_rate'] = hyst_par[2][1] 
+    hyst_par_obj['UseExpData'] = hyst_par[3][1] 
+    hyst_par_obj['Vmin'] = hyst_par[4][1] 
+    hyst_par_obj['Vmax'] = hyst_par[5][1] 
+    hyst_par_obj['steps'] = hyst_par[6][1]
+    hyst_par_obj['expJV_Vmin_Vmax'] = hyst_par[7][1] 
+    hyst_par_obj['expJV_Vmax_Vmin'] = hyst_par[8][1] 
 
     for section in dev_par[1:]:
     # Generation profile
@@ -68,10 +71,14 @@ def read_hyst_par_file(session_path, hyst_pars_file, hyst_pars):
                 for item in hyst_pars:
                     if item[0] == 'gen_rate':
                         item[1] = float(line_element[1].strip())
-            elif line_element[0].strip() == 'direction' or line_element[0].strip() == 'steps':
+            elif line_element[0].strip() == 'direction' or line_element[0].strip() == 'steps' or line_element[0].strip() == 'UseExpData':
                 for item in hyst_pars:
                     if item[0] == line_element[0].strip():
                         item[1] = int(line_element[1].strip())
+            elif line_element[0].strip() == 'expJV_Vmin_Vmax' or line_element[0].strip() == 'expJV_Vmax_Vmin':
+                for item in hyst_pars:
+                    if item[0] == line_element[0].strip():
+                        item[1] = line_element[1].strip()
             else:
                 for item in hyst_pars:
                     if item[0] == line_element[0].strip():

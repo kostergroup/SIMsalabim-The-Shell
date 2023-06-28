@@ -213,14 +213,19 @@ def save_parameters(dev_par, session_path, dev_par_file):
         fp_device_parameters.write(par_file)
         fp_device_parameters.close()
 
-def verify_devpar_file(data_devpar):
+def verify_devpar_file(data_devpar, check_devpar, nk_file_list, spectrum_file_list):
     """Verify the uploaded device parameters file. Compare it with the standard device parameter file. If it does not match, reject the upload.
     
     Parameters
     ----------
     data_devpar : List
         List object with all parameters and comments.
-
+    check_devpar : string
+        Indicate which type of device parameters file needs to be checked, simss or zimt
+    nk_file_list : List
+        List with the available nk files
+    spectrum_file_list : List
+        List with the available spectrum files       
     Returns
     -------
     integer
@@ -229,7 +234,7 @@ def verify_devpar_file(data_devpar):
         Message which, when file is invalid, states the reason including line numbers
     """   
 
-    simss_path = st.session_state['resource_path'] # Path to default simss device parameters
+    res_path = st.session_state['resource_path'] # Path to default device parameters
     line_min = []
     line_min_default = []
     valid_upload = 1
@@ -256,8 +261,17 @@ def verify_devpar_file(data_devpar):
         if str(tmp_id) in item_dir_list:
             os.remove('Simulations/tmp/devpar_' + str(tmp_id) + '.txt')
 
+    if check_devpar == 'simss':
+        std_par_file = os.path.join(res_path, st.session_state['simss_devpar_file'])
+    elif check_devpar == 'zimt':
+        std_par_file = os.path.join(res_path, st.session_state['zimt_devpar_file'])
+    else:
+        valid_upload = 1
+        msg = 'Something went wrong, upload failed'
+        return valid_upload, msg
+
     # Open and read the standard device parameters file
-    with open(os.path.join(simss_path, st.session_state['simss_devpar_file']), encoding='utf-8') as fp:
+    with open(std_par_file, encoding='utf-8') as fp:
         count = 1
         for line in fp:
             line = line.strip()
@@ -280,6 +294,35 @@ def verify_devpar_file(data_devpar):
             return valid_upload, msg
         else:
             valid_upload = 0
+
+    if valid_upload == 0:
+        # Extra check, verify whether the nk/spectrum files exist
+        for item in line_min:
+            item_par = item[0].split('=')
+            if item_par[0].startswith('nk_'):
+                # Found a nk_file
+                item_par_split = item_par[1].split('*')
+                if item_par_split[0].strip() not in nk_file_list and item_par_split[0].strip() != 'none':
+                    # Check if the file is in the list or labelled as none
+                    if msg == '':
+                        msg = [item_par_split[0].strip()]
+                    else:
+                        msg.append(item_par_split[0].strip())
+                    valid_upload = 2
+            elif item_par[0].startswith('spectrum'):
+                # Found the spectrum
+                item_par_split = item_par[1].split('*')
+                if item_par_split[0].strip() not in spectrum_file_list and item_par_split[0].strip() != 'none':
+                    # Check if the file is in the list or labelled as none
+                    if msg == '':
+                        msg = [item_par_split[0].strip()]
+                    else:
+                        msg.append(item_par_split[0].strip())
+                    valid_upload = 2
+        
+        if valid_upload == 2:
+            # One or more files were not found, a list of the missing files is returned in the message.
+            msg = ['Warning, File(s) not found. \n These files will be replaced by --none--. If you want to calculate the generation profile, select files from the list or upload them.\n'] + msg
 
     return valid_upload, msg
 

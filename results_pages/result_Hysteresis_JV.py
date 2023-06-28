@@ -8,6 +8,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from utils import plot_functions as utils_plot
 from utils import general_web as utils_gen_web
+from Experiments import hysteresis as hyst_exp
 
 ######### Page configuration ######################################################################
 
@@ -54,6 +55,10 @@ def show_results_Hysteresis_JV(session_path, id_session):
             # Read the main files/data (tj_file)
             data_tj = pd.read_csv(os.path.join(session_path,st.session_state['tj_file']), delim_whitespace=True)
 
+            if st.session_state["Exp_object"]['UseExpData'] == 1:
+                data_JVExp = hyst_exp.concatJVs(session_path, st.session_state["Exp_object"]['expJV_Vmin_Vmax'], st.session_state["Exp_object"]['expJV_Vmax_Vmin'], 
+                                                st.session_state["Exp_object"]['direction'])
+
             # Define plot type options
             plot_type = [plt.plot, plt.scatter]
 
@@ -83,19 +88,32 @@ def show_results_Hysteresis_JV(session_path, id_session):
             # JV curve [1]
             col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
 
+            with col1_1:
+                # Show the rms error when comparing to experimental data
+                if st.session_state["Exp_object"]['UseExpData'] == 1:
+                    st.markdown('<br><br>', unsafe_allow_html=True)
+                    st.write(f'**RMS error between simulated and experimental data: {st.session_state["hyst_rms_error"]:.5f}**')
             with col1_2:
                 # Init plot parameters
                 pars_hyst = {'Jext' : '$J_{ext}$'}
                 par_x_hyst = 'Vext'
                 par_weight_hyst = 't'
                 xlabel_hyst = '$V_{ext}$ [V]'
-                ylabel_hyst = 'Current density [Am$^{-2}$]'
+                ylabel_hyst = '$J_{ext}$ [Am$^{-2}$]'
                 weightlabel_hyst = '$t$ [s]'
                 title_hyst = 'JV curve'
                 fig1, ax1 = plt.subplots()
 
                 # Create the plot
-                utils_plot.create_UI_component_plot(data_tj, pars_hyst, par_x_hyst, xlabel_hyst, ylabel_hyst, 
+                fig1,ax1 = utils_plot.create_UI_component_plot(data_tj, pars_hyst, par_x_hyst, xlabel_hyst, ylabel_hyst, 
                                 title_hyst, 1, fig1, ax1, plot_type[0], [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=False, 
                                 weight_key=par_weight_hyst, weight_label=weightlabel_hyst)
+                # Add the experimental data points to the plot
+                if st.session_state["Exp_object"]['UseExpData'] == 1:
+                    # Plot the experimental data and move it behind the simulated curve.
+                    ax1.plot(data_JVExp['Vext'],data_JVExp['Jext'],'.b', zorder=0, markersize = 5)
+                    ax1.legend(['Simulation', 'Experiments'])
+                # Show the plot
+                st.pyplot(fig1, format='png')
+                
             

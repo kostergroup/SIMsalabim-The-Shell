@@ -96,5 +96,6 @@ def show_results_imps(session_path, id_session):
                 #plot_type = plt.errorbar
 
                 # Create the plot
-                utils_plot.create_UI_component_plot(data_freqY, pars_imps, par_x_imps, xlabel_imps, ylabel_imps, 
+                fig1, ax1 = utils_plot.create_UI_component_plot(data_freqY, pars_imps, par_x_imps, xlabel_imps, ylabel_imps, 
                                 title_imps, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=True, error_y = 'ImErrY', xscale_init=1, yscale_init=1)
+                st.pyplot(fig1, format='png')

@@ -398,7 +398,7 @@ def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, 
         Return message to display on the UI, for both success and failed
     """
     # Create tVG
-    result, message = create_tVG(V, G_0, GStep, gen_profile, tVG_name, session_path, f_min, f_max,)
+    result, message = create_tVG(V, G_0, GStep, gen_profile, tVG_name, session_path, f_min, f_max)
 
     # Check if tVG file is created
     if result == 0:

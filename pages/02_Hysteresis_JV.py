@@ -40,14 +40,20 @@ else:
     zimt_device_parameters = str(st.session_state['zimt_devpar_file'])
     session_path = os.path.join(str(st.session_state['simulation_path']), id_session)
     hyst_pars_file = 'hyst_pars.txt'
-    
+
     # default hysteresis parameters
-    hyst_par = [['Vmin', 0.0, 'V, Lower voltage boundary'], 
-                ['Vmax',1.17, 'V, Higher voltage boundary'], 
-                ['scan_speed', 1.0, 'V/s, Scan speed'],
+    hyst_par = [['scan_speed', 1.0, 'V/s, Scan speed'],
                 ['direction', 1, 'Voltage sweep order, 1 for [ Vmin-Vmax | Vmax-Vmin ], -1 for [ Vmax-Vmin | Vmin-Vmax ]'], 
-                ['steps',500, 'Number of time steps'], 
-                ['gen_rate',1.0,'Generation rate. Note: When using the option [gen_profile = calc] this is Gfrac, all other cases it is Gehp']]
+                ['gen_rate',1.0,'Generation rate. Note: When using the option [gen_profile = calc] this is Gfrac, all other cases it is Gehp'],
+                ['UseExpData',0,'If 1, use experimental JV data as specified in expJV_Vmin_Vmax, expJV_Vmax_Vmin.'],
+                ['Vmin', 0.0, 'V, Lower voltage boundary. Ignored when UseExpData = 1'], 
+                ['Vmax',1.17, 'V, Higher voltage boundary. Ignored when UseExpData = 1'], 
+                ['steps',500, 'Number of time steps. Ignored when UseExpData = 1'],
+                ['expJV_Vmin_Vmax','none', 'Name of experimental JV file with sweep from low to high voltage. Ignored when UseExpData = 0'],
+                ['expJV_Vmax_Vmin','none', 'Name of experimental JV file with sweep from high to low voltage. Ignored when UseExpData = 0']]
+
+    # Init the rms error parameter
+    rms_error = 0.0
 
     # Object to hold device parameters and hysteresis specific parameters (with defaults)
     dev_par = [] 
@@ -73,9 +79,13 @@ else:
             hyst_par_obj = utils_hyst.read_hysteresis_parameters(hyst_par, dev_par)
 
             # Run the JV Hysteresis script
-            result, message = hyst_exp.Hysteresis_JV(zimt_device_parameters, session_path, hyst_par_obj['Vmin'], hyst_par_obj['Vmax'], hyst_par_obj['scan_speed'], 
-                                                        hyst_par_obj['direction'], hyst_par_obj['steps'], hyst_par_obj['gen_profile'], hyst_par_obj['gen_rate'], 
-                                                        hyst_par_obj['tVG_file'], True)
+            result, message, rms_error = hyst_exp.Hysteresis_JV(zimt_device_parameters, session_path, hyst_par_obj['UseExpData'], 
+                                                      hyst_par_obj['scan_speed'], hyst_par_obj['direction'], 
+                                                       hyst_par_obj['gen_profile'], hyst_par_obj['gen_rate'], 
+                                                        hyst_par_obj['tVG_file'], run_mode = True, Vmin = hyst_par_obj['Vmin'], 
+                                                        Vmax =hyst_par_obj['Vmax'],steps = hyst_par_obj['steps'],
+                                                        expJV_Vmin_Vmax=hyst_par_obj['expJV_Vmin_Vmax'], 
+                                                        expJV_Vmax_Vmin=hyst_par_obj['expJV_Vmax_Vmin'])
         
         if result == 1:
             # Creating the tVG file for the hysteresis loop failed                
@@ -94,8 +104,12 @@ else:
                     for key,value in hyst_par_obj.items():
                         fp_hyst.write('%s = %s\n' % (key, value))
 
+                st.session_state['Exp_object'] = hyst_par_obj
                 st.session_state['hyst_pars'] = hyst_pars_file
-              
+                if hyst_par_obj['UseExpData'] == 1:
+                    # Share the rms error with the results page
+                    st.session_state['hyst_rms_error'] = rms_error
+
                 # Set the state variable to true to indicate that a new simulation has been run and a new ZIP file with results must be created
                 st.session_state['run_simulation'] = True
                 
@@ -171,6 +185,15 @@ else:
         save_parameters()
 
         return st.success('File upload complete')
+    
+    def upload_expJV_files():
+        """ Read and decode the uploaded exp JVs and create files.
+        """
+        utils_gen.upload_multiple_files_to_folder(uploaded_files, os.path.join(session_path))
+
+        save_parameters()
+
+        return st.success('File upload complete')
 
     def upload_devpar_file():
         """Write the device parameter file to the session folder. 
@@ -194,6 +217,9 @@ else:
         """
         nk_file_list = []
         spectrum_file_list = []
+        # Placeholder item when nk/spectrum file is not found
+        nk_file_list.append('--none--')
+        spectrum_file_list.append('--none--')
         for dirpath, dirnames, filenames in os.walk(os.path.join(session_path,'Data_nk')):
             for filename in filenames:
                 nk_file_list.append(os.path.join('Data_nk',filename))
@@ -219,6 +245,12 @@ else:
         return filename_split[1]
 
     ######### UI layout ###############################################################################
+
+    # Create lists containing the names of available nk and spectrum files. Including user uploaded ones.
+    nk_file_list, spectrum_file_list = create_nk_spectrum_file_array()
+    # Sort them alphabetically
+    nk_file_list.sort(key=str.casefold)
+    spectrum_file_list.sort(key=str.casefold)
 
     with st.sidebar:
         # UI component to upload a generation profile
@@ -259,11 +291,20 @@ else:
                 st.button("Upload files", key='spectrum', on_click=upload_spectrum_file)
                 st.markdown('<hr>', unsafe_allow_html=True)
 
+        # UI component to upload Experimental JV files
+        chk_spectrum = st.checkbox("Upload experimental current voltage characteristics")
+        if chk_spectrum:
+            uploaded_files = st.file_uploader("Select experimental current voltage characteristic",type=['txt'], accept_multiple_files=True, label_visibility='collapsed')
+            if uploaded_files != None and uploaded_files != False:
+                # File uploaded(s) to memory successfull, enable the button to store the file(s) in the session folder.
+                st.button("Upload files", key='expJVs', on_click=upload_expJV_files)
+                st.markdown('<hr>', unsafe_allow_html=True)
+
         # UI component to upload a device parameter file
         chk_devpar = st.checkbox("Upload device parameters")
         if chk_devpar:
             file_desc = "Select device parameters file to upload"
-            uploaded_file = utils_gen_web.upload_file(file_desc, [], '', True)
+            uploaded_file = utils_gen_web.upload_file(file_desc, [], '', 'zimt', nk_file_list, spectrum_file_list)
             if uploaded_file != None and uploaded_file != False:
                 # File uploaded to memory successfull, enable the button to store the file in the session folder.
                 st.button("Upload file", on_click=upload_devpar_file)
@@ -290,12 +331,6 @@ else:
             dev_par = utils_devpar.devpar_read_from_txt(fd)
         save_parameters()
 
-    # Create lists containing the names of available nk and spectrum files. Including user uploaded ones.
-    nk_file_list, spectrum_file_list = create_nk_spectrum_file_array()
-    # Sort them alphabetically
-    nk_file_list.sort(key=str.casefold)
-    spectrum_file_list.sort(key=str.casefold)
-
     with main_container_hysteresis_JV.container():
         st.title("Hysteresis JV")
         # st.text("Description")
@@ -313,6 +348,8 @@ else:
                         hyst_item[1] = st.number_input(hyst_item[0] + '_val', value=hyst_item[1], label_visibility="collapsed", format="%e")
                     elif hyst_item[0] == 'Vmin' or hyst_item[0] == 'Vmax' or hyst_item[0] == 'gen_rate':
                         hyst_item[1] = st.number_input(hyst_item[0] + '_val', value=hyst_item[1], label_visibility="collapsed", format="%f")
+                    elif hyst_item[0] == 'expJV_Vmin_Vmax' or hyst_item[0] == 'expJV_Vmax_Vmin':
+                        hyst_item[1] = st.text_input(hyst_item[0] + '_val', value=hyst_item[1], label_visibility="collapsed")
                     else:
                         hyst_item[1] = st.number_input(hyst_item[0] + '_val', value=hyst_item[1], label_visibility="collapsed")
                 
@@ -369,9 +406,13 @@ else:
                                 with col_val:
                                     # Handle exceptions/special cases.
                                     if item[1].startswith('nk_'): # nk file name, use a selectbox.
+                                        if item[2] not in nk_file_list:
+                                            item[2] = '--none--'
                                         item[2] = st.selectbox(item[1] + '_val', options=nk_file_list, format_func=format_func, index=nk_file_list.index(item[2].replace('../','')), label_visibility="collapsed")
                                     elif item[1] == 'spectrum': # spectrum file name, use a selectbox.
-                                        item[2] = st.selectbox(item[1] + '_val', options=spectrum_file_list, format_func=format_func, label_visibility="collapsed")
+                                        if item[2] not in spectrum_file_list:
+                                            item[2] = '--none--'
+                                        item[2] = st.selectbox(item[1] + '_val', options=spectrum_file_list, format_func=format_func,index=spectrum_file_list.index(item[2].replace('../','')), label_visibility="collapsed")
                                     elif item[1]== 'Pause_at_end':
                                         # This parameter must not be editable and forced to 0, otherwise the program will not exit/complete and hang forever.
                                         item[2] = 0
