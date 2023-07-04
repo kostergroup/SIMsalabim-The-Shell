@@ -2,6 +2,10 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.05] - 04-07-2023 - SH
+- Updated to SIMsalabim v4.54
+- Added Fransien Elhorst to the contributors/copyright
+
 ## [1.04] - 28-06-2023 - SH
 - When downloading the simulation results, a txt file is created which contains a summary/reproduction sceneario of the simulation including all relevant files. It also contains also contains all the references needed for citation.
 - A hysteresis JV experiment can now be compared to experimental data and results in a rms error. 

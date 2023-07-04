@@ -15,8 +15,8 @@ utils_gen_web.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.04' # The Shell version
-version_simsalabim = '4.52' # SIMsalabim version
+version_theshell = '1.05' # The Shell version
+version_simsalabim = '4.54' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
 simulation_path = 'Simulations'
@@ -136,7 +136,7 @@ st.write('The paper can be viewed [here](https://joss.theoj.org/papers/10.21105/
 
 st.text('''
 
-Copyright Ⓒ 2023 | S. Heester, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.
+Copyright Ⓒ 2023 | S. Heester, F.D. Elhorst, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.
 ''')
         
 #  Show the SIMsalabim logo in the sidebar
