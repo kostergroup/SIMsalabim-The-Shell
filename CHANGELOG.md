@@ -2,6 +2,9 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.06] - 21-08-2023 - SH
+- Updated to SIMsalabim v4.56
+
 ## [1.05] - 04-07-2023 - SH
 - Updated to SIMsalabim v4.54
 - Added Fransien Elhorst to the contributors/copyright
