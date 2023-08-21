@@ -46,8 +46,8 @@ Rseries = 0.0                      * Ohms m2, series resistance.
 **Transport layers******************************************************************
 L_LTL = 14e-9                      * m, thickness left TL
 L_RTL = 30e-9                      * m, thickness right TL
-nk_LTL = Data_nk/nk_PEDOT.txt      * name of file with n,k values of the left TL, ignored when Gen_profile <> calc
-nk_RTL = Data_nk/nk_PCBM.txt       * name of file with n,k values of the right TL, ignored when Gen_profile <> calc
+nk_LTL = Data_nk/nk_PCBM.txt      * name of file with n,k values of the left TL, ignored when Gen_profile <> calc
+nk_RTL = Data_nk/nk_PEDOT.txt       * name of file with n,k values of the right TL, ignored when Gen_profile <> calc
 Nc_LTL = 5e24                      * m^-3, DOS of left TL
 Nc_RTL = 5e24                      * m^-3, DOS of right TL
 doping_LTL = -1e22                 * m^-3, doping in left TL
@@ -138,7 +138,7 @@ NJV = 100                          * number of JV points in logarithmic distribu
 until_Voc = 0                      * if 1 then SimSS will stop at Voc
 
 **User interface********************************************************************
-timeout = 3600                     * s, max run time, use negative value for unlimited run time.
+timeout = 600                     * s, max run time, use negative value for unlimited run time.
 Pause_at_end = 0                   * pause at the end of the simulation yes(1) or no (0)
 AutoTidy = 0                       * if 1, then the program will always tidy up this file
 UseExpData = 0                     * if 1, SimSS will try to read JV_Exp and use it

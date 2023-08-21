@@ -4,6 +4,8 @@ Note: This does not include changes to the SIMsalabim simulation software itself
 
 ## [1.06] - 21-08-2023 - SH
 - Updated to SIMsalabim v4.56
+- Switched standard materials/nk files for the transport layers
+- Reduced timeout from 3600 to 600
 
 ## [1.05] - 04-07-2023 - SH
 - Updated to SIMsalabim v4.54
