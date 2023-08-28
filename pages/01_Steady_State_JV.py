@@ -8,6 +8,7 @@ from utils import band_diagram as utils_bd
 from utils import general as utils_gen
 from utils import general_web as utils_gen_web
 from utils import steady_state as utils_simss
+from datetime import datetime
 
 ######### Page configuration ######################################################################
 
@@ -78,9 +79,16 @@ else:
 
             # Store the assigned file names from the saved device parameters in session state variables.
             utils_devpar.store_file_names(dev_par, 'simss')
+
+            res = 'SUCCESS'
+
         else:
             # Simulation failed, show the error message
             st.error(message)
+            res = 'ERROR'
+
+        with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
+                f.write(id_session + ' Steady_State ' + res + ' '+ str(datetime.now()) + '\n')
 
     def save_parameters():
         """Save the current state of the device parameters to the txt file used by the simulation

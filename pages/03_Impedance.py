@@ -9,6 +9,7 @@ from utils import general as utils_gen
 from utils import general_web as utils_gen_web
 from utils import impedance_func as utils_impedance
 from Experiments import impedance as impedance_exp
+from datetime import datetime
 
 ######### Page configuration ######################################################################
 
@@ -81,6 +82,7 @@ else:
         if result == 1:
             # Creating the tVG file for impedance failed                
             st.error(message)
+            res = 'FAILED'
         else:
             if result == 0 or result == 95:
                 # Simulation succeeded, continue with the process
@@ -104,9 +106,16 @@ else:
 
                 # Store the assigned file names from the saved device parameters in session state variables.
                 utils_devpar.store_file_names(dev_par,'zimt')
+
+                res = 'SUCCESS'
             else:
                 # Simulation failed, show the error message
                 st.error(message)
+
+                res = 'FAILED'
+
+        with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
+                f.write(id_session + ' Impedance ' + res + ' '+ str(datetime.now()) + '\n')
 
     def save_parameters():
         """Save the current state of the device parameters to the txt file used by the simulation

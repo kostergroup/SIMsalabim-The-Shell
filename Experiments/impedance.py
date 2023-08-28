@@ -124,7 +124,7 @@ def get_integral_bounds(data, f_min=1e-2, f_max=1e6, f_steps=20):
         msg = 'Could not find a time that corresponds to the highest frequency.'
         return -1, msg
     
-    print('Found istart: ', istart)
+    # print('Found istart: ', istart)
 
     # ifin: last index we should plot, corresponds to time = 1/f_min:
     ifin = numTimePoints - 1
@@ -279,7 +279,7 @@ def store_impedance_data(session_path, freq, ReZ, ImZ, errZ, output_file):
         for i in range(len(freq)):
             file.write(f'{freq[i]:.6e} {ReZ[i]:.6e} {ImZ[i]:.6e} {abs(errZ[i].real):.6e} {abs(errZ[i].imag):.6e}' + '\n')
 
-    print('The data of the Impedance Spectroscopy graphs is written to ' + output_file)
+    # print('The data of the Impedance Spectroscopy graphs is written to ' + output_file)
 
 def get_impedance(data, f_min, f_max, f_steps, del_V, session_path, output_file):
     """Calculate the impedance from the simulation result

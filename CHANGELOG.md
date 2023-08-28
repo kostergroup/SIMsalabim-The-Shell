@@ -2,6 +2,10 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.07] - 28-08-2023 - SH
+- Added session logging with: id, simulation_type, result and date/time
+- Removed standard console writing for the Impedance/IMPS experiments
+
 ## [1.06] - 21-08-2023 - SH
 - Updated to SIMsalabim v4.56
 - Switched standard materials/nk files for the transport layers

@@ -15,7 +15,7 @@ utils_gen_web.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.06' # The Shell version
+version_theshell = '1.07' # The Shell version
 version_simsalabim = '4.56' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
@@ -80,6 +80,9 @@ if 'id' not in st.session_state:
     id_user = int(datetime.now(timezone.utc).timestamp()*1e6)
     st.session_state.key = 'id'
     st.session_state['id'] = id_user
+
+    st.experimental_set_query_params(session=id_user)
+
     session_path = os.path.join(simulation_path, str(st.session_state['id']))
 
     # If session folder does not exist yet, create it

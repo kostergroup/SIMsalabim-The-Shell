@@ -123,7 +123,7 @@ def get_integral_bounds(data, f_min=1e-2, f_max=1e6, f_steps=20):
         msg = 'Could not find a time that corresponds to the highest frequency.'
         return -1, msg
     
-    print('Found istart: ', istart)
+    # print('Found istart: ', istart)
 
     # ifin: last index we should plot, corresponds to time = 1/f_min:
     ifin = numTimePoints - 1
@@ -274,7 +274,7 @@ def store_IMPS_data(session_path, freq, ReY, ImY, errY, output_file):
         for i in range(len(freq)):
             file.write(f'{freq[i]:.6e} {ReY[i]:.6e} {ImY[i]:.6e} {abs(errY[i].real):.6e} {abs(errY[i].imag):.6e}' + '\n')
 
-    print('The data of the IMPS graphs is written to ' + output_file)
+    # print('The data of the IMPS graphs is written to ' + output_file)
 
 def get_IMPS(data, f_min, f_max, f_steps, session_path, output_file):
     """Calculate the IMPS from the simulation result
