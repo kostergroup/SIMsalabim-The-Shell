@@ -46,7 +46,7 @@ else:
     imps_par = [['fmin', 1E-1, 'Hz, Minimum frequency'],
                 ['fmax', 5E+06, 'Hz, Maximum frequency'],
                 ['fstep', 20, 'Number of frequency steps'],
-                ['V0', 0.0, 'V, Applied voltage'],
+                ['V0', 0.3, 'V, Applied voltage'],
                 ['fracG', 5e-2, 'Fraction to increase the intensity/generation rate with. Sets the size of the initial pertubation'],
                 ['gen_rate',1.0, 'Generation rate. Note: When using the option [gen_profile = calc] this is Gfrac, all other cases it is Gehp']]
 
@@ -116,7 +116,8 @@ else:
                 res = 'FAILED'
 
         with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
-                f.write(id_session + ' IMPS ' + res + ' '+ str(datetime.now()) + '\n')
+            f.write(id_session + ' IMPS ' + res + ' ' + str(datetime.now()) + '\n')
+
 
     def save_parameters():
         """Save the current state of the device parameters to the txt file used by the simulation

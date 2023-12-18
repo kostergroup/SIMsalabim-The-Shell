@@ -2,6 +2,11 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.08] - 18-12-2023 - SH
+- Added nk-files for FAPbI and FACsPbIBr
+- Updated device parameters
+- The results of IMPS are now shown in a Cole-Cole plot instead of a Bode plot
+
 ## [1.07] - 28-08-2023 - SH
 - Added session logging with: id, simulation_type, result and date/time
 - Removed standard console writing for the Impedance/IMPS experiments

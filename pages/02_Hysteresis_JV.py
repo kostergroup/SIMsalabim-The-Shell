@@ -43,12 +43,12 @@ else:
     hyst_pars_file = 'hyst_pars.txt'
 
     # default hysteresis parameters
-    hyst_par = [['scan_speed', 1.0, 'V/s, Scan speed'],
+    hyst_par = [['scan_speed', 10.0, 'V/s, Scan speed'],
                 ['direction', 1, 'Voltage sweep order, 1 for [ Vmin-Vmax | Vmax-Vmin ], -1 for [ Vmax-Vmin | Vmin-Vmax ]'], 
                 ['gen_rate',1.0,'Generation rate. Note: When using the option [gen_profile = calc] this is Gfrac, all other cases it is Gehp'],
                 ['UseExpData',0,'If 1, use experimental JV data as specified in expJV_Vmin_Vmax, expJV_Vmax_Vmin.'],
                 ['Vmin', 0.0, 'V, Lower voltage boundary. Ignored when UseExpData = 1'], 
-                ['Vmax',1.17, 'V, Higher voltage boundary. Ignored when UseExpData = 1'], 
+                ['Vmax',1.16, 'V, Higher voltage boundary. Ignored when UseExpData = 1'], 
                 ['steps',500, 'Number of time steps. Ignored when UseExpData = 1'],
                 ['expJV_Vmin_Vmax','none', 'Name of experimental JV file with sweep from low to high voltage. Ignored when UseExpData = 0'],
                 ['expJV_Vmax_Vmin','none', 'Name of experimental JV file with sweep from high to low voltage. Ignored when UseExpData = 0']]
@@ -117,6 +117,7 @@ else:
                 
                 # Store the assigned file names from the saved device parameters in session state variables.
                 utils_devpar.store_file_names(dev_par,'zimt')
+
                 res = 'SUCCESS'
             else:
                 # Simulation failed, show the error message
@@ -124,7 +125,7 @@ else:
                 res = 'FAILED'
 
         with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
-                f.write(id_session + ' Hysteresis ' + res + ' '+ str(datetime.now()) + '\n')
+            f.write(id_session + ' Hysteresis ' + res + ' ' + str(datetime.now()) + '\n')
 
     def save_parameters():
         """Save the current state of the device parameters to the txt file used by the simulation

@@ -6,37 +6,6 @@ import streamlit as st
 
 ######### Function Definitions ####################################################################
 
-def create_energy_label(x_left, x_right, y, band_type, position, ax):
-    """Create and place the label for an energy level (in eV) of a layer
-
-    Parameters
-    ----------
-    x_left : float
-        Left x position of the layer [m]
-    x_right : float
-        right x position of the layer [m]
-    y : float
-        Energy of the band [eV]
-    band_type : string
-        Type of band (CB, VB, Electrode)
-    position : float
-        Full length of the device
-    ax : axes
-        Axes object for the plot
-    """
-
-    # If the layer covers over 20% of the figure size, move the label to the x middle of the figure. Else align it to the left side of the layer.
-    if 'VB' in band_type:
-        offset = 0.035
-    else:
-        offset = -0.01
-
-    if (x_right - x_left) > 0.2*position:
-        ax.text((x_left+x_right)/2, y+offset*y, y)
-    else:
-        ax.text(x_left, y+offset*y, y)
-
-
 def create_width_label(x_left, x_right, value, y_min, ax, color):
     """ Create the label to displaythe width of a layer on the width bar
 
@@ -95,6 +64,44 @@ def plot_device_widths(ax, y_min, L, LLTL, LRTL, L_original):
     ax.text(1.05*L, y_min-0.7, '[nm]', color='k')
 
 
+def create_energy_label(x_left, x_right, y, band_type, position, ax, vert_pos='top'):
+    """Create and place the label for an energy level (in eV) of a layer
+
+    Parameters
+    ----------
+    x_left : float
+        Left x position of the layer [m]
+    x_right : float
+        right x position of the layer [m]
+    y : float
+        Energy of the band [eV]
+    band_type : string
+        Type of band (CB, VB, Electrode)
+    position : float
+        Full length of the device
+    ax : axes
+        Axes object for the plot
+    """
+
+    # If the layer covers over 20% of the figure size, move the label to the x middle of the figure. Else align it to the left side of the layer.
+    if vert_pos == 'top':
+        offset = -0.02
+    else:
+        if ('WL' in band_type) or ('WR' in band_type):
+            offset = 0.06
+        else:
+            offset = 0.04
+    
+    if (x_right - x_left) > 0.2*position:
+        ax.text((x_left+x_right)/2, y+offset*y, y)
+    # elif 'RTL' in band_type:
+    #     ax.text(x_right, y+offset*y, y, horizontalalignment='right')
+    elif 'WR' in band_type:
+        ax.text(x_right, y+offset*y, y, horizontalalignment='right')
+    else:
+        ax.text(x_left, y+offset*y, y)
+        # ax.text(x_left-0.1*y, y+offset*y, y)
+
 def create_band_energy_diagram(param):
     """Create and plot the band energy diagram for the device based on the input parameters
 
@@ -145,33 +152,45 @@ def create_band_energy_diagram(param):
     # Left Transport Layer
     if LLTL > 0:
         ax.fill_between([0, LLTL], [CBLTL, CBLTL], y2=[VBLTL, VBLTL], color='#AF312E')
-        create_energy_label(0, LLTL, CBLTL, 'CBLTL', L, ax)
-        create_energy_label(0, LLTL, VBLTL, 'VBLTL', L, ax)
-
+        create_energy_label(0, LLTL, CBLTL, 'CBLTL', L, ax, 'top')
+        create_energy_label(0, LLTL, VBLTL, 'VBLTL', L, ax, 'bot')
+        
     # Active Layer
     ax.fill_between([LLTL, L-LRTL], [CB, CB], y2=[VB, VB], color='#C7D5A0')
-    create_energy_label(LLTL, L-LRTL, CB, 'CB', L, ax)
-    create_energy_label(LLTL, L-LRTL, VB, 'VB', L, ax)
+    create_energy_label(LLTL, L-LRTL, CB, 'CB', L, ax, 'top')
+    create_energy_label(LLTL, L-LRTL, VB, 'VB', L, ax, 'bot')
 
     # Right Transport Layer
     if LRTL > 0:
         ax.fill_between([L-LRTL, L], [CBRTL, CBRTL],y2=[VBRTL, VBRTL], color='#95B2DA')
-        create_energy_label(L-LRTL, L, CBRTL, 'CBRTL', L, ax)
-        create_energy_label(L-LRTL, L, VBRTL, 'VBRTL', L, ax)
+        create_energy_label(L-LRTL, L, CBRTL, 'CBRTL', L, ax, 'top')
+        create_energy_label(L-LRTL, L, VBRTL, 'VBRTL', L, ax, 'bot')
 
-    # Left Electrode
-    ax.plot([-0.1*L, 0], [WL, WL], color='k')
-    create_energy_label(-0.1*L, 0, WL, 'WL', L, ax)
-
-    # Right Electrode
-    ax.plot([L, L+0.1*L], [WR, WR], color='k')
-    create_energy_label(L, L+0.1*L, WR, 'WR', L, ax)
+    # In nip-structure put label left electrode below & right electrode above work function to prevent the label
+    # to overlap with the valence/conduction band of the left/right transport layer, vice versa in pin-structure.
+    if WL > WR:
+        # Left Electrode
+        ax.plot([-0.12*L, 0], [WL, WL], color='k')
+        create_energy_label(-0.12*L, 0, WL, 'WL', L, ax, 'bot')
+        
+        # Right Electrode
+        ax.plot([L, L+0.12*L], [WR, WR], color='k')
+        create_energy_label(L, L+0.12*L, WR, 'WR', L, ax, 'top')
+    else:
+        # Left Electrode
+        ax.plot([-0.12*L, 0], [WL, WL], color='k')
+        create_energy_label(-0.12*L, 0, WL, 'WL', L, ax, 'top')
+        
+        # Right Electrode
+        ax.plot([L, L+0.12*L], [WR, WR], color='k')
+        create_energy_label(L, L+0.12*L, WR, 'WR', L, ax, 'bot')
 
     # Hide the figure axis
     ax.axis('off')
 
     # Add a horizontal bar to the figure width the layer widths
     plot_device_widths(ax, E_low, L, LLTL, LRTL, L_original)
+    # display(fig)
 
     return fig
 

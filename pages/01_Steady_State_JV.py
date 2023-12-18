@@ -85,10 +85,11 @@ else:
         else:
             # Simulation failed, show the error message
             st.error(message)
+
             res = 'ERROR'
 
         with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
-                f.write(id_session + ' Steady_State ' + res + ' '+ str(datetime.now()) + '\n')
+            f.write(id_session + ' Steady_State ' + res + ' ' + str(datetime.now()) + '\n')
 
     def save_parameters():
         """Save the current state of the device parameters to the txt file used by the simulation

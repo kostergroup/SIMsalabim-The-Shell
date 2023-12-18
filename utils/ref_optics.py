@@ -80,6 +80,17 @@ nk_ref_dict['nk_PS'] = Burkhard_2010
 nk_ref_dict['nk_SiO2'] = Burkhard_2010
 nk_ref_dict['nk_aSi'] = Burkhard_2010
 
+Xie_2017 = '''
+Xie, Ziang, et al. "Refractive index and extinction coefficient of NH2CH= NH2PbI3 perovskite photovoltaic material." Journal of Physics: Condensed Matter 29.24 (2017): 245702.
+'''
+nk_ref_dict['FAPI'] = Xie_2017
+
+Werner_2018 = '''
+Werner, J., Nogay, G., Sahli, F., Yang, T. C. J., Bräuninger, M., Christmann, G., ... & Ballif, C. (2018). Complex refractive indices of cesium–formamidinium-based mixed-halide perovskites with optical band gaps from 1.5 to 1.8 eV. ACS Energy Letters, 3(3), 742-74
+'''
+
+nk_ref_dict['nk_FACsPbIBr'] = Werner_2018
+
 spectrum_ref_dict = {}
 
 AM_REF = 'Gueymard, C. A., Myers, D., & Emery, K. (2002). Proposed reference irradiance spectra for solar energy systems testing. Solar energy, 73(6), 443-467 https://doi.org/10.1016/S0038-092X(03)00005-7'

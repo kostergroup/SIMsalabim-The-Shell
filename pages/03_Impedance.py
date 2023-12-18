@@ -46,7 +46,7 @@ else:
     impedance_par = [['fmin', 1E-1, 'Hz, Minimum frequency'],
                      ['fmax', 1E+06, 'Hz, Maximum frequency'],
                      ['fstep', 20, 'Number of frequency steps'],
-                     ['V0', 0.0, 'V, Applied voltage'],
+                     ['V0', 0.6, 'V, Applied voltage'],
                      ['delV', 1e-2, 'V, Voltage step size. Keep this around 1 - 10 mV.'],
                      ['gen_rate',1.0, 'Generation rate. Note: When using the option [gen_profile = calc] this is Gfrac, all other cases it is Gehp']]
 
@@ -115,7 +115,7 @@ else:
                 res = 'FAILED'
 
         with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
-                f.write(id_session + ' Impedance ' + res + ' '+ str(datetime.now()) + '\n')
+            f.write(id_session + ' Impedance ' + res + ' ' + str(datetime.now()) + '\n')
 
     def save_parameters():
         """Save the current state of the device parameters to the txt file used by the simulation

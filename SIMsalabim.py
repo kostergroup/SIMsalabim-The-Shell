@@ -15,7 +15,7 @@ utils_gen_web.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.07' # The Shell version
+version_theshell = '1.08' # The Shell version
 version_simsalabim = '4.56' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored

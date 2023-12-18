@@ -85,17 +85,18 @@ def show_results_imps(session_path, id_session):
             col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
 
             with col1_2:
-                # Init plot parameters
-                pars_imps = {'ImY' : '-Im Y [A/m$^2$]'}
-                par_x_imps = 'freq'
-                xlabel_imps = 'frequency [Hz]'
-                ylabel_imps = 'Im Y [Am$^{-2}$]'
-                title_imps = 'IMPS'
-                fig1, ax1 = plt.subplots()
+                fig2, ax2 = plt.subplots()
+                pars_nyq = {'ImY' : '-Im Y [A/m$^2$]'}
+                par_x_nyq = 'ReY'
+                par_weight_nyq = 'freq'
+                xlabel_nyq = 'Re Y [A/m$^2$]'
+                ylabel_nyq = '-Im Y [A/m$^2$]'
+                weightlabel_nyq = 'frequency [Hz]'
+                weight_norm_nyq = 'log'
+                title_nyq = 'Cole-Cole plot'
 
-                #plot_type = plt.errorbar
-
-                # Create the plot
-                fig1, ax1 = utils_plot.create_UI_component_plot(data_freqY, pars_imps, par_x_imps, xlabel_imps, ylabel_imps, 
-                                title_imps, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=True, error_y = 'ImErrY', xscale_init=1, yscale_init=1)
-                st.pyplot(fig1, format='png')
+                # Plot the Cole-Cole plot with or without errorbars
+                fig2, ax2 = utils_plot.create_UI_component_plot(data_freqY, pars_nyq, par_x_nyq, xlabel_nyq, ylabel_nyq, 
+                                title_nyq, 1, fig2, ax2, plt.colorbar, [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=True, show_xscale=True,
+                                weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq)
+                st.pyplot(fig2, format='png')
