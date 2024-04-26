@@ -121,14 +121,14 @@ def show_results_impedance(session_path, id_session):
             with col3_2:
                 fig3, ax31 = plt.subplots()
                 ax32 = ax31.twinx()
-                pars_cap_cond = {'C' : 'C [F m$^{-2}$]', 'G' : 'G [S m$^{-2}$]' }
-                selected_1_cap_cond = ['C']
-                selected_2_cap_cond = ['G']
+                pars_cap_cond = {'G' : 'G [S m$^{-2}$]', 'C' : 'C [F m$^{-2}$]', }
+                selected_1_cap_cond = ['G']
+                selected_2_cap_cond = ['C']
                 par_x_cap_cond= 'freq'
                 xlabel_cap_cond = 'frequency [Hz]'
-                ylabel_1_cap_cond = 'Capacitance [F m$^{-2}$]'
-                ylabel_2_cap_cond = 'Conductance [S m$^{-2}$]'
-                title_cap_cond = 'Capacitance & Conductance'
+                ylabel_1_cap_cond = 'Conductance [S m$^{-2}$]'
+                ylabel_2_cap_cond = 'Capacitance [F m$^{-2}$]'
+                title_cap_cond = 'Conductance & Capacitance'
 
                 utils_plot.create_UI_component_plot_twinx(data_freqZ, pars_cap_cond, selected_1_cap_cond, selected_2_cap_cond, par_x_cap_cond, xlabel_cap_cond, ylabel_1_cap_cond, 
-                                                          ylabel_2_cap_cond, title_cap_cond,fig3, ax31, ax32, [col3_1, col3_2, col3_3], show_plot_param=False, show_errors=False, yscale_init_1 = 1)
+                                                          ylabel_2_cap_cond, title_cap_cond,fig3, ax31, ax32, [col3_1, col3_2, col3_3], show_plot_param=False, show_errors=False, yscale_init_2 = 1)
