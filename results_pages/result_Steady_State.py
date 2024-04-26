@@ -52,11 +52,11 @@ def show_results_Steady_State(session_path, id_session):
             # Results data is present, or at least the files are there. 
 
             # Read the main files/data (Var, JV and optional ScPars)
-            data_var = pd.read_csv(os.path.join(session_path,st.session_state['Var_file']), delim_whitespace=True)
+            data_var = pd.read_csv(os.path.join(session_path,st.session_state['Var_file']), sep=r'\s+')
 
             # In some very rare situations the JV file is empty. Check the size of the file first to prevent breaking the page
             if os.path.getsize(os.path.join(session_path,st.session_state['JV_file'])) != 0:
-                data_jv = pd.read_csv(os.path.join(session_path,st.session_state['JV_file']), delim_whitespace=True)
+                data_jv = pd.read_csv(os.path.join(session_path,st.session_state['JV_file']), sep=r'\s+')
             else:
                 # JV file is empty (can occur under certain specific conditions) initialize an empty dict to continue
                 data_jv = pd.DataFrame([], columns=['Vext', 'Jext', 'convIndex', 'P', 'Jphoto',
@@ -122,7 +122,7 @@ def show_results_Steady_State(session_path, id_session):
                         # expJV data present, use a small column for the header title and a wide column for the ScPars
                         col1_head, col2_head = st.columns([2, 3])
                         exp_jv = True
-                        df_exp_jv = pd.read_csv(os.path.join(session_path, st.session_state['expJV']), delim_whitespace=True)
+                        df_exp_jv = pd.read_csv(os.path.join(session_path, st.session_state['expJV']), sep=r'\s+')
                 else:
                     # No experimental ScPars data present, use the default column layout with a wide column for the header title.
                     col1_head, col2_head = st.columns([4, 2])

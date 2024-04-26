@@ -8,6 +8,7 @@ from results_pages import result_Steady_State as result_simss
 from results_pages import result_Hysteresis_JV as result_hyst
 from results_pages import result_Impedance as result_imp
 from results_pages import result_IMPS as result_imps
+from results_pages import result_CV as result_CV
 
 
 ######### Page configuration ######################################################################
@@ -42,6 +43,9 @@ else:
     elif st.session_state['simulation_results'] == 'IMPS':
         # IMPS results
         result_imps.show_results_imps(session_path, id_session)
+    elif st.session_state['simulation_results'] == 'CV':
+        # CV results
+        result_CV.show_results_CV(session_path, id_session)
     else:
         # No simulation has been run successfully, thus nothing to display.
         st.error('No results to display, no simulation has been run yet.')

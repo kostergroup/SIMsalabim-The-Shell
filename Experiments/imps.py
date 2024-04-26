@@ -13,7 +13,7 @@ from utils import plot_functions_gen as utils_plot_gen
 
 ######### Function Definitions ####################################################################
 
-def create_tVG(V, G_0, del_G, gen_profile, tVG_name, session_path, f_min=1e-2, f_max=1e6, ini_timeFactor=1e-3, timeFactor=1.02):
+def create_tVG(V, G_0, del_G, gen_profile, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor):
     """Create a tVG file for IMPS experiments.
 
     Parameters
@@ -85,7 +85,7 @@ def read_tj_file(session_path, tj_file_name='tj.dat'):
         Pandas dataFrame of the tj_file containing the time, current density, numerical error in the current density and the photogenerated current density
     """
 
-    data = pd.read_csv(os.path.join(session_path,tj_file_name), delim_whitespace=True)
+    data = pd.read_csv(os.path.join(session_path,tj_file_name), sep=r'\s+')
 
     return data
 
@@ -329,7 +329,7 @@ def IMPS_plot(session_path, output_file, xscale='log', yscale='log', plot_type =
         Scale of the right y-axis. E.g linear or log
     """
     # Read the data from freqY-file
-    data_freqY = pd.read_csv(os.path.join(session_path,output_file), delim_whitespace=True)
+    data_freqY = pd.read_csv(os.path.join(session_path,output_file), sep=r'\s+')
 
     # Flip the ImY data to the first quadrant
     # data["ImY"] = data["ImY"]*-1*-1
@@ -357,7 +357,7 @@ def plot_IMPS(session_path, output_file='freqY.dat'):
     # IMPS plot
     IMPS_plot(session_path,output_file)
 
-def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V, G_0, GStep, gen_profile, run_mode=False, output_file = 'freqY.dat', 
+def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V, G_0, GStep, gen_profile, run_mode=False, output_file = 'freqY.dat', ini_timeFactor=1e-3, timeFactor=1.02, 
                   tj_name = 'tj.dat'):
     """Create a tVG file and run ZimT with admittance device parameters
 
@@ -389,6 +389,10 @@ def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, 
         Name of the file where the admittance data is stored, by default freqY.dat
     tj_name : string, optional
         Name of the tj file where the admittance data is stored, by default tj.dat
+    ini_timeFactor : float, optional
+        Constant defining the size of the initial timestep, by default 1e-3
+    timeFactor : float, optional
+        Exponential increase of the timestep, to reduce the amount of timepoints necessary. Use values close to 1., by default 1.02
        
     Returns
     -------
@@ -398,7 +402,7 @@ def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, 
         Return message to display on the UI, for both success and failed
     """
     # Create tVG
-    result, message = create_tVG(V, G_0, GStep, gen_profile, tVG_name, session_path, f_min, f_max)
+    result, message = create_tVG(V, G_0, GStep, gen_profile, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor)
 
     # Check if tVG file is created
     if result == 0:
@@ -445,7 +449,7 @@ if __name__ == "__main__":
 
     # Run IMPS spectroscopy
     GStep = G_0*fac_G
-    result, message = run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V, G_0, GStep, gen_profile, run_mode=False)
+    result, message = run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V, G_0, GStep, gen_profile, run_mode=False, ini_timeFactor=ini_timeFactor, timeFactor=timeFactor)
 
     # Make the IMPS plots
     plot_IMPS(session_path)

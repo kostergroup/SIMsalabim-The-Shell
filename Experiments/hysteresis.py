@@ -127,7 +127,7 @@ def plot_hysteresis_JV():
     """Plot the hysteresis JV curve
     """
     # Read the data from tj-file
-    data_tj = pd.read_csv(os.path.join(session_path,'tj.dat'), delim_whitespace=True)
+    data_tj = pd.read_csv(os.path.join(session_path,'tj.dat'), sep=r'\s+')
     
     fig, ax = plt.subplots()
     pars = {'Jext' : 'Simulation'} #'$J_{ext}$'}
@@ -247,8 +247,8 @@ def read_Exp_JV(session_path, expJV_Vmin_Vmax, expJV_Vmax_Vmin):
     expJV_max_min = os.path.join(session_path, expJV_Vmax_Vmin)
     
     # Determine time corresponding to each voltage V_i
-    JV_min_max = pd.read_csv(expJV_min_max, delim_whitespace=True)
-    JV_max_min = pd.read_csv(expJV_max_min, delim_whitespace=True)
+    JV_min_max = pd.read_csv(expJV_min_max, sep=r'\s+')
+    JV_max_min = pd.read_csv(expJV_max_min, sep=r'\s+')
     
     return JV_min_max, JV_max_min
 
@@ -297,7 +297,7 @@ def read_tj_file(session_path, tj_file_name='tj.dat'):
         Pandas dataFrame of the tj_file containing the time, current density, numerical error in the current density and the photogenerated current density
     """
 
-    data = pd.read_csv(os.path.join(session_path,tj_file_name), delim_whitespace=True)
+    data = pd.read_csv(os.path.join(session_path,tj_file_name), sep=r'\s+')
 
     return data
 

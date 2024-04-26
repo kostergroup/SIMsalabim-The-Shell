@@ -1,4 +1,4 @@
-"""Impedance Simulations"""
+"""CV Simulations"""
 ######### Package Imports #########################################################################
 
 import os
@@ -8,13 +8,13 @@ from utils import device_parameters_gen as utils_devpar_gen
 from utils import band_diagram as utils_bd
 from utils import general as utils_gen
 from utils import general_web as utils_gen_web
-from utils import impedance_func as utils_impedance
-from Experiments import impedance as impedance_exp
+from utils import CV_func as utils_CV
+from Experiments import CV as CV_exp
 from datetime import datetime
 
 ######### Page configuration ######################################################################
 
-st.set_page_config(layout="wide", page_title="SIMsalabim Impedance",
+st.set_page_config(layout="wide", page_title="SIMsalabim CV",
                    page_icon='./logo/SIMsalabim_logo_HAT.jpg')
 
 # Load custom CSS
@@ -41,66 +41,67 @@ else:
     simss_device_parameters = str(st.session_state['simss_devpar_file'])
     zimt_device_parameters = str(st.session_state['zimt_devpar_file'])
     session_path = os.path.join(str(st.session_state['simulation_path']), id_session)
-    impedance_pars_file = 'impedance_pars.txt'
+    CV_pars_file = 'CV_pars.txt'
     
-    # default impedance parameters
-    impedance_par = [['fmin', 1E-1, 'Hz, Minimum frequency'],
-                     ['fmax', 1E+06, 'Hz, Maximum frequency'],
-                     ['fstep', 20, 'Number of frequency steps'],
-                     ['V0', 0.6, 'V, Applied voltage'],
-                     ['delV', 1e-2, 'V, Voltage step size. Keep this around 1 - 10 mV.'],
-                     ['gen_rate',1.0, 'Generation rate. Note: When using the option [gen_profile = calc] this is Gfrac, all other cases it is Gehp']]
+    # default CV parameters
+    CV_par = [['freq', 1E4, 'Hz, Frequency at which CV is performed'],
+                     ['Vmin',0.5, 'V, Initial voltage'],
+                     ['Vmax', 1.0, 'Maximum voltage'],
+                     ['delV', 1E-2, 'V, Voltage step that is applied directly after t=0'],
+                     ['Vstep', 0.1, 'V, Voltage difference, sets the interval at which the capacitance is determined'],
+                     ['gen_rate',0.0, 'Generation rate. Note: When using the option [gen_profile = calc] this is Gfrac, all other cases it is Gehp']]
 
-    # Object to hold device parameters and impedance specific parameters (with defaults)
+    # Object to hold device parameters and CV specific parameters (with defaults)
     dev_par = [] 
-    if os.path.isfile(os.path.join(session_path, impedance_pars_file)):
-        impedance_par = utils_impedance.read_impedance_par_file(session_path, impedance_pars_file, impedance_par)
+    if os.path.isfile(os.path.join(session_path, CV_pars_file)):
+        CV_par = utils_CV.read_CV_par_file(session_path, CV_pars_file, CV_par)
 
     # UI Containers
-    main_container_impedance = st.empty()
-    container_impedance_par = st.empty()
+    main_container_CV = st.empty()
+    container_CV_par = st.empty()
     container_device_par = st.empty()
     bd_container_title = st.empty()
     bd_container_plot = st.empty()
 
     ######### Function Definitions ####################################################################
 
-    def run_Impedance():
-        """Run the Impedance simulation with the saved device parameters. 
+    def run_CV():
+        """Run the CV simulation with the saved device parameters. 
         Display an error message (From SIMsalabim or a generic one) when the simulation did not succeed. 
         Save the used file names in global states to use them in the results.
         """
         with st.spinner('SIMulating...'):
-            # Store all impedance specific parameters into a single object.
-            impedance_par_obj = utils_impedance.read_impedance_parameters(impedance_par, dev_par)
+            # Store all CV specific parameters into a single object.
+            CV_par_obj = utils_CV.read_CV_parameters(CV_par, dev_par)
 
-            # Run the impedance script
-            result, message = impedance_exp.run_impedance_simu(zimt_device_parameters, session_path, impedance_par_obj["tVG_file"], impedance_par_obj["fmin"],
-                                                               impedance_par_obj["fmax"],impedance_par_obj["fstep"],impedance_par_obj["V0"],
-                                                               impedance_par_obj["delV"],impedance_par_obj["gen_rate"],impedance_par_obj["gen_profile"],True, 
-                                                               tj_name=impedance_par_obj['tj_file'])
+            # Run the CV script
+            result, message = CV_exp.run_CV_simu(zimt_device_parameters, session_path, CV_par_obj["tVG_file"], CV_par_obj["freq"],
+                                                               CV_par_obj["Vmin"],CV_par_obj["Vmax"],CV_par_obj["delV"],
+                                                               CV_par_obj["Vstep"],CV_par_obj["gen_rate"],CV_par_obj["gen_profile"],True, 
+                                                               tj_name=CV_par_obj['tj_file'])
         
         if result == 1:
-            # Creating the tVG file for impedance failed                
+            # Creating the tVG file for CV failed                
             st.error(message)
             res = 'FAILED'
         else:
             if result == 0 or result == 95:
                 # Simulation succeeded, continue with the process
+                st.toast('Hip!')
                 st.success('Simulation complete. Output can be found in the Simulation results.')
-                st.session_state['simulation_results'] = 'Impedance' # Init the results page to display results
+                st.session_state['simulation_results'] = 'CV' # Init the results page to display results
 
-                # Save the impedance parameters in a file
+                # Save the CV parameters in a file
 
-                if os.path.isfile(os.path.join(session_path, impedance_pars_file)):
-                     os.remove(os.path.join(os.path.join(session_path, impedance_pars_file)))
-                with open(os.path.join(session_path, impedance_pars_file), 'w') as fp_impedance:
-                    for key,value in impedance_par_obj.items():
-                        fp_impedance.write('%s = %s\n' % (key, value))
+                if os.path.isfile(os.path.join(session_path, CV_pars_file)):
+                     os.remove(os.path.join(os.path.join(session_path, CV_pars_file)))
+                with open(os.path.join(session_path, CV_pars_file), 'w') as fp_CV:
+                    for key,value in CV_par_obj.items():
+                        fp_CV.write('%s = %s\n' % (key, value))
 
-                st.session_state['Exp_object'] = impedance_par_obj
-                st.session_state['impedance_pars'] = impedance_pars_file
-                st.session_state['freqZ_file'] = 'freqZ.dat' # Currently a fixed name
+                st.session_state['Exp_object'] = CV_par_obj
+                st.session_state['CV_pars'] = CV_pars_file
+                st.session_state['CapVol_file'] = 'CapVol.dat' # Currently a fixed name
         
                 # Set the state variable to true to indicate that a new simulation has been run and a new ZIP file with results must be created
                 st.session_state['run_simulation'] = True
@@ -116,7 +117,7 @@ else:
                 res = 'FAILED'
 
         with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
-            f.write(id_session + ' Impedance ' + res + ' ' + str(datetime.now()) + '\n')
+            f.write(id_session + ' CV ' + res + ' ' + str(datetime.now()) + '\n')
 
     def save_parameters():
         """Save the current state of the device parameters to the txt file used by the simulation
@@ -299,7 +300,7 @@ else:
                 fo.close()
 
         reset_device_parameters = st.button('Reset device parameters')
-        st.button('Run Simulation', on_click=run_Impedance)
+        st.button('Run Simulation', on_click=run_CV)
 
     # Load the device_parameters file and create a List object.
     # Check if a session specific file already exists. If True, use this one, else return to the default device_parameters_simss.txt
@@ -307,39 +308,39 @@ else:
 
     # When the reset button is pressed, empty the container and create a List object from the default .txt file. Next, save the default parameters to the parameter file.
     if reset_device_parameters:
-        main_container_impedance.empty()
+        main_container_CV.empty()
         with open(os.path.join(resource_path, zimt_device_parameters), encoding='utf-8') as fd:
             dev_par = utils_devpar_gen.devpar_read_from_txt(fd)
         save_parameters()
 
-    with main_container_impedance.container():
-        st.title("Impedance spectroscopy")
+    with main_container_CV.container():
+        st.title("Capacitance Voltage (CV)")
+        # st.write("""
+        #     Simulate an impedance spectroscopy experiment with SIMsalabim (ZimT). The impedance is calculated at the applied voltage. 
+        #     A small one time pertubation at t=0 is introduced at this voltage, defined by the voltage step size. 
+        #     The impedance is calculated using Fourier decomposition, based on the method desrcibed in *S.E. Laux, IEEE Trans. Electron Dev. 32 (10), 2028 (1985)*.
+        # """)
         st.write("""
-            Simulate an impedance spectroscopy experiment with SIMsalabim (ZimT). The impedance is calculated at the applied voltage. 
-            A small one time pertubation at t=0 is introduced at this voltage, defined by the voltage step size. 
-            The impedance is calculated using Fourier decomposition, based on the method desrcibed in *S.E. Laux, IEEE Trans. Electron Dev. 32 (10), 2028 (1985)*.
+            Simulate a Capacitance-Voltage experiment with SIMsalabim.
         """)
-        with container_impedance_par.container():
-            st.subheader('Impedance parameters')
-            col_par_impedance, col_val_impedance, col_desc_impedance = st.columns([2, 2, 8],)
-            for impedance_item in impedance_par:
-                with col_par_impedance:
-                    st.text_input(impedance_item[0], value=impedance_item[0], disabled=True, label_visibility="collapsed")
+        with container_CV_par.container():
+            st.subheader('CV parameters')
+            col_par_CV, col_val_CV, col_desc_CV = st.columns([2, 2, 8],)
+            for CV_item in CV_par:
+                with col_par_CV:
+                    st.text_input(CV_item[0], value=CV_item[0], disabled=True, label_visibility="collapsed")
 
                 # Parameter value
-                with col_val_impedance:
-                    if impedance_item[0] == 'fstep':
+                with col_val_CV:
+                    if  CV_item[0] == 'Vmin' or CV_item[0] == 'Vmax' or CV_item[0] == 'delV' or CV_item[0] == 'Vstep' or CV_item[0] == 'gen_rate':
                         # Show these parameters as a float
-                        impedance_item[1] = st.number_input(impedance_item[0] + '_val', value=impedance_item[1], label_visibility="collapsed")
-                    elif impedance_item[0] == 'V0' or impedance_item[0] == 'delV' or impedance_item[0] == 'gen_rate':
-                        # Show these parameters as a float
-                        impedance_item[1] = st.number_input(impedance_item[0] + '_val', value=impedance_item[1], label_visibility="collapsed", format="%f")
+                        CV_item[1] = st.number_input(CV_item[0] + '_val', value=CV_item[1], label_visibility="collapsed", format="%f")
                     else:
                         # Show all other parameters in scientific notation e.g. 1e+2
-                        impedance_item[1] = st.number_input(impedance_item[0] + '_val', value=impedance_item[1], label_visibility="collapsed", format="%e")
+                        CV_item[1] = st.number_input(CV_item[0] + '_val', value=CV_item[1], label_visibility="collapsed", format="%e")
                 # Parameter description
-                with col_desc_impedance:
-                    st.text_input(impedance_item[0] + '_desc', value=impedance_item[2], disabled=True, label_visibility="collapsed")
+                with col_desc_CV:
+                    st.text_input(CV_item[0] + '_desc', value=CV_item[2], disabled=True, label_visibility="collapsed")
             st.markdown('<hr>', unsafe_allow_html=True)
 
         with container_device_par.container():

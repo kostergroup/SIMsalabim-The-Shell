@@ -10,10 +10,11 @@ import scipy.integrate
 
 from utils import general as utils_gen
 from utils import plot_functions_gen as utils_plot_gen
+from utils.device_parameters_gen import *
 
 ######### Function Definitions ####################################################################
 
-def create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min=1e-2, f_max=1e6, ini_timeFactor=1e-3, timeFactor=1.02):
+def create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor):
     """Create a tVG file for impedance experiments. 
 
     Parameters
@@ -70,6 +71,50 @@ def create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min=1e-2, f
 
     return retval, msg
 
+def create_tVG_SS(V_0, G, gen_profile, tVG_name, session_path):
+    """ Creates the tVG file for the steady state simulation with only t 0 and V_0
+
+    Parameters
+    ----------
+    V_0 : float 
+        Voltage at t=0
+    del_V : float
+        Voltage step that is applied after t=0
+    G : float
+        Amount of suns if gen_profile == 'calc', else amount of generated electron-hole pairs
+    gen_profile : string
+        Indicator for type of generation profile to set the correct header in the tVG file
+    tVG_name : string
+        Name of the tVG file
+    session_path : string
+        Path of the simulation folder for this session
+
+    Returns
+    -------
+    string
+        A message to indicate the result of the process
+
+    
+    """    
+
+    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header based on the type of generation profile used.
+    if gen_profile == 'calc':
+        tVG_lines = 't Vext Gfrac\n' + f'{0} {V_0} {G:.3e}\n'
+    else:
+        tVG_lines = 't Vext Gehp\n' + f'{0} {V_0} {G:.3e}\n'
+
+   
+    # Write the tVG lines to the tVG file
+    with open(os.path.join(session_path,tVG_name), 'w') as file:
+        file.write(tVG_lines)
+
+    # tVG file is created, message a success
+    msg = 'Success'
+    retval = 0
+
+    return retval, msg
+
+
 def read_tj_file(session_path, tj_file_name='tj.dat'):
     """ Read relevant parameters for impedance of the tj file
 
@@ -86,7 +131,7 @@ def read_tj_file(session_path, tj_file_name='tj.dat'):
         Pandas dataFrame containing the time, voltage, current density and numerical error in the current density of the tj_file
     """
 
-    data = pd.read_csv(os.path.join(session_path,tj_file_name), delim_whitespace=True)
+    data = pd.read_csv(os.path.join(session_path,tj_file_name), sep=r'\s+')
 
     return data
 
@@ -217,7 +262,7 @@ def calc_impedance_limit_time(I, errI, time, VStep, imax):
     #now return complex impedance, its error and the corresponding frequency:	
     return freq, Z, errZ
 
-def calc_impedance(data, del_V, isToPlot):
+def calc_impedance(data, del_V, isToPlot,session_path,zimt_device_parameters):
     """ Calculate the impedance over the frequency range
     
     Parameters
@@ -239,6 +284,10 @@ def calc_impedance(data, del_V, isToPlot):
         Array of the imaginary component of impedance
     np.array
         Array of complex error
+    np.array
+        Array of capacitance	
+    np.array
+        Array of conductance
     """
     # init the arrays for the impedance and its error:
     numFreqPoints = len(isToPlot)
@@ -247,17 +296,38 @@ def calc_impedance(data, del_V, isToPlot):
     ImZ = np.empty(numFreqPoints)
     Z = [1 + 1J] * numFreqPoints
     errZ = [1 + 1J] * numFreqPoints
+    C = np.empty(numFreqPoints)
+    G = np.empty(numFreqPoints)
+
+    # We need to know the series and shunt resistance to calculate the impedance correctly later on
+    dev_val = load_device_parameters(session_path, zimt_device_parameters)
+    for i in dev_val:
+        if i[0] == 'Contacts':
+            contacts = i
+            break
+
+    for i in contacts[1:]:
+        if i[1] == 'Rseries':
+            Rseries = float(i[2])
+        elif i[1] == 'Rshunt':
+            Rshunt = float(i[2])
 
     for i in range(numFreqPoints):
         imax=isToPlot[i]
         freq[i], Z[i], errZ[i] = calc_impedance_limit_time(data['Jext'], data['errJ'], data['t'], del_V, imax)
-        # we are only interested in the absolute value of the real and imag components:
-        ReZ[i] =(Z[i].real)
-        ImZ[i] = (Z[i].imag)
-    
-    return freq, ReZ, ImZ, errZ
 
-def store_impedance_data(session_path, freq, ReZ, ImZ, errZ, output_file):
+        Z[i] = Rseries + 1/(1/Z[i] + 1/Rshunt)
+        invZ = 1/Z[i]
+        
+        # we are only interested in the absolute value of the real and imag components:
+        ReZ[i] = Z[i].real
+        ImZ[i] = Z[i].imag
+        C[i] = 1/(2*math.pi*freq[i])*invZ.imag
+        G[i] = invZ.real
+    
+    return freq, ReZ, ImZ, errZ, C, G
+
+def store_impedance_data(session_path, freq, ReZ, ImZ, errZ, C, G, output_file):
     """ Save the frequency, real & imaginary part of the impedance & impedance error in one file called freqZ.dat
     
     Parameters
@@ -272,16 +342,20 @@ def store_impedance_data(session_path, freq, ReZ, ImZ, errZ, output_file):
         Array of the imaginary component of impedance
     errZ : np.array
         Array of complex error
+    C : np.array
+        Array of capacitance	
+    G : np.array
+        Array of conductance
     """
 
     with open(os.path.join(session_path,output_file), 'w') as file:
-        file.write('freq ReZ ImZ ReErrZ ImErrZ' + '\n')
+        file.write('freq ReZ ImZ ReErrZ ImErrZ C G' + '\n')
         for i in range(len(freq)):
-            file.write(f'{freq[i]:.6e} {ReZ[i]:.6e} {ImZ[i]:.6e} {abs(errZ[i].real):.6e} {abs(errZ[i].imag):.6e}' + '\n')
+            file.write(f'{freq[i]:.6e} {ReZ[i]:.6e} {ImZ[i]:.6e} {abs(errZ[i].real):.6e} {abs(errZ[i].imag):.6e} {C[i]:.6e} {G[i]:.6e}\n')
 
     # print('The data of the Impedance Spectroscopy graphs is written to ' + output_file)
 
-def get_impedance(data, f_min, f_max, f_steps, del_V, session_path, output_file):
+def get_impedance(data, f_min, f_max, f_steps, del_V, session_path, output_file,zimt_device_parameters):
     """Calculate the impedance from the simulation result
 
     Parameters
@@ -310,10 +384,10 @@ def get_impedance(data, f_min, f_max, f_steps, del_V, session_path, output_file)
 
     if isToPlot != -1:
         # Integral bounds have been determined, continue to calculate the impedance
-        freq, ReZ, ImZ, errZ = calc_impedance(data, del_V, isToPlot)
+        freq, ReZ, ImZ, errZ, C, G = calc_impedance(data, del_V, isToPlot,session_path,zimt_device_parameters)
 
         # Write impedance results to a file
-        store_impedance_data(session_path, freq, ReZ, ImZ, errZ, output_file)
+        store_impedance_data(session_path, freq, ReZ, ImZ, errZ, C, G, output_file)
 
         msg = 'Success'
         return 0,msg
@@ -336,7 +410,7 @@ def Bode_plot(session_path, output_file, xscale='log', yscale_1='linear', yscale
         Scale of the right y-axis. E.g linear or log
     """
     # Read the data from freqZ-file
-    data = pd.read_csv(os.path.join(session_path,output_file), delim_whitespace=True)
+    data = pd.read_csv(os.path.join(session_path,output_file), sep=r'\s+')
 
     # Flip the ImZ data to the first quadrant
     data["ImZ"] = data["ImZ"]*-1
@@ -370,7 +444,7 @@ def Nyquist_plot(session_path, output_file, xscale='linear', yscale='linear', pl
         Scale of the y-axis. E.g linear or log
     """
     # Read the data from freqZ-file
-    data = pd.read_csv(os.path.join(session_path,output_file), delim_whitespace=True)
+    data = pd.read_csv(os.path.join(session_path,output_file), sep=r'\s+')
 
     # Flip the ImZ data to the first quadrant
     data["ImZ"] = data["ImZ"]*-1
@@ -391,6 +465,36 @@ def Nyquist_plot(session_path, output_file, xscale='linear', yscale='linear', pl
 
     plt.show()
 
+
+def Capacitance_plot(session_path, output_file, xscale='log', yscale='linear'):
+    """ Plot the capacitance against frequency
+
+    Parameters
+    ----------
+    session_path : string
+        working directory for zimt
+    xscale : string
+        Scale of the x-axis. E.g linear or log
+    yscale : string
+        Scale of the y-axis. E.g linear or log
+    """
+    # Read the data from freqZ-file
+    data = pd.read_csv(os.path.join(session_path,output_file), sep=r'\s+')
+
+    # Flip the ImZ data to the first quadrant
+    data["C"] = data["C"]
+
+    fig, ax = plt.subplots()
+    pars = {'C' : 'C [F m$^{-2}$]'}
+    par_x = 'freq'
+    xlabel = 'frequency [Hz]'
+    ylabel = 'C [F m$^{-2}$]'
+    title = 'Capacitance plot'
+
+    ax = utils_plot_gen.plot_result(data, pars, list(pars.keys()), par_x, xlabel, ylabel, xscale, yscale, title, ax, plt.plot, legend=False)
+
+    plt.show()
+
 def plot_impedance(session_path, output_file='freqZ.dat'):
     """Make a Bode and Nyquist plot of the impedance
 
@@ -405,8 +509,10 @@ def plot_impedance(session_path, output_file='freqZ.dat'):
     #Nyquist plot
     Nyquist_plot(session_path,output_file)
 
+    # Capacitance plot
+    Capacitance_plot(session_path,output_file)
 
-def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V_0, del_V, G, gen_profile, run_mode=False, output_file = 'freqZ.dat', tj_name = 'tj.dat'):
+def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V_0, del_V, G, gen_profile, run_mode=False, output_file = 'freqZ.dat', tj_name = 'tj.dat', ini_timeFactor=1e-3, timeFactor=1.02):
     """Create a tVG file and run ZimT with impedance device parameters
 
     Parameters
@@ -437,6 +543,11 @@ def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_
         Name of the file where the impedance data is stored, by default freqZ.dat
     tj_name : string, optional
         Name of the tj file where the impedance data is stored, by default tj.dat
+    ini_timeFactor : float, optional
+        Constant defining the size of the initial timestep, by default 1e-3
+    timeFactor : float, optional
+        Exponential increase of the timestep, to reduce the amount of timepoints necessary. Use values close to 1., by default 1.02
+        
     Returns
     -------
     CompletedProcess
@@ -444,8 +555,59 @@ def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_
     string
         Return message to display on the UI, for both success and failed
     """
+
+    # The simulations with Rseries and Rshunt often do not converge, so we first run a steady state simulation to get the internal voltage and then run the impedance simulation with Rseries = 0 and Rshunt = -Rshunt. We will correct the impedance afterwards. This is a workaround to improve the convergence of the impedance simulation that should remain accurate to estimate the impedance.
+
+    # Do the steady state simulation to calculate the internal voltage in case of series resistance
     # Create tVG
-    result, message = create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min=f_min, f_max=f_max)
+    result, message = create_tVG_SS(V_0, G, gen_profile, tVG_name, session_path)
+
+    # Get the device parameters and Rseries and Rshunt
+    dev_val = load_device_parameters(session_path, zimt_device_parameters)
+    for i in dev_val:
+        if i[0] == 'Contacts':
+            contacts = i
+            break
+
+    for i in contacts[1:]:
+        if i[1] == 'Rseries':
+            Rseries = float(i[2])
+        elif i[1] == 'Rshunt':
+            Rshunt = float(i[2])
+
+    if Rseries > 0:
+        # Check if tVG file is created
+        if result == 0:
+            # In order for zimt to converge, set absolute tolerance of Poisson solver small enough
+            tolPois = 10**(math.floor(math.log10(abs(del_V)))-4)
+
+            # Define mandatory options for ZimT to run well with impedance:
+            Impedance_SS_args = [{'par':'dev_par_file','val':zimt_device_parameters},
+                                {'par':'tVG_file','val':tVG_name},
+                                {'par':'Gen_profile','val':gen_profile},
+                                {'par':'tolPois','val':str(tolPois)},
+                                {'par':'LimitDigits','val':'0'},
+                                {'par':'CurrDiffInt','val':'2'},]
+            
+            result, message = utils_gen.run_simulation('zimt', Impedance_SS_args, session_path, run_mode)
+    
+            if result.returncode == 0 or result.returncode == 95:
+                data = read_tj_file(session_path, tj_file_name=tj_name)
+
+                Vext = data['Vext'][0]
+                Jext = data['Jext'][0]
+
+                Vint = Vext - Jext*Rseries
+                V_0 = Vint # we need to shift the voltage to the internal voltage to account for the series resistance
+
+            else:
+                return result.returncode, message
+        else:
+            return result, message
+
+    # Do the impedance simulation
+    # Create tVG
+    result, message = create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor)
 
     # Check if tVG file is created
     if result == 0:
@@ -455,16 +617,20 @@ def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_
         # Define mandatory options for ZimT to run well with impedance:
         Impedance_JV_args = [{'par':'dev_par_file','val':zimt_device_parameters},
                              {'par':'tVG_file','val':tVG_name},
+                             {'par':'Gen_profile','val':gen_profile},
                              {'par':'tolPois','val':str(tolPois)},
                              {'par':'LimitDigits','val':'0'},
-                             {'par':'CurrDiffInt','val':'2'}]
+                             {'par':'CurrDiffInt','val':'2'},
+                             # We reemove Rseries and Rshunt as the simulation is either to converge that way, we will correct the impedance afterwards
+                             {'par':'Rseries','val':str(0)},
+                             {'par':'Rshunt','val':str(-abs(Rshunt))}]
         
         result, message = utils_gen.run_simulation('zimt', Impedance_JV_args, session_path, run_mode)
 
         if result.returncode == 0 or result.returncode == 95:
             data = read_tj_file(session_path, tj_file_name=tj_name)
 
-            result, message = get_impedance(data, f_min, f_max, f_steps, del_V, session_path, output_file)
+            result, message = get_impedance(data, f_min, f_max, f_steps, del_V, session_path, output_file, zimt_device_parameters)
             return result, message
 
         else:
@@ -495,11 +661,10 @@ if __name__ == "__main__":
     # SIMsalabim input parameters
     zimt_device_parameters = 'device_parameters_zimt.txt'
     tVG_name = 'tVG.txt'
-    tj_name = 'tj.dat'
     session_path = 'Zimt'
 
     # Run impedance spectroscopy
-    result, message = run_impedance_simu(zimt_device_parameters, session_path, tVG_name,f_min, f_max, f_steps, V_0, del_V, G, gen_profile, run_mode=True)
+    result, message = run_impedance_simu(zimt_device_parameters, session_path, tVG_name,f_min, f_max, f_steps, V_0, del_V, G, gen_profile, run_mode=True, ini_timeFactor=ini_timeFactor, timeFactor=timeFactor)
 
     # Make the impedance plots
     plot_impedance(session_path)

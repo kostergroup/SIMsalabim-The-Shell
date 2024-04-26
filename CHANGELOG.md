@@ -2,6 +2,12 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.09] - 21-12-2023 - SH, FE, VLC
+- The impedance simulations with Rseries and Rshunt often did not converge. To improve this,  we now first run a steady state simulation to get the internal voltage and then run the impedance simulation with Rseries = 0 and Rshunt = -Rshunt. We will correct the impedance afterwards. This is a workaround to improve the convergence of the impedance simulation that  remains accurate to estimate the impedance. This is only done when Rseries <> 0. 
+- Added a Capacitance/Conductance vs. frequency plot to the impedance results
+- Split the device_parameters utility functions to decouple the streamlit dependent functions
+- Added a new experiment, capacitance-voltage (CV) 
+
 ## [1.08] - 18-12-2023 - SH
 - Added nk-files for FAPbI and FACsPbIBr
 - Updated device parameters

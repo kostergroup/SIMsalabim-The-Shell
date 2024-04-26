@@ -1,7 +1,6 @@
-streamlit
+streamlit==1.27.2
 pandas
 matplotlib
 numpy
 werkzeug
-chardet
 scipy

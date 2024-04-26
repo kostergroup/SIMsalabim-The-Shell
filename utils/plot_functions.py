@@ -268,7 +268,7 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
         with st.expander('Figure options', expanded=False):
             # Select which parameters to plot
             if show_plot_param:
-                options = st.multiselect('Parameters to plot:', list(pars.keys()), list(pars.keys()), key = str(1) + '-par-options')
+                options = st.multiselect('Parameters to plot:', list(pars.keys()), list(pars.keys()), key = str(1) + '-par-options' + str(selected_1))
                 st.markdown('<br>', unsafe_allow_html=True)
                 st.markdown('<br>', unsafe_allow_html=True)
             else:
@@ -276,21 +276,21 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
 
             # Select the y1-scale
             if show_yscale_1:
-                yscale_1 = st.radio('y-scale (Left)', scale_options, index = yscale_init_1, key = str(1) + '-y1-scale')
+                yscale_1 = st.radio('y-scale (Left)', scale_options, index = yscale_init_1, key = str(1) + '-y1-scale' + str(selected_1))
             else:
                 yscale_1 = scale_options[yscale_init_1]
 
             # Select the y2-scale
             if show_yscale_2:
-                yscale_2 = st.radio('y-scale (Right)', scale_options, index = yscale_init_2, key = str(1) + '-y2-scale')
+                yscale_2 = st.radio('y-scale (Right)', scale_options, index = yscale_init_2, key = str(1) + '-y2-scale' + str(selected_1))
             else:
                 yscale_2 = scale_options[yscale_init_2]
 
             # Show the error margin on y1 axis
             if show_errors:
-                yerror = st.radio('Show error margins', error_options, index = 0, key = str(1) + '-y-error')
+                yerror = st.radio('Show error margins', error_options, index = 0, key = str(1) + '-y-error' + str(selected_1))
             else:
-                yerror = error_options[0]
+                yerror = error_options[1]
 
     with cols[1]:
         # Create plot

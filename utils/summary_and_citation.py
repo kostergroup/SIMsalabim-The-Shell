@@ -84,7 +84,7 @@ def create_summary_and_cite(session_path, used_optics):
         elif st.session_state['simulation_results'] == 'Impedance':
             # Impedance
             fp.write(st.session_state['simulation_results'] + ' variables are stored in impedance_pars.txt\n')
-            fp.write(f'Frequyency range: {st.session_state["Exp_object"]["fmin"]:.2E} to {st.session_state["Exp_object"]["fmax"]:.2E} Hz\n')
+            fp.write(f'Frequency range: {st.session_state["Exp_object"]["fmin"]:.2E} to {st.session_state["Exp_object"]["fmax"]:.2E} Hz\n')
             fp.write(f'Applied Voltage: {st.session_state["Exp_object"]["V0"]:.3f} V\n')
             fp.write(f'Voltage step size: {st.session_state["Exp_object"]["delV"]:f} V\n')
             if used_optics:
@@ -95,9 +95,19 @@ def create_summary_and_cite(session_path, used_optics):
         elif st.session_state['simulation_results'] == 'IMPS':
             # IMPS
             fp.write(st.session_state['simulation_results'] + ' variables are stored in imps_pars.txt\n')
-            fp.write(f'Frequyency range: {st.session_state["Exp_object"]["fmin"]:.2E} to {st.session_state["Exp_object"]["fmax"]:.2E} Hz\n')
+            fp.write(f'Frequency range: {st.session_state["Exp_object"]["fmin"]:.2E} to {st.session_state["Exp_object"]["fmax"]:.2E} Hz\n')
             fp.write(f'Applied Voltage: {st.session_state["Exp_object"]["V0"]:.3f} V\n')
             fp.write(f'Fraction generation rate: {st.session_state["Exp_object"]["fracG"]:f} (Fraction to increase the intensity/generation rate with. Sets the size of the initial pertubation)\n')
+            if used_optics:
+                fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3E} (Fraction of the light intensity/generation rate)\n')
+            else:
+                 fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3f} m^-3 s^-1\n')
+            fp.write('\n')
+        elif st.session_state['simulation_results'] == 'CV':
+            # IMPS
+            fp.write(st.session_state['simulation_results'] + ' variables are stored in CV_pars.txt\n')
+            fp.write(f'Frequency at which CV is performed: {st.session_state["Exp_object"]["freq"]:.2E}\n')
+            fp.write(f'Voltage range: {st.session_state["Exp_object"]["Vmin"]:.3f} to {st.session_state["Exp_object"]["Vmax"]:.3f} V\n')
             if used_optics:
                 fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3E} (Fraction of the light intensity/generation rate)\n')
             else:

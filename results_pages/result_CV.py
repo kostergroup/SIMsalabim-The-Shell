@@ -1,4 +1,4 @@
-""" UI to display the Hysteresis JV results"""
+""" UI to display the CV results"""
 ######### Package Imports #########################################################################
 
 import os
@@ -8,12 +8,11 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from utils import plot_functions as utils_plot
 from utils import general_web as utils_gen_web
-from Experiments import hysteresis as hyst_exp
 
 ######### Page configuration ######################################################################
 
-def show_results_Hysteresis_JV(session_path, id_session):
-    """Display the results from a Hysteresis (2) JV simulation.
+def show_results_CV(session_path, id_session):
+    """Display the results from a CV (5) simulation.
 
     Parameters
     ----------
@@ -37,30 +36,22 @@ def show_results_Hysteresis_JV(session_path, id_session):
         """
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
-            utils_gen_web.prepare_results_download(session_path, id_session, 'zimt', 'hysteresis')
+            utils_gen_web.prepare_results_download(session_path, id_session, 'zimt', 'CV')
         st.session_state['run_simulation'] = False
 
     ######### Parameter Initialisation #############################################################
-
     if not os.path.exists(session_path):
         # There is not a session folder yet, so nothing to show. Show an error.
         st.error('Save the device parameters first and run the simulation.')
     else:
-        if not st.session_state['tj_file'] in os.listdir(session_path):
+        if not st.session_state['CapVol_file'] in os.listdir(session_path):
             # The main results file (tj file by default) is not present, so no data can be shown. Show an error 
             st.error('No data available. SIMsalabim simulation did not run yet or the device parameters have been changed. Run the simulation first.')
         else:
             # Results data is present, or at least the files are there. 
 
             # Read the main files/data (tj_file)
-            data_tj = pd.read_csv(os.path.join(session_path,st.session_state['tj_file']), sep=r'\s+')
-
-            if st.session_state["Exp_object"]['UseExpData'] == 1:
-                data_JVExp = hyst_exp.concatJVs(session_path, st.session_state["Exp_object"]['expJV_Vmin_Vmax'], st.session_state["Exp_object"]['expJV_Vmax_Vmin'], 
-                                                st.session_state["Exp_object"]['direction'])
-
-            # Define plot type options
-            plot_type = [plt.plot, plt.scatter]
+            data_CapVol = pd.read_csv(os.path.join(session_path,st.session_state['CapVol_file']), sep=r'\s+')
 
             with st.sidebar:
                 st.write('<strong>Download Simulation results</strong>', unsafe_allow_html=True)
@@ -85,35 +76,19 @@ def show_results_Hysteresis_JV(session_path, id_session):
             # Show the plots, add a horizontal line first to separate the title section from the plot section
             st.markdown('<hr>', unsafe_allow_html=True)
 
-            # JV curve [1]
-            col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
+            # Capacitance-Voltage [1]
+            col1_1, col1_2, col1_3 = st.columns([1, 5, 1])
 
-            with col1_1:
-                # Show the rms error when comparing to experimental data
-                if st.session_state["Exp_object"]['UseExpData'] == 1:
-                    st.markdown('<br><br>', unsafe_allow_html=True)
-                    st.write(f'**RMS error between simulated and experimental data: {st.session_state["hyst_rms_error"]:.5f}**')
             with col1_2:
-                # Init plot parameters
-                pars_hyst = {'Jext' : '$J_{ext}$'}
-                par_x_hyst = 'Vext'
-                par_weight_hyst = 't'
-                xlabel_hyst = '$V_{ext}$ [V]'
-                ylabel_hyst = '$J_{ext}$ [Am$^{-2}$]'
-                weightlabel_hyst = '$t$ [s]'
-                title_hyst = 'JV curve'
+                # Create a dictionary for all potential parameters to plot. Key matches the name in the dataFrame, value is the corresponding label. 
                 fig1, ax1 = plt.subplots()
+                pars_CV = {'cap':'C [F m$^{-2}$]'}
+                xlabel_CV =  'Voltage [V]'
+                par_x_CV = 'V' 
+                ylabel_CV = 'Capacitance [F m$^{-2}$]'
+                title_CV = 'Capacitance-Voltage'
 
-                # Create the plot
-                fig1,ax1 = utils_plot.create_UI_component_plot(data_tj, pars_hyst, par_x_hyst, xlabel_hyst, ylabel_hyst, 
-                                title_hyst, 1, fig1, ax1, plot_type[0], [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=False, 
-                                weight_key=par_weight_hyst, weight_label=weightlabel_hyst)
-                # Add the experimental data points to the plot
-                if st.session_state["Exp_object"]['UseExpData'] == 1:
-                    # Plot the experimental data and move it behind the simulated curve.
-                    ax1.plot(data_JVExp['Vext'],data_JVExp['Jext'],'.b', zorder=0, markersize = 5)
-                    ax1.legend(['Simulation', 'Experiments'])
-                # Show the plot
-                st.pyplot(fig1, format='png')
-                
-            
+                fig1, ax1 = utils_plot.create_UI_component_plot(data_CapVol, pars_CV, par_x_CV, xlabel_CV, ylabel_CV, 
+                                title_CV, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_yscale=True, error_y = 'errC', show_plot_param=False)
+                with col1_2:
+                    st.pyplot(fig1, format='png')

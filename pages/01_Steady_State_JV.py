@@ -4,6 +4,7 @@
 import os
 import streamlit as st
 from utils import device_parameters as utils_devpar
+from utils import device_parameters_gen as utils_devpar_gen
 from utils import band_diagram as utils_bd
 from utils import general as utils_gen
 from utils import general_web as utils_gen_web
@@ -95,7 +96,7 @@ else:
         """Save the current state of the device parameters to the txt file used by the simulation
         """
         # Use this 'layer/inbetween' function to make sure the most recent device parameters are saved
-        utils_devpar.save_parameters(dev_par, session_path, simss_device_parameters)
+        utils_devpar_gen.save_parameters(dev_par, session_path, simss_device_parameters)
         utils_gen.exchangeDevPar(session_path, simss_device_parameters, zimt_device_parameters) ## update zimt parameters with simss parameters.
 
     def save_parameters_BD():
@@ -308,13 +309,13 @@ else:
 
     # Load the device_parameters file and create a List object.
     # Check if a session specific file already exists. If True, use this one, else return to the default device_parameters_simss.txt
-    dev_par = utils_devpar.load_device_parameters(session_path, simss_device_parameters, simss_path)
+    dev_par = utils_devpar_gen.load_device_parameters(session_path, simss_device_parameters, simss_path)
 
     # When the reset button is pressed, empty the container and create a List object from the default .txt file. Next, save the default parameters to the parameter file.
     if reset_device_parameters:
         main_container_simss.empty()
         with open(os.path.join(resource_path, simss_device_parameters), encoding='utf-8') as fd:
-            dev_par = utils_devpar.devpar_read_from_txt(fd)
+            dev_par = utils_devpar_gen.devpar_read_from_txt(fd)
         save_parameters()
 
     with main_container_simss.container():

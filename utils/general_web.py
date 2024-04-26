@@ -195,6 +195,11 @@ def prepare_results_download(session_path, id_session, sim_type, exp_type=''):
                         shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
                     if file == st.session_state['freqY_file']:
                         shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
+                if exp_type == 'CV':
+                    if file == st.session_state['CV_pars']:
+                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
+                    if file == st.session_state['CapVol_file']:
+                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
             
     # When a calculated generation profile is used, retrieve the used nk data and spectrum files as well
     if st.session_state['genProf'] == 'calc':

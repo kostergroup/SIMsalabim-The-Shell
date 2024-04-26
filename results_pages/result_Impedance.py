@@ -51,7 +51,7 @@ def show_results_impedance(session_path, id_session):
             # Results data is present, or at least the files are there. 
 
             # Read the main files/data (tj_file)
-            data_freqZ = pd.read_csv(os.path.join(session_path,st.session_state['freqZ_file']), delim_whitespace=True)
+            data_freqZ = pd.read_csv(os.path.join(session_path,st.session_state['freqZ_file']), sep=r'\s+')
             data_freqZ["ImZ"] = data_freqZ["ImZ"]*-1
 
             with st.sidebar:
@@ -114,3 +114,21 @@ def show_results_impedance(session_path, id_session):
                                 title_nyq, 1, fig2, ax2, plt.colorbar, [col2_1, col2_2, col2_3], show_plot_param=False, show_yscale=True, show_xscale=True,
                                 weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq)
                 st.pyplot(fig2, format='png')
+
+            # Capacitance & Conductance 
+            col3_1, col3_2, col3_3 = st.columns([1, 5, 1])
+
+            with col3_2:
+                fig3, ax31 = plt.subplots()
+                ax32 = ax31.twinx()
+                pars_cap_cond = {'C' : 'C [F m$^{-2}$]', 'G' : 'G [S m$^{-2}$]' }
+                selected_1_cap_cond = ['C']
+                selected_2_cap_cond = ['G']
+                par_x_cap_cond= 'freq'
+                xlabel_cap_cond = 'frequency [Hz]'
+                ylabel_1_cap_cond = 'Capacitance [F m$^{-2}$]'
+                ylabel_2_cap_cond = 'Conductance [S m$^{-2}$]'
+                title_cap_cond = 'Capacitance & Conductance'
+
+                utils_plot.create_UI_component_plot_twinx(data_freqZ, pars_cap_cond, selected_1_cap_cond, selected_2_cap_cond, par_x_cap_cond, xlabel_cap_cond, ylabel_1_cap_cond, 
+                                                          ylabel_2_cap_cond, title_cap_cond,fig3, ax31, ax32, [col3_1, col3_2, col3_3], show_plot_param=False, show_errors=False, yscale_init_1 = 1)

@@ -1,4 +1,4 @@
-""" UI to display the Impedance spectroscopy results"""
+""" UI to display the IMPS results"""
 ######### Package Imports #########################################################################
 
 import os
@@ -52,7 +52,7 @@ def show_results_imps(session_path, id_session):
             # Results data is present, or at least the files are there. 
 
             # Read the main files/data (tj_file)
-            data_freqY = pd.read_csv(os.path.join(session_path,st.session_state['freqY_file']), delim_whitespace=True)
+            data_freqY = pd.read_csv(os.path.join(session_path,st.session_state['freqY_file']), sep=r'\s+')
             data_freqY["ImZ"] = data_freqY["ImY"]*-1
 
             # Define plot type options

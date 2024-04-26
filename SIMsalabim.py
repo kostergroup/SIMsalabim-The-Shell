@@ -15,7 +15,7 @@ utils_gen_web.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.08' # The Shell version
+version_theshell = '1.09' # The Shell version
 version_simsalabim = '4.56' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
@@ -72,6 +72,9 @@ st.session_state.key = 'Exp_object'
 st.session_state.key = 'freqZ_file'
 st.session_state.key = 'imps_pars'
 st.session_state.key = 'freqY_file'
+st.session_state.key = 'CV_pars'
+st.session_state.key = 'CapVol_file'
+
 st.session_state.key = 'run_simulation'
 
 # Check if the user already has an id. If not, create it for the user to identify input/output files. Currently UTC timestamp is used as an identifier.
@@ -105,12 +108,15 @@ if 'id' not in st.session_state:
 ######### Function Definitions ####################################################################
 
 ######### UI ######################################################################################
+# st.warning('''PLACEHOLDER''')
 
 st.title("SIMsalabim - The Shell")
 
 st.text('The Shell v' + version_theshell + ' | ' + 'SIMsalabim v' + version_simsalabim)
 
 st.write('An easy-to-use web interface for open source SIMsalabim drift-diffusion simulation package.')
+
+#st.warning('''Note! The Shell will be down temporarly on PLACEHOLDER due to maintenance. ''')
 
 st.warning('''Note: The Shell does not support all features and functionality that SIMsalabim has to offer. 
 To use all functionality, download and run the SIMsalabim project on your machine as described in the 
@@ -125,9 +131,10 @@ st.write('''Currently supported functionality in The Shell is:
 - Upload and use a generation profile
 - Upload and use a definition of multiple trap levels
 - Plot, analyze and download the simulation results
-- Simulate a JV hysteresis experiment
+- Simulate a JV hysteresis experiment and compare it to an experimental JV curve
 - Simulate an impedance spectroscopy experiment
 - Simulate an IMPS experiment
+- Simulate a capacitance-voltage experiment
 ''')
 st.text(' ')
 
@@ -139,7 +146,7 @@ st.write('The paper can be viewed [here](https://joss.theoj.org/papers/10.21105/
 
 st.text('''
 
-Copyright Ⓒ 2023 | S. Heester, F.D. Elhorst, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.
+Copyright Ⓒ 2023 - 2024 | S. Heester, F.D. Elhorst, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.
 ''')
         
 #  Show the SIMsalabim logo in the sidebar
