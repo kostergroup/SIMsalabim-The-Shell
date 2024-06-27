@@ -9,7 +9,7 @@ from results_pages import result_Hysteresis_JV as result_hyst
 from results_pages import result_Impedance as result_imp
 from results_pages import result_IMPS as result_imps
 from results_pages import result_CV as result_CV
-
+from menu import menu
 
 ######### Page configuration ######################################################################
 
@@ -18,8 +18,14 @@ st.set_page_config(layout="wide", page_title="SIMsalabim simulation results", pa
 # Load custom CSS.
 utils_gen_web.local_css('./utils/style.css')
 
-######### Parameter Initialisation ################################################################
+# Session states for page navigation
+st.session_state['pagename'] = 'Simulation results'
 
+######### Parameter Initialisation ################################################################
+with st.sidebar:
+    # Show custom menu
+    menu()
+    
 if 'id' not in st.session_state:
     st.error('SIMsalabim simulation has not been initialized yet, return to SIMsalabim page to start a session.')
 else:

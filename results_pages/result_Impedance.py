@@ -37,21 +37,21 @@ def show_results_impedance(session_path, id_session):
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
             utils_gen_web.prepare_results_download(session_path, id_session, 'zimt', 'impedance')
-        st.session_state['run_simulation'] = False
+        st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
     if not os.path.exists(session_path):
         # There is not a session folder yet, so nothing to show. Show an error.
         st.error('Save the device parameters first and run the simulation.')
     else:
-        if not st.session_state['freqZ_file'] in os.listdir(session_path):
+        if not st.session_state['freqZFile'] in os.listdir(session_path):
             # The main results file (tj file by default) is not present, so no data can be shown. Show an error 
             st.error('No data available. SIMsalabim simulation did not run yet or the device parameters have been changed. Run the simulation first.')
         else:
             # Results data is present, or at least the files are there. 
 
-            # Read the main files/data (tj_file)
-            data_freqZ = pd.read_csv(os.path.join(session_path,st.session_state['freqZ_file']), sep=r'\s+')
+            # Read the main files/data (tJFile)
+            data_freqZ = pd.read_csv(os.path.join(session_path,st.session_state['freqZFile']), sep=r'\s+')
             data_freqZ["ImZ"] = data_freqZ["ImZ"]*-1
 
             with st.sidebar:
@@ -61,7 +61,7 @@ def show_results_impedance(session_path, id_session):
                     prepare_results(session_path, id_session)
 
                 # Button to download the ZIP file
-                if not st.session_state['run_simulation']:
+                if not st.session_state['runSimulation']:
                     with open('Simulations/simulation_results_' + id_session + '.zip', 'rb') as ff:
                         id_to_time_string = datetime.fromtimestamp(float(id_session) / 1e6).strftime("%Y-%d-%mT%H-%M-%SZ")
                         filename = 'simulation_result_' + id_to_time_string
@@ -86,6 +86,8 @@ def show_results_impedance(session_path, id_session):
                 pars_bode = {'ReZ' : 'Re Z [Ohm m$^2$]', 'ImZ' : '-Im Z [Ohm m$^2$]' }
                 selected_1_bode = ['ReZ']
                 selected_2_bode = ['ImZ']
+                y_error_1 = data_freqZ["ReErrZ"]
+                y_error_2 = data_freqZ["ImErrZ"]
                 par_x_bode = 'freq'
                 xlabel_bode = 'frequency [Hz]'
                 ylabel_1_bode = 'Re Z [Ohm m$^2$]'
@@ -93,7 +95,7 @@ def show_results_impedance(session_path, id_session):
                 title_bode = 'Bode plot'
 
                 utils_plot.create_UI_component_plot_twinx(data_freqZ, pars_bode, selected_1_bode, selected_2_bode, par_x_bode, xlabel_bode, ylabel_1_bode, 
-                                                          ylabel_2_bode, title_bode,fig1, ax11, ax12, [col1_1, col1_2, col1_3], show_plot_param=False)
+                                                          ylabel_2_bode, title_bode,fig1, ax11, ax12, [col1_1, col1_2, col1_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2)
 
             # Nyquist [1]
             col2_1, col2_2, col2_3 = st.columns([1, 6, 1])
@@ -124,6 +126,8 @@ def show_results_impedance(session_path, id_session):
                 pars_cap_cond = {'G' : 'G [S m$^{-2}$]', 'C' : 'C [F m$^{-2}$]', }
                 selected_1_cap_cond = ['G']
                 selected_2_cap_cond = ['C']
+                y_error_1 = data_freqZ["errG"]
+                y_error_2 = data_freqZ["errC"]
                 par_x_cap_cond= 'freq'
                 xlabel_cap_cond = 'frequency [Hz]'
                 ylabel_1_cap_cond = 'Conductance [S m$^{-2}$]'
@@ -131,4 +135,4 @@ def show_results_impedance(session_path, id_session):
                 title_cap_cond = 'Conductance & Capacitance'
 
                 utils_plot.create_UI_component_plot_twinx(data_freqZ, pars_cap_cond, selected_1_cap_cond, selected_2_cap_cond, par_x_cap_cond, xlabel_cap_cond, ylabel_1_cap_cond, 
-                                                          ylabel_2_cap_cond, title_cap_cond,fig3, ax31, ax32, [col3_1, col3_2, col3_3], show_plot_param=False, show_errors=False, yscale_init_2 = 1)
+                                                          ylabel_2_cap_cond, title_cap_cond,fig3, ax31, ax32, [col3_1, col3_2, col3_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2,show_errors=True, yscale_init_2 = 1)

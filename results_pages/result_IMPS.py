@@ -37,7 +37,7 @@ def show_results_imps(session_path, id_session):
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
             utils_gen_web.prepare_results_download(session_path, id_session, 'zimt', 'imps')
-        st.session_state['run_simulation'] = False
+        st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
 
@@ -45,14 +45,14 @@ def show_results_imps(session_path, id_session):
         # There is not a session folder yet, so nothing to show. Show an error.
         st.error('Save the device parameters first and run the simulation.')
     else:
-        if not st.session_state['freqY_file'] in os.listdir(session_path):
+        if not st.session_state['freqYFile'] in os.listdir(session_path):
             # The main results file (tj file by default) is not present, so no data can be shown. Show an error 
             st.error('No data available. SIMsalabim simulation did not run yet or the device parameters have been changed. Run the simulation first.')
         else:
             # Results data is present, or at least the files are there. 
 
-            # Read the main files/data (tj_file)
-            data_freqY = pd.read_csv(os.path.join(session_path,st.session_state['freqY_file']), sep=r'\s+')
+            # Read the main files/data (tJFile)
+            data_freqY = pd.read_csv(os.path.join(session_path,st.session_state['freqYFile']), sep=r'\s+')
             data_freqY["ImZ"] = data_freqY["ImY"]*-1
 
             # Define plot type options
@@ -65,7 +65,7 @@ def show_results_imps(session_path, id_session):
                     prepare_results(session_path, id_session)
 
                 # Button to download the ZIP file
-                if not st.session_state['run_simulation']:
+                if not st.session_state['runSimulation']:
                     with open('Simulations/simulation_results_' + id_session + '.zip', 'rb') as ff:
                         id_to_time_string = datetime.fromtimestamp(float(id_session) / 1e6).strftime("%Y-%d-%mT%H-%M-%SZ")
                         filename = 'simulation_result_' + id_to_time_string

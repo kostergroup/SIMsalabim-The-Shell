@@ -13,7 +13,7 @@ from utils import plot_functions_gen as utils_plot_gen
 
 ######### Function Definitions ####################################################################
 
-def create_tVG(V_0, V_max, del_V, V_step, G, gen_profile, tVG_name, session_path, freq, ini_timeFactor, timeFactor):
+def create_tVG(V_0, V_max, del_V, V_step, G_frac, tVG_name, session_path, freq, ini_timeFactor, timeFactor):
     """Create a tVG file for capacitance experiment. 
 
     Parameters
@@ -26,10 +26,8 @@ def create_tVG(V_0, V_max, del_V, V_step, G, gen_profile, tVG_name, session_path
         Voltage step that is applied directly after t=0
     V_step : float
         Voltage difference, determines at which voltages the capacitance is determined
-    G : float
-        Amount of suns if gen_profile == 'calc', else amount of generated electron-hole pairs
-    gen_profile : string
-        Indicator for type of generation profile to set the correct header in the tVG file
+    G_frac : float
+        Fractional light intensity
     tVG_name : string
         Name of the tVG file
     session_path : string
@@ -47,23 +45,20 @@ def create_tVG(V_0, V_max, del_V, V_step, G, gen_profile, tVG_name, session_path
         A message to indicate the result of the process
     """        
 
-    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header based on the type of generation profile used.
-    if gen_profile == 'calc':
-        tVG_lines = 't Vext Gfrac\n'
-    else:
-        tVG_lines = 't Vext Gehp\n'
+    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header
+    tVG_lines = 't Vext G_frac\n'
 
-    # Loop until V reaches V_max, in other words go from Vmin to Vmax with in V_step steps
-    while V_0 <= V_max:
+    # Loop until V reaches V_max, in other words go from Vmin to Vmax with in V_step steps. Add some extra margin on the Vmax to prevent missing the last voltage point due to numerical accuracy.
+    while V_0 <= V_max + V_max*1E-5:
         time = 0
         del_t = ini_timeFactor/freq
-        tVG_lines += f'{time:.3e} {V_0:.3e} {G:.3e}\n'
+        tVG_lines += f'{time:.3e} {V_0:.3e} {G_frac:.3e}\n'
         
         # Make the other lines in the tVG file
         while time < 1/freq: #max time: 1/f_min is enough!
             time += del_t
             del_t = del_t * timeFactor
-            tVG_lines += f'{time:.3e} {V_0+del_V:.3e} {G:.3e}\n'
+            tVG_lines += f'{time:.3e} {V_0+del_V:.3e} {G_frac:.3e}\n'
     
         V_0 += V_step
 
@@ -136,10 +131,10 @@ def calc_capacitance_forOneVoltage(I, errI, time, VStep, freq):
         int4[i] = cosfac*(I[i] + errI[i] - Iinf - errI[imax-1])	
 
     #Compute the capacitance:
-    cap = scipy.integrate.trapz(int2, time)/VStep
+    cap = scipy.integrate.trapezoid(int2, time)/VStep
 	
     #and again, but now with the error added to the current:	
-    capErr = scipy.integrate.trapz(int4, time)/VStep
+    capErr = scipy.integrate.trapezoid(int4, time)/VStep
 
     # error is the difference between cap and capPlusErr:
     errC = abs( cap - capErr )
@@ -302,7 +297,7 @@ def plot_capacitance(session_path, output_file='CapVol.dat'):
 
     cap_plot(session_path, output_file)
 
-def run_CV_simu(zimt_device_parameters, session_path, tVG_name, freq, V_min, V_max, del_V, V_step, G, gen_profile, run_mode=False, output_file = 'CapVol.dat', tj_name = 'tj.dat', ini_timeFactor=1e-3, timeFactor=1.02):
+def run_CV_simu(zimt_device_parameters, session_path, tVG_name, freq, V_min, V_max, del_V, V_step, G_frac, run_mode=False, output_file = 'CapVol.dat', tj_name = 'tj.dat', ini_timeFactor=1e-3, timeFactor=1.02):
     """Create a tVG file and run ZimT with capacitance device parameters
 
     Parameters
@@ -323,10 +318,8 @@ def run_CV_simu(zimt_device_parameters, session_path, tVG_name, freq, V_min, V_m
         Voltage step that is applied directly after t=0
     V_step : float
         Voltage difference, determines at which voltages the capacitance is determined
-    G : float
-        Amount of suns if gen_profile == 'calc', else amount of generated electron-hole pairs
-    gen_profile : string
-        Indicator for type of generation profile to set the correct header in the tVG file  
+    G_frac : float
+        Fractional light intensity
     run_mode : bool, optional
         Indicate whether the script is in 'web' mode (True) or standalone mode (False). Used to control the console output, by default False  
     output_file : string, optional
@@ -347,7 +340,7 @@ def run_CV_simu(zimt_device_parameters, session_path, tVG_name, freq, V_min, V_m
     """
    
     # Create tVG
-    result, message = create_tVG(V_min, V_max, del_V, V_step, G, gen_profile, tVG_name, session_path, freq, ini_timeFactor, timeFactor)
+    result, message = create_tVG(V_min, V_max, del_V, V_step, G_frac, tVG_name, session_path, freq, ini_timeFactor, timeFactor)
 
     # Check if tVG file is created
     if result == 0:
@@ -356,11 +349,10 @@ def run_CV_simu(zimt_device_parameters, session_path, tVG_name, freq, V_min, V_m
 
         # Define mandatory options for ZimT to run well with CV:
         CV_args = [{'par':'dev_par_file','val':zimt_device_parameters},
-                        {'par':'tVG_file','val':tVG_name},
-                        {'par':'Gen_profile','val':gen_profile},
+                        {'par':'tVGFile','val':tVG_name},
                         {'par':'tolPois','val':str(tolPois)},
-                        {'par':'LimitDigits','val':'0'},
-                        {'par':'CurrDiffInt','val':'2'},]
+                        {'par':'limitDigits','val':'0'},
+                        {'par':'currDiffInt','val':'2'},]
         
         result, message = utils_gen.run_simulation('zimt', CV_args, session_path, run_mode)
 
@@ -383,8 +375,7 @@ if __name__ == "__main__":
     V_max = 1.0
     del_V = 10e-3
     V_step = 0.1    
-    gen_profile = 'calc' # amount of sun ('calc') or amount of generated electron-hole pairs ('none')
-    G = 0
+    G_frac = 0
 
     # Not user input
     ini_timeFactor = 1e-3 # Initial timestep factor, org 1e-3
@@ -396,7 +387,7 @@ if __name__ == "__main__":
     tj_name = 'tj.dat'
 
     # Run Capacitance-Voltage   
-    result, message = run_CV_simu(zimt_device_parameters, session_path, tVG_name, freq, V_min, V_max, del_V, V_step, G, gen_profile, run_mode=True, ini_timeFactor=ini_timeFactor, timeFactor=timeFactor)
+    result, message = run_CV_simu(zimt_device_parameters, session_path, tVG_name, freq, V_min, V_max, del_V, V_step, G_frac, run_mode=True, ini_timeFactor=ini_timeFactor, timeFactor=timeFactor)
 
     # Make the capacitance-voltage plot
     if result == 0 or result == 95:

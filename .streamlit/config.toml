@@ -5,3 +5,5 @@ enableXsrfProtection=false
 enableCORS = false
 maxUploadSize=5
 #enableWebsocketCompression=false
+[client]
+showSidebarNavigation = false

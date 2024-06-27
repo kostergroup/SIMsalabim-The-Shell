@@ -66,52 +66,44 @@ def create_summary_and_cite(session_path, used_optics):
     if not st.session_state['simulation_results'] == 'Steady State JV':
         if st.session_state['simulation_results'] == 'Hysteresis JV':
             # Hysteresis JV
-            fp.write(st.session_state['simulation_results'] + ' variables are stored in hyst_pars.txt\n')
-            if st.session_state["Exp_object"]['UseExpData'] == 0:
-                fp.write(f'Voltage range: {st.session_state["Exp_object"]["Vmin"]:.3f} to {st.session_state["Exp_object"]["Vmax"]:.3f} V\n')
+            fp.write(st.session_state['simulation_results'] + ' variables are stored in hystPars.txt\n')
+            if st.session_state["expObject"]['UseExpData'] == 0:
+                fp.write(f'Voltage range: {st.session_state["expObject"]["Vmin"]:.3f} to {st.session_state["expObject"]["Vmax"]:.3f} V\n')
             else:
                 fp.write(f'Experimental JV data used. Files:\n')
-                fp.write(f'- {st.session_state["Exp_object"]["expJV_Vmin_Vmax"]}\n')
-                fp.write(f'- {st.session_state["Exp_object"]["expJV_Vmax_Vmin"]}\n')
+                fp.write(f'- {st.session_state["expObject"]["expJV_Vmin_Vmax"]}\n')
+                fp.write(f'- {st.session_state["expObject"]["expJV_Vmax_Vmin"]}\n')
 
-            fp.write(f'Scan speed: {st.session_state["Exp_object"]["scan_speed"]:.3E} V/s\n')
-            fp.write(f'direction: {st.session_state["Exp_object"]["direction"]} (Voltage sweep order, 1 for [ Vmin-Vmax | Vmax-Vmin ], -1 for [ Vmax-Vmin | Vmin-Vmax ])\n')
-            if used_optics:
-                fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3E} (Fraction of the light intensity/generation rate)\n')
-            else:
-                 fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3f} m^-3 s^-1\n')
+            fp.write(f'Scan speed: {st.session_state["expObject"]["scan_speed"]:.3E} V/s\n')
+            fp.write(f'direction: {st.session_state["expObject"]["direction"]} (Voltage sweep order, 1 for [ Vmin-Vmax | Vmax-Vmin ], -1 for [ Vmax-Vmin | Vmin-Vmax ])\n')
+            fp.write(f'Fractional Generation rate: {st.session_state["expObject"]["G_frac"]:.3E} (Fraction of the light intensity/generation rate)\n')
+
             fp.write('\n')
         elif st.session_state['simulation_results'] == 'Impedance':
             # Impedance
-            fp.write(st.session_state['simulation_results'] + ' variables are stored in impedance_pars.txt\n')
-            fp.write(f'Frequency range: {st.session_state["Exp_object"]["fmin"]:.2E} to {st.session_state["Exp_object"]["fmax"]:.2E} Hz\n')
-            fp.write(f'Applied Voltage: {st.session_state["Exp_object"]["V0"]:.3f} V\n')
-            fp.write(f'Voltage step size: {st.session_state["Exp_object"]["delV"]:f} V\n')
-            if used_optics:
-                fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3E} (Fraction of the light intensity/generation rate)\n')
-            else:
-                 fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3f} m^-3 s^-1\n')
+            fp.write(st.session_state['simulation_results'] + ' variables are stored in impedancePars.txt\n')
+            fp.write(f'Frequency range: {st.session_state["expObject"]["fmin"]:.2E} to {st.session_state["expObject"]["fmax"]:.2E} Hz\n')
+            fp.write(f'Applied Voltage: {st.session_state["expObject"]["V0"]:.3f} V\n')
+            fp.write(f'Voltage step size: {st.session_state["expObject"]["delV"]:f} V\n')
+            fp.write(f'Fractional Generation rate: {st.session_state["expObject"]["G_frac"]:.3E} (Fraction of the light intensity/generation rate)\n')
+
             fp.write('\n')
         elif st.session_state['simulation_results'] == 'IMPS':
             # IMPS
-            fp.write(st.session_state['simulation_results'] + ' variables are stored in imps_pars.txt\n')
-            fp.write(f'Frequency range: {st.session_state["Exp_object"]["fmin"]:.2E} to {st.session_state["Exp_object"]["fmax"]:.2E} Hz\n')
-            fp.write(f'Applied Voltage: {st.session_state["Exp_object"]["V0"]:.3f} V\n')
-            fp.write(f'Fraction generation rate: {st.session_state["Exp_object"]["fracG"]:f} (Fraction to increase the intensity/generation rate with. Sets the size of the initial pertubation)\n')
-            if used_optics:
-                fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3E} (Fraction of the light intensity/generation rate)\n')
-            else:
-                 fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3f} m^-3 s^-1\n')
+            fp.write(st.session_state['simulation_results'] + ' variables are stored in IMPSPars.txt\n')
+            fp.write(f'Frequency range: {st.session_state["expObject"]["fmin"]:.2E} to {st.session_state["expObject"]["fmax"]:.2E} Hz\n')
+            fp.write(f'Applied Voltage: {st.session_state["expObject"]["V0"]:.3f} V\n')
+            fp.write(f'Fractional increase in generation rate: {st.session_state["expObject"]["fracG"]:f} (Fraction to increase the intensity/generation rate with. Sets the size of the initial pertubation)\n')
+            fp.write(f'Fractional Generation rate: {st.session_state["expObject"]["G_frac"]:.3E} (Fraction of the light intensity/generation rate)\n')
+
             fp.write('\n')
         elif st.session_state['simulation_results'] == 'CV':
             # IMPS
-            fp.write(st.session_state['simulation_results'] + ' variables are stored in CV_pars.txt\n')
-            fp.write(f'Frequency at which CV is performed: {st.session_state["Exp_object"]["freq"]:.2E}\n')
-            fp.write(f'Voltage range: {st.session_state["Exp_object"]["Vmin"]:.3f} to {st.session_state["Exp_object"]["Vmax"]:.3f} V\n')
-            if used_optics:
-                fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3E} (Fraction of the light intensity/generation rate)\n')
-            else:
-                 fp.write(f'Generation rate: {st.session_state["Exp_object"]["gen_rate"]:.3f} m^-3 s^-1\n')
+            fp.write(st.session_state['simulation_results'] + ' variables are stored in CVPars.txt\n')
+            fp.write(f'Frequency at which CV is performed: {st.session_state["expObject"]["freq"]:.2E}\n')
+            fp.write(f'Voltage range: {st.session_state["expObject"]["Vmin"]:.3f} to {st.session_state["expObject"]["Vmax"]:.3f} V\n')
+            fp.write(f'Generation rate: {st.session_state["expObject"]["G_frac"]:.3E} (Fraction of the light intensity/generation rate)\n')
+
             fp.write('\n')
 
     # Citation
@@ -165,7 +157,8 @@ The voltage sweep order is specified via the direction, either  1 for forward | 
         desc = '''
 Simulate an impedance spectroscopy experiment with SIMsalabim. 
 The impedance is calculated at the applied voltage. A small one time pertubation at t=0 is introduced at this voltage, defined by the voltage step size. 
-The time step of the pertubation is 0.1% of 1/fmax. The time profile is not linear, but the timestep increases by 2% every time point to reduce the number of (unnecessary) datapoints. 
+The time step of the pertubation is 0.1% of 1/fmax. The ti            if used_optics:
+me profile is not linear, but the timestep increases by 2% every time point to reduce the number of (unnecessary) datapoints. 
 The light intensity (generation rate) is kept constant. The impedance is calculated using Fourier decomposition, based on the method desrcibed in S.E. Laux, IEEE Trans. Electron Dev. 32 (10), 2028 (1985). 
 Note, we do not integrate from t=0 to infinity, but only from t=0 to the time corresponding to the lowest frequency, i.e. 1/fmin. The integral is calculated using the trapezoidal rule. 
 The results (stored in freqZ.dat) consists of the real and imaginary part (including error margins) of the impedance as a function of the frequency.
@@ -173,7 +166,8 @@ The results (stored in freqZ.dat) consists of the real and imaginary part (inclu
     elif type == 'IMPS':
         # IMPS
         desc = '''
-Simulate an Intensity Modulated PhotoSpectroscopy (IMPS) experiment with SIMsalabim. 
+Simulate an Intensity Modulated PhotoSpectroscopy (IMPS) e            if used_optics:
+xperiment with SIMsalabim. 
 The impedance is calculated at the applied voltage. A small one time pertubation in light intensity at t=0 is introduced at this voltage, defined as a fraction with which the generation rate is increased.  
 The time step of the pertubation is 0.1% of 1/fmax. The time profile is not linear, but the timestep increases by 2% every time point to reduce the number of (unnecessary) datapoints. 
 The applied voltage is kept constant. The admittance is calculated using Fourier decomposition, based on the method desrcibed in S.E. Laux, IEEE Trans. Electron Dev. 32 (10), 2028 (1985). 

@@ -3,12 +3,20 @@ An easy-to-use web interface for SIMsalabim, build on the Streamlit framework an
 
 Note: The Shell does not support all features and functionality that SIMsalabim has to offer. To use all functionality, download and run the SIMSalabim project on your machine as described in the [SIMsalabim Project readme](https://github.com/sheester/SIMsalabim-web/tree/development/SIMsalabim#quickstart-guide). For a full overview of the functionality of SIMSalabim, refer to the [SIMsalabim manual](https://raw.githubusercontent.com/kostergroup/SIMsalabim/master/Docs/Manual.pdf).
 
-Currently supported functionality in The Shell is (only for SimSS, ZimT is not supported):
-- Define the device parameters based on a default template or upload your own device parameters.
-- Upload and use a experimental JV curve
+Currently supported functionality in The Shell is:
+- Define your device via the device parameters on a template or upload your own device parameters.
+- Full flexibility in defining the number of layers and their parameters
+- Use optics (based on the Transfermatrix method) to calculate a generation profile
+- Upload an experimental JV curve and compare it to a simulated JV curve
 - Upload and use a generation profile
 - Upload and use a definition of multiple trap levels
-- Plot and investigate the simulation results (Var.dat & JV.dat)
+- Plot, analyze and download the simulation results
+- Simulate Steady State JV curves
+- Simulate the EQE of a device
+- Simulate a JV hysteresis experiment and compare it to an experimental JV curve
+- Simulate an impedance spectroscopy experiment
+- Simulate an IMPS experiment
+- Simulate a capacitance-voltage experiment
 
 
 ## Table of Contents
@@ -61,7 +69,9 @@ The script will either compile the SIMsalabim binaries (preferred) or use the pr
 The Shell is licensed under the GNU Lesser General Public Licence version 3. The details of this licence can be found in the files COPYING.txt and COPYING.LESSER.txt. Several authors have contributed to the code:
 
 - S. (Sander) Heester (University of Groningen)
+- F.D. (Fransien) Elhorst (University of Groningen)
+- P. (Patricia) Martin Fernandez (University of Groningen)
 - Dr. M. (Marten) Koopmans (University of Groningen)
-- Dr. V.M. (Vincent) Le Corre
-- Prof. Dr. L.J.A. (Jan Anton) Koster
+- Dr. V.M. (Vincent) Le Corre (University of Erlangen-Nuremberg)
+- Prof. Dr. L.J.A. (Jan Anton) Koster (University of Groningen)
 

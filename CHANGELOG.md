@@ -2,6 +2,19 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.10] - ... - SH
+Major update
+- Updated to use SIMsalabim v5.11
+- Reworked core functions to support SIMsalabim v5.11.
+- The main object that holds the parameters after reading the files is now a dictionary with the file names as keys instead of a List object. This dictionary contains all the available layer files in the current session, not just the ones written in the simulation setup file.
+- Updated many of the parameter and variable names to be coherent with the new notation in SIMsalabim v5.11.
+- Added functionality to add/remove layers from the device. The layers and their relative position defined here are leading for the device structure used for the simulations. Parameters are now shown per layer and can be selected for editing or viewing using a dropdown menu.
+- Changed the file upload options from selectboxes per file type, to a single dialog window.
+- Implementation of the navigation menu in the sidebar is now custom and dynamic. When editing parameters, one can navigate between all the different pages. However, when one visits the simulation results, only the option to return back the last visited page is present. The sidebar would become overcrowded otherwise, especially in case of Steady State simulations.
+- Added the option to plot errorbars for scatter plots
+- The calculated conductivity and capacitance now include the respective error margins.
+- Added option to do an EQE calculation for the device. This can be done on the Steady State JV definition page. One needs to specify the wavelength bounds and step size accompanied by the applied voltage. The used spectrum is taken from the device parameter definition.
+
 ## [1.09] - 21-12-2023 - SH, FE, VLC
 - The impedance simulations with Rseries and Rshunt often did not converge. To improve this,  we now first run a steady state simulation to get the internal voltage and then run the impedance simulation with Rseries = 0 and Rshunt = -Rshunt. We will correct the impedance afterwards. This is a workaround to improve the convergence of the impedance simulation that  remains accurate to estimate the impedance. This is only done when Rseries <> 0. 
 - Added a Capacitance/Conductance vs. frequency plot to the impedance results

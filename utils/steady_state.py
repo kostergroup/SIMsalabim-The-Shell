@@ -101,13 +101,26 @@ def write_scpars(item, solar_cell_param, solar_cell):
         solar_cell = True
     return solar_cell_param, solar_cell
 
-def store_scPar_state(sc_par, solar_cell, dev_par):
+def store_scPar_state(sc_par, solar_cell, dev_par, dev_par_name):
+    """Store the solar cell parameters in a state.
+
+    Parameters
+    ----------
+    sc_par : dict
+        Dict object with the solar cell parameters from the terminal
+    solar_cell : boolean
+        True if a solar cell has been simulated, False if not
+    dev_par : dict
+        Dict object with all parameters and comments.
+    dev_par_name : string
+        Name of the device parameter file
+    """
     # Find and store the experimental JV file name parameter from the device parameters in a state. 
     # When not simulating a solar cell, this parameter will later be forced to 'none' again
-    for section in dev_par[1:]:
+    for section in dev_par[dev_par_name][1:]:
         if section[0] == 'User interface':
             for param in section:
-                if param[1] == 'ExpJV':
+                if param[1] == 'expJV':
                     st.session_state['expJV'] = param[2]
 
     if solar_cell is False:
@@ -118,7 +131,7 @@ def store_scPar_state(sc_par, solar_cell, dev_par):
     # Store the solar cell parameters in memory
     st.session_state['sc_par'] = sc_par
 
-def read_scPar(console_output_decoded, dev_par, run_mode=True):
+def read_scPar(console_output_decoded, dev_par, dev_par_name, run_mode=True):
     """Read the solar cell parameters from the txt line. Store them in a dictionary.
 
     Parameters
@@ -147,7 +160,7 @@ def read_scPar(console_output_decoded, dev_par, run_mode=True):
 
     if run_mode:
         # Running as part of The Shell, store the parameters as a state
-        store_scPar_state(sc_par, solar_cell, dev_par)
+        store_scPar_state(sc_par, solar_cell, dev_par, dev_par_name)
     else:
         # Running standalone, return the dict with solar cell parameters, force empty it when not a solar cell has been simulated.
         if solar_cell is False:

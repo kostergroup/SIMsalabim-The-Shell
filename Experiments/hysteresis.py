@@ -50,7 +50,7 @@ def build_tVG_arrays(t, tmax, V, G, scan_speed, V1, V2, Genrate, sign):
         G.append(Genrate)
     return V,G
 
-def create_tVG(session_path, Vmin, Vmax, scan_speed, direction, steps, gen_profile, gen_rate, tVG_name):
+def create_tVG(session_path, Vmin, Vmax, scan_speed, direction, steps, G_frac, tVG_name):
     """Create a tVG file for hysteresis experiments. 
 
     Parameters
@@ -67,10 +67,8 @@ def create_tVG(session_path, Vmin, Vmax, scan_speed, direction, steps, gen_profi
         Perform a Vmin-Vmax-Vmin (1) or Vmax-Vmin-Vmax scan (-1)
     steps : integer
         Number of time steps
-    gen_profile : string
-        Device Parameter | Indicator for type of generation profile to set the correct header in the tVG file
-    gen_rate : float
-        Device Parameter | Generation rate
+    G_frac : float
+        Device Parameter | Fractional Generation rate
     tVG_name : string
         Device Parameter | Name of the tVG file
 
@@ -96,21 +94,18 @@ def create_tVG(session_path, Vmin, Vmax, scan_speed, direction, steps, gen_profi
     # Create V,G arrays for both sweep directions
     if direction == 1:
         # forward -> backward
-        V,G = build_tVG_arrays(t, tmax, V,G, scan_speed, Vmin, Vmax, gen_rate, direction)
+        V,G = build_tVG_arrays(t, tmax, V,G, scan_speed, Vmin, Vmax, G_frac, direction)
     elif direction == -1:
         # backward -> forward
-        V,G = build_tVG_arrays(t, tmax, V,G, scan_speed, Vmax, Vmin, gen_rate, direction)
+        V,G = build_tVG_arrays(t, tmax, V,G, scan_speed, Vmax, Vmin, G_frac, direction)
     else:
         # Illegal value for direction given
         msg = 'Incorrect scan direction, choose either 1 for a forward - backward scan or -1 for a backward - forward scan'
         retval = 1
         return retval, msg
    
-    # Set the correct header for the tVG file based on the gen_profile parameter
-    if gen_profile == 'calc':
-        tVG_header = ['t','Vext','Gfrac']
-    else :
-        tVG_header = ['t','Vext','Gehp']
+    # Set the correct header for the tVG file
+    tVG_header = ['t','Vext','G_frac']
 
     # Combine t,V,G arrays into a DataFrame
     tVG = pd.DataFrame(np.stack([t,np.asarray(V),np.asarray(G)]).T,columns=tVG_header)
@@ -143,7 +138,7 @@ def plot_hysteresis_JV():
     
     return ax
 
-def tVG_exp(session_path, expJV_Vmin_Vmax, expJV_Vmax_Vmin, scan_speed, direction, gen_profile, gen_rate, tVG_name):
+def tVG_exp(session_path, expJV_Vmin_Vmax, expJV_Vmax_Vmin, scan_speed, direction, G_frac, tVG_name):
     """Create a tVG file for hysteresis experiments where Vext is the same as the voltages in the experimental JV file
 
     Parameters
@@ -158,10 +153,8 @@ def tVG_exp(session_path, expJV_Vmin_Vmax, expJV_Vmax_Vmin, scan_speed, directio
         Voltage scan speed [V/s]
     direction : integer
         Perform a Vmin-Vmax-Vmin (1) or Vmax-Vmin-Vmax scan (-1)
-    gen_profile : string
-        Indicator for type of generation profile to set the correct header in the tVG file
-    gen_rate : float
-        Generation rate
+    G_frac : float
+        Fractional Generation rate
     tVG_name : string
         Name of the tVG file
 
@@ -204,13 +197,10 @@ def tVG_exp(session_path, expJV_Vmin_Vmax, expJV_Vmax_Vmin, scan_speed, directio
     # Voltage array
     V = np.concatenate([V_forward, V_backward])
 
-    # Set the correct header for the tVG file based on the gen_profile parameter
-    if gen_profile == 'calc':
-        tVG_header = ['t','Vext','Gfrac']
-    else:
-        tVG_header = ['t','Vext','Gehp']
+    # Set the correct header for the tVG file
+    tVG_header = ['t','Vext','G_frac']
 
-    G = gen_rate * np.ones(len(t))
+    G = G_frac * np.ones(len(t))
 
     # Combine t,V,G arrays into a DataFrama
     tVG = pd.DataFrame(np.stack([t,np.asarray(V),G]).T,columns=tVG_header)
@@ -384,8 +374,8 @@ def Compare_Exp_Sim_JV(session_path, expJV_Vmin_Vmax, expJV_Vmax_Vmin, rms_mode,
     
     return rms
 
-def Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, direction, gen_profile, gen_rate, tVG_name, 
-                  run_mode=False, Vmin=0.0, Vmax=0.0, steps =0, expJV_Vmin_Vmax='', expJV_Vmax_Vmin='' ):
+def Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, direction, G_frac, tVG_name, 
+                  run_mode=False, Vmin=0.0, Vmax=0.0, steps =0, expJV_Vmin_Vmax='', expJV_Vmax_Vmin='',rms_mode='lin' ):
     """Create a tVG file and perform a JV hysteresis experiment.
 
     Parameters
@@ -400,10 +390,8 @@ def Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, 
         Voltage scan speed [V/s]
     direction : integer
         Perform a forward-backward (1) or backward-forward scan (-1).
-    gen_profile : string
-        Device Parameter | Indicator for type of generation profile to set the correct header in the tVG file
-    gen_rate : float
-        Device Parameter | Generation rate
+    G_frac : float
+        Device Parameter | Fractional generation rate
     tVG_name : string
         Device Parameter | Name of the tVG file
     run_mode : bool, optional
@@ -418,6 +406,8 @@ def Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, 
         file name of the first expJV curve, by default ''
     expJV_Vmax_Vmin : str, optional
         file name of the second expJV curve, by default ''
+    rms_mode : str, optional
+        Either 'lin' or 'log' to specify how the rms error is calculated
 
     Returns
     -------
@@ -430,12 +420,11 @@ def Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, 
     """
 
     rms = 0.0
-    rms_mode = 'log'
     if UseExpData == 1:
         # When fitting to experimental data, create a tVG file where Vext is the same as the voltages in the experimental JV file
-        result, message = tVG_exp(session_path, expJV_Vmin_Vmax, expJV_Vmax_Vmin, scan_speed, direction, gen_profile, gen_rate, tVG_name)
+        result, message = tVG_exp(session_path, expJV_Vmin_Vmax, expJV_Vmax_Vmin, scan_speed, direction, G_frac, tVG_name)
     else:
-        result, message = create_tVG(session_path, Vmin, Vmax, scan_speed, direction, steps, gen_profile, gen_rate, tVG_name)
+        result, message = create_tVG(session_path, Vmin, Vmax, scan_speed, direction, steps, G_frac, tVG_name)
 
     if result == 0:
         # tVG file created
@@ -458,8 +447,7 @@ if __name__ == "__main__":
     # Hysteresis input parameters
     direction = 1
     scan_speed = 1e1 # V/s
-    gen_profile = 'calc'
-    gen_rate = 1 # amount of sun ('calc') or amount of generated electron-hole pairs ('Gehp')
+    G_frac = 1 # amount of sun ('calc') or amount of generated electron-hole pairs ('Gehp')
     
     # # Hysteresis input when not fitting
     Vmin = 0 # V
@@ -473,11 +461,11 @@ if __name__ == "__main__":
     expJV_Vmax_Vmin = 'od05_b.txt' # Backward (direction=1)/Forward (direction=-1) JV scan file
     
     if UseExpData == 1:
-        result, message, rms = Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, direction, gen_profile, gen_rate, tVG_name, 
-                                             expJV_Vmin_Vmax = expJV_Vmin_Vmax, expJV_Vmax_Vmin = expJV_Vmax_Vmin)
+        result, message, rms = Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, direction, G_frac, tVG_name, 
+                                             expJV_Vmin_Vmax = expJV_Vmin_Vmax, expJV_Vmax_Vmin = expJV_Vmax_Vmin, rms_mode = rms_mode)
     else:
-        result, message, rms = Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, direction, gen_profile, gen_rate, tVG_name, 
-                                             Vmin=Vmin, Vmax=Vmax, steps =steps)
+        result, message, rms = Hysteresis_JV(zimt_device_parameters, session_path, UseExpData, scan_speed, direction, G_frac, tVG_name, 
+                                             Vmin=Vmin, Vmax=Vmax, steps =steps, rms_mode = rms_mode)
         
     if result.returncode == 0 or result.returncode == 95:
         if UseExpData == 1:

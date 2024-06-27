@@ -1,8 +1,9 @@
 """Functions for general use"""
 ######### Package Imports #########################################################################
 
-import os
+import os, zipfile
 from subprocess import run, PIPE
+from datetime import datetime
 
 ######### Function Definitions ####################################################################
 
@@ -223,3 +224,44 @@ def exchangeDevPar(session_path, source , target):
     """   
     result = run(['./exchangeDevPar', source, target], cwd=session_path, stdout=PIPE, check=False)
     return result.returncode
+
+def create_zip(session_path, layers):
+    """ Create a ZIP archive from a list of filenames
+
+    Parameters
+    ----------
+    session_path : string
+        path to the current session folder, where device parameter files are located
+    layers : List
+        List with all filenames/paths to be zipped, to be extracted from the layer object
+
+    Returns
+    -------
+    string
+        Filename of the ZIP archive
+    """
+
+    # Read all the file names to be zipped
+    files = []
+    for layer in layers:
+        # Check if a layer file is already added, as they can be reused for different layers. If so, there is no need in including it twice in the ZIP archive
+        if not os.path.join(session_path,layer[2]) in files:
+            files.append(os.path.join(session_path,layer[2]))
+
+    # Fixed name for the ZIP archive
+    zip_filename = os.path.join(session_path, 'Device_parameters.zip')
+
+    # Store the current date & time for the archive
+    current_datetime = datetime.now().timetuple()[:6]
+
+    with zipfile.ZipFile(zip_filename, 'w') as zipf:
+        dir_name = 'Device_parameters' #Name of the subfolder in ZIP archive
+        # get the current date and time to set the correct modified date for the subfolder, would otherwise be 01-01-1970 00:00
+        info = zipfile.ZipInfo(f'{dir_name}/')
+        info.date_time = current_datetime
+        zipf.writestr(info, '')
+
+        for file in files:
+            zipf.write(file, arcname=os.path.join(dir_name,os.path.basename(file)))
+
+    return zip_filename

@@ -26,34 +26,29 @@ def read_CV_parameters(CV_par, dev_par):
     CV_par_obj['Vmax'] = CV_par[2][1] 
     CV_par_obj['delV'] = CV_par[3][1] 
     CV_par_obj['Vstep'] = CV_par[4][1]
-    CV_par_obj['gen_rate'] = CV_par[5][1] 
+    CV_par_obj['G_frac'] = CV_par[5][1] 
 
     for section in dev_par[1:]:
-    # Generation profile
-        if section[0] == 'Generation and recombination':
-            for param in section:
-                if param[1] == 'Gen_profile':
-                    CV_par_obj['gen_profile'] = param[2]
     # tVG file location
         if section[0] == 'User interface':
             for param in section:
-                if param[1] == 'tVG_file':
-                    CV_par_obj['tVG_file'] = param[2]
-                if param[1] == 'tj_file':
-                    CV_par_obj['tj_file'] = param[2]
+                if param[1] == 'tVGFile':
+                    CV_par_obj['tVGFile'] = param[2]
+                if param[1] == 'tJFile':
+                    CV_par_obj['tJFile'] = param[2]
     
     return CV_par_obj
 
-def read_CV_par_file(session_path, CV_pars_file, CV_pars):
+def read_CV_par_file(session_path, CVParsFile, CVPars):
     """When the CV parameter file already exists, use these parameters.
 
     Parameters
     ----------
     session_path : string
         Path of the simulation folder for this session
-    CV_pars_file : string
+    CVParsFile : string
         Name of the CV parameter file
-    CV_pars : List 
+    CVPars : List 
         List with the CV parameters to show
 
     Returns
@@ -62,23 +57,23 @@ def read_CV_par_file(session_path, CV_pars_file, CV_pars):
         List with updated CV parameters to show
     """
     #ToDo fix setting correct param!
-    with open(os.path.join(session_path, CV_pars_file), encoding='utf-8') as fp_CV:
+    with open(os.path.join(session_path, CVParsFile), encoding='utf-8') as fp_CV:
         for line in fp_CV:
             line_element = line.split('=')
-            if line_element[0].strip() == 'gen_profile' or line_element[0].strip() == 'tVG_file' or line_element[0].strip() == 'tj_file':
+            if line_element[0].strip() == 'tVGFile' or line_element[0].strip() == 'tJFile':
                 continue
-            elif line_element[0].strip() == 'gen_rate':
-                for item in CV_pars:
-                    if item[0] == 'gen_rate':
+            elif line_element[0].strip() == 'G_frac':
+                for item in CVPars:
+                    if item[0] == 'G_frac':
                         item[1] = float(line_element[1].strip())
             elif line_element[0].strip() == 'fstep':
-                for item in CV_pars:
+                for item in CVPars:
                     if item[0] == 'fstep':
                         item[1] = int(line_element[1].strip())
             else:
-                for item in CV_pars:
+                for item in CVPars:
                     if item[0] == line_element[0].strip():
                         item[1] = float(line_element[1].strip())
     fp_CV.close()
 
-    return CV_pars
+    return CVPars

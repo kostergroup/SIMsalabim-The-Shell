@@ -5,7 +5,7 @@ from matplotlib.collections import LineCollection
 from utils import plot_def
 import numpy as np
 
-def plot_result(data, pars, selected, x_key, xlabel, ylabel, xscale, yscale, title, ax, plot_funcs, x_error = [], y_error=[], legend=True):
+def plot_result(data, pars, selected, x_key, xlabel, ylabel, xscale, yscale, title, ax, plot_funcs, x_error = [], y_error=[], legend=True, error_fmt='-'):
     """Make a plot for a (sub)set of parameters from a DataFrame. Note: errorbars only work with single x,y functions
 
 
@@ -39,7 +39,8 @@ def plot_result(data, pars, selected, x_key, xlabel, ylabel, xscale, yscale, tit
         List with the error on the y parameter, by default []
     legend : bool, optional
         Toggle between showing the legend in the plot, by default True
-
+    error_fmt : str, optional
+        Format of the errorbars, by default '-'
     Returns
     -------
     axes
@@ -50,13 +51,13 @@ def plot_result(data, pars, selected, x_key, xlabel, ylabel, xscale, yscale, tit
         if (sum(data[y_var]) != 0):
             if plot_funcs == plt.errorbar:
                 if len(x_error) == 0 and len(y_error) != 0:
-                    plot_funcs(data[x_key], data[y_var], label=pars[y_var], yerr = y_error, color=plot_def.color[i])
+                    plot_funcs(data[x_key], data[y_var], label=pars[y_var], yerr = y_error, color=plot_def.color[i], fmt=error_fmt)
                 elif len(x_error) != 0 and len(y_error) != 0:
-                    plot_funcs(data[x_key], data[y_var], label=pars[y_var], xerr = x_error, color=plot_def.color[i])
+                    plot_funcs(data[x_key], data[y_var], label=pars[y_var], xerr = x_error, color=plot_def.color[i], fmt=error_fmt)
                 elif len(x_error) != 0 and len(y_error) != 0:
-                    plot_funcs(data[x_key], data[y_var], label=pars[y_var], xerr = x_error, yerr = y_error, color=plot_def.color[i])
+                    plot_funcs(data[x_key], data[y_var], label=pars[y_var], xerr = x_error, yerr = y_error, color=plot_def.color[i], fmt=error_fmt)
                 else:
-                    plot_funcs(data[x_key], data[y_var], label=pars[y_var], color=plot_def.color[i])
+                    plot_funcs(data[x_key], data[y_var], label=pars[y_var], color=plot_def.color[i], fmt=error_fmt)
             else: 
                  plot_funcs(data[x_key], data[y_var], label=pars[y_var], color=plot_def.color[i])               
         i += 1

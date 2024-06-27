@@ -13,19 +13,17 @@ from utils import plot_functions_gen as utils_plot_gen
 
 ######### Function Definitions ####################################################################
 
-def create_tVG(V, G_0, del_G, gen_profile, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor):
+def create_tVG(V, G_frac, del_G, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor):
     """Create a tVG file for IMPS experiments.
 
     Parameters
     ----------
     V : float
         Voltage, the voltage is constant over the whole time range
-    G_0 : float
-        Amount of suns if gen_profile == 'calc', else amount of generated electron-hole pairs. Both at t=0
+    G_frac : float
+        Fractional light intensity
     del_G : float
         Applied generation rate increase at t=0
-    gen_profile : string
-        Indicator for type of generation profile to set the correct header in the tVG file
     tVG_name : string
         Name of the tVG file
     session_path : string
@@ -48,16 +46,13 @@ def create_tVG(V, G_0, del_G, gen_profile, tVG_name, session_path, f_min, f_max,
     time = 0
     del_t = ini_timeFactor/f_max
 
-    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header based on the type of generation profile used.
-    if gen_profile == 'calc':
-        tVG_lines = 't Vext Gfrac\n' + f'{time:.3e} {V} {G_0:.3e}\n'
-    else:
-        tVG_lines = 't Vext Gehp\n' + f'{time:.3e} {V} {G_0:.3e}\n'
+    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header
+    tVG_lines = 't Vext G_frac\n' + f'{time:.3e} {V} {G_frac:.3e}\n'
 
     # Make the other lines in the tVG file
     while time < 1/f_min: #max time: 1/f_min is enough!
         time = time+del_t
-        tVG_lines += f'{time:.3e} {V} {G_0+del_G:.3e}\n'
+        tVG_lines += f'{time:.3e} {V} {G_frac+del_G:.3e}\n'
         del_t = del_t * timeFactor # At first, we keep delt constant to its minimum values
 
     # Export tVG file to ZimT folder
@@ -197,14 +192,14 @@ def calc_IMPS_limit_time(I, errI, time, imax):
         int4[i] = cosfac*(I[i] + errI[i] - Iinf - errI[imax])	
 
     #now compute the conductance and capacitance:
-    cond = (Iinf - I[0] + 2*math.pi*freq*scipy.integrate.trapz(int1, timeLim))
-    cap = scipy.integrate.trapz(int2, timeLim)
+    cond = (Iinf - I[0] + 2*math.pi*freq*scipy.integrate.trapezoid(int1, timeLim))
+    cap = scipy.integrate.trapezoid(int2, timeLim)
     #convert to admittance:
     Y = cond + 2J*math.pi*freq*cap
 	
     #and again, but now with the error added to the current:	
-    condErr = (Iinf + errI[imax] - I[0] - errI[0] + 2*math.pi*freq*scipy.integrate.trapz(int3, timeLim))
-    capErr = scipy.integrate.trapz(int4, timeLim)
+    condErr = (Iinf + errI[imax] - I[0] - errI[0] + 2*math.pi*freq*scipy.integrate.trapezoid(int3, timeLim))
+    capErr = scipy.integrate.trapezoid(int4, timeLim)
     #convert to admittance:
     Y2 = condErr + 2J*math.pi*freq*capErr
     
@@ -269,7 +264,7 @@ def store_IMPS_data(session_path, freq, ReY, ImY, errY, output_file):
         Array of complex error in admittance
     """
 
-    with open(os.path.join(session_path,'freqY.dat'), 'w') as file:
+    with open(os.path.join(session_path,output_file), 'w') as file:
         file.write('freq ReY ImY ReErrY ImErrY' + '\n')
         for i in range(len(freq)):
             file.write(f'{freq[i]:.6e} {ReY[i]:.6e} {ImY[i]:.6e} {abs(errY[i].real):.6e} {abs(errY[i].imag):.6e}' + '\n')
@@ -357,7 +352,7 @@ def plot_IMPS(session_path, output_file='freqY.dat'):
     # IMPS plot
     IMPS_plot(session_path,output_file)
 
-def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V, G_0, GStep, gen_profile, run_mode=False, output_file = 'freqY.dat', ini_timeFactor=1e-3, timeFactor=1.02, 
+def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V, G_frac, GStep, run_mode=False, output_file = 'freqY.dat', ini_timeFactor=1e-3, timeFactor=1.02, 
                   tj_name = 'tj.dat'):
     """Create a tVG file and run ZimT with admittance device parameters
 
@@ -377,12 +372,10 @@ def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, 
         Frequency step
     V : float
         Voltage, the voltage is constant over the whole time range
-    G_0 : float
-        Amount of suns if gen_profile == 'calc', else amount of generated electron-hole pairs. Both at t=0
+    G_frac : float
+        Fractional light intensity
     GStep : float
         Applied generation rate increase at t=0
-    gen_profile : string
-        Indicator for type of generation profile to set the correct header in the tVG file
     run_mode : bool, optional
         Indicate whether the script is in 'web' mode (True) or standalone mode (False). Used to control the console output, by default False
     output_file : string, optional
@@ -402,15 +395,15 @@ def run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, 
         Return message to display on the UI, for both success and failed
     """
     # Create tVG
-    result, message = create_tVG(V, G_0, GStep, gen_profile, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor)
+    result, message = create_tVG(V, G_frac, GStep, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor)
 
     # Check if tVG file is created
     if result == 0:
         # Define mandatory options for ZimT to run well with IMPS:
         IMPS_JV_args = [{'par':'dev_par_file','val':zimt_device_parameters},
-                        {'par':'tVG_file','val':tVG_name},
-                        {'par':'LimitDigits','val':'0'},
-                        {'par':'CurrDiffInt','val':'2'}]
+                        {'par':'tVGFile','val':tVG_name},
+                        {'par':'limitDigits','val':'0'},
+                        {'par':'currDiffInt','val':'2'}]
         
         result, message = utils_gen.run_simulation('zimt', IMPS_JV_args, session_path, run_mode)
 
@@ -433,9 +426,8 @@ if __name__ == "__main__":
     f_steps = 30 # org 30
 
     V = 1.0 # Float or 'oc' for the open-circuit voltage
-    G_0 = 1
+    G_frac = 1
     fac_G = 5e-2 # org 2e-1, use around 0.2 for IMPS
-    gen_profile = 'calc'
 
     # Not user input
     ini_timeFactor = 1e-3 # Initial timestep factor, org 1e-3
@@ -448,8 +440,8 @@ if __name__ == "__main__":
     session_path = 'ZimT'
 
     # Run IMPS spectroscopy
-    GStep = G_0*fac_G
-    result, message = run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V, G_0, GStep, gen_profile, run_mode=False, ini_timeFactor=ini_timeFactor, timeFactor=timeFactor)
+    GStep = G_frac*fac_G
+    result, message = run_IMPS_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V, G_frac, GStep, run_mode=False, ini_timeFactor=ini_timeFactor, timeFactor=timeFactor)
 
     # Make the IMPS plots
     plot_IMPS(session_path)

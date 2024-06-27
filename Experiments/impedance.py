@@ -14,7 +14,7 @@ from utils.device_parameters_gen import *
 
 ######### Function Definitions ####################################################################
 
-def create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor):
+def create_tVG(V_0, del_V, G_frac, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor):
     """Create a tVG file for impedance experiments. 
 
     Parameters
@@ -23,10 +23,8 @@ def create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min, f_max,
         Voltage at t=0
     del_V : float
         Voltage step that is applied after t=0
-    G : float
-        Amount of suns if gen_profile == 'calc', else amount of generated electron-hole pairs
-    gen_profile : string
-        Indicator for type of generation profile to set the correct header in the tVG file
+    G_frac : float
+        Fractional light intensity
     tVG_name : string
         Name of the tVG file
     session_path : string
@@ -49,16 +47,14 @@ def create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min, f_max,
     time = 0
     del_t = ini_timeFactor/f_max
 
-    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header based on the type of generation profile used.
-    if gen_profile == 'calc':
-        tVG_lines = 't Vext Gfrac\n' + f'{time:.3e} {V_0} {G:.3e}\n'
-    else:
-        tVG_lines = 't Vext Gehp\n' + f'{time:.3e} {V_0} {G:.3e}\n'
+    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header
+    tVG_lines = 't Vext G_frac\n' + f'{time:.3e} {V_0} {G_frac:.3e}\n'
+
 
     # Make the other lines in the tVG file
     while time < 1/f_min: #max time: 1/f_min is enough!
         time = time+del_t
-        tVG_lines += f'{time:.3e} {V_0+del_V} {G:.3e}\n'
+        tVG_lines += f'{time:.3e} {V_0+del_V} {G_frac:.3e}\n'
         del_t = del_t * timeFactor # At first, we keep delt constant to its minimum values
 
     # Write the tVG lines to the tVG file
@@ -71,7 +67,7 @@ def create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min, f_max,
 
     return retval, msg
 
-def create_tVG_SS(V_0, G, gen_profile, tVG_name, session_path):
+def create_tVG_SS(V_0, G_frac, tVG_name, session_path):
     """ Creates the tVG file for the steady state simulation with only t 0 and V_0
 
     Parameters
@@ -80,10 +76,8 @@ def create_tVG_SS(V_0, G, gen_profile, tVG_name, session_path):
         Voltage at t=0
     del_V : float
         Voltage step that is applied after t=0
-    G : float
-        Amount of suns if gen_profile == 'calc', else amount of generated electron-hole pairs
-    gen_profile : string
-        Indicator for type of generation profile to set the correct header in the tVG file
+    G_frac : float
+        Fractional light intensity
     tVG_name : string
         Name of the tVG file
     session_path : string
@@ -97,12 +91,8 @@ def create_tVG_SS(V_0, G, gen_profile, tVG_name, session_path):
     
     """    
 
-    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header based on the type of generation profile used.
-    if gen_profile == 'calc':
-        tVG_lines = 't Vext Gfrac\n' + f'{0} {V_0} {G:.3e}\n'
-    else:
-        tVG_lines = 't Vext Gehp\n' + f'{0} {V_0} {G:.3e}\n'
-
+    # Starting line of the tVG file: header + datapoints at time=0. Set the correct header
+    tVG_lines = 't Vext G_frac\n' + f'{0} {V_0} {G_frac:.3e}\n'
    
     # Write the tVG lines to the tVG file
     with open(os.path.join(session_path,tVG_name), 'w') as file:
@@ -245,14 +235,14 @@ def calc_impedance_limit_time(I, errI, time, VStep, imax):
         int4[i] = cosfac*(I[i] + errI[i] - Iinf - errI[imax])	
 
     #now compute the conductance and capacitance:
-    cond = (Iinf - I[0] + 2*math.pi*freq*scipy.integrate.trapz(int1, timeLim))/VStep
-    cap = scipy.integrate.trapz(int2, timeLim)/VStep
+    cond = (Iinf - I[0] + 2*math.pi*freq*scipy.integrate.trapezoid(int1, timeLim))/VStep
+    cap = scipy.integrate.trapezoid(int2, timeLim)/VStep
     #convert to impedance:
     Z = 1/(cond + 2J*math.pi*freq*cap)
 	
     #and again, but now with the error added to the current:	
-    condErr = (Iinf + errI[imax] - I[0] - errI[0] + 2*math.pi*freq*scipy.integrate.trapz(int3, timeLim))/VStep
-    capErr = scipy.integrate.trapz(int4, timeLim)/VStep
+    condErr = (Iinf + errI[imax] - I[0] - errI[0] + 2*math.pi*freq*scipy.integrate.trapezoid(int3, timeLim))/VStep
+    capErr = scipy.integrate.trapezoid(int4, timeLim)/VStep
     #convert to impedance:
     Z2 = 1/(condErr + 2J*math.pi*freq*capErr)
     
@@ -288,6 +278,10 @@ def calc_impedance(data, del_V, isToPlot,session_path,zimt_device_parameters):
         Array of capacitance	
     np.array
         Array of conductance
+    np.array
+        Array of error in capacitance	
+    np.array
+        Array of error in conductance
     """
     # init the arrays for the impedance and its error:
     numFreqPoints = len(isToPlot)
@@ -298,18 +292,21 @@ def calc_impedance(data, del_V, isToPlot,session_path,zimt_device_parameters):
     errZ = [1 + 1J] * numFreqPoints
     C = np.empty(numFreqPoints)
     G = np.empty(numFreqPoints)
+    errC = np.empty(numFreqPoints)
+    errG = np.empty(numFreqPoints)
+
 
     # We need to know the series and shunt resistance to calculate the impedance correctly later on
-    dev_val = load_device_parameters(session_path, zimt_device_parameters)
-    for i in dev_val:
+    dev_val,lyrs_dum = load_device_parameters(session_path, zimt_device_parameters)
+    for i in dev_val[zimt_device_parameters]:
         if i[0] == 'Contacts':
             contacts = i
             break
 
     for i in contacts[1:]:
-        if i[1] == 'Rseries':
+        if i[1] == 'R_series':
             Rseries = float(i[2])
-        elif i[1] == 'Rshunt':
+        elif i[1] == 'R_shunt':
             Rshunt = float(i[2])
 
     for i in range(numFreqPoints):
@@ -324,10 +321,13 @@ def calc_impedance(data, del_V, isToPlot,session_path,zimt_device_parameters):
         ImZ[i] = Z[i].imag
         C[i] = 1/(2*math.pi*freq[i])*invZ.imag
         G[i] = invZ.real
-    
-    return freq, ReZ, ImZ, errZ, C, G
 
-def store_impedance_data(session_path, freq, ReZ, ImZ, errZ, C, G, output_file):
+        errC[i] = abs(1/(2*math.pi*freq[i])*(invZ.imag**2)*errZ[i].real)
+        errG[i] = abs((invZ.real**2)*errZ[i].imag)
+    
+    return freq, ReZ, ImZ, errZ, C, G, errC, errG
+
+def store_impedance_data(session_path, freq, ReZ, ImZ, errZ, C, G, errC, errG, output_file):
     """ Save the frequency, real & imaginary part of the impedance & impedance error in one file called freqZ.dat
     
     Parameters
@@ -346,12 +346,16 @@ def store_impedance_data(session_path, freq, ReZ, ImZ, errZ, C, G, output_file):
         Array of capacitance	
     G : np.array
         Array of conductance
+    errC : np.array
+        Array of error in capacitance	
+    errG : np.array
+        Array of error in conductance
     """
 
     with open(os.path.join(session_path,output_file), 'w') as file:
-        file.write('freq ReZ ImZ ReErrZ ImErrZ C G' + '\n')
+        file.write('freq ReZ ImZ ReErrZ ImErrZ C G errC errG' + '\n')
         for i in range(len(freq)):
-            file.write(f'{freq[i]:.6e} {ReZ[i]:.6e} {ImZ[i]:.6e} {abs(errZ[i].real):.6e} {abs(errZ[i].imag):.6e} {C[i]:.6e} {G[i]:.6e}\n')
+            file.write(f'{freq[i]:.6e} {ReZ[i]:.6e} {ImZ[i]:.6e} {abs(errZ[i].real):.6e} {abs(errZ[i].imag):.6e} {C[i]:.6e} {G[i]:.6e} {errC[i]:.6e} {errG[i]:.6e}\n')
 
     # print('The data of the Impedance Spectroscopy graphs is written to ' + output_file)
 
@@ -384,10 +388,10 @@ def get_impedance(data, f_min, f_max, f_steps, del_V, session_path, output_file,
 
     if isToPlot != -1:
         # Integral bounds have been determined, continue to calculate the impedance
-        freq, ReZ, ImZ, errZ, C, G = calc_impedance(data, del_V, isToPlot,session_path,zimt_device_parameters)
+        freq, ReZ, ImZ, errZ, C, G, errC, errG = calc_impedance(data, del_V, isToPlot,session_path,zimt_device_parameters)
 
         # Write impedance results to a file
-        store_impedance_data(session_path, freq, ReZ, ImZ, errZ, C, G, output_file)
+        store_impedance_data(session_path, freq, ReZ, ImZ, errZ, C, G, errC, errG, output_file)
 
         msg = 'Success'
         return 0,msg
@@ -491,7 +495,7 @@ def Capacitance_plot(session_path, output_file, xscale='log', yscale='linear'):
     ylabel = 'C [F m$^{-2}$]'
     title = 'Capacitance plot'
 
-    ax = utils_plot_gen.plot_result(data, pars, list(pars.keys()), par_x, xlabel, ylabel, xscale, yscale, title, ax, plt.plot, legend=False)
+    ax = utils_plot_gen.plot_result(data, pars, list(pars.keys()), par_x, xlabel, ylabel, xscale, yscale, title, ax, plt.errorbar, y_error=data['errC'], legend=False)
 
     plt.show()
 
@@ -512,7 +516,7 @@ def plot_impedance(session_path, output_file='freqZ.dat'):
     # Capacitance plot
     Capacitance_plot(session_path,output_file)
 
-def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V_0, del_V, G, gen_profile, run_mode=False, output_file = 'freqZ.dat', tj_name = 'tj.dat', ini_timeFactor=1e-3, timeFactor=1.02):
+def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_max, f_steps, V_0, del_V, G_frac, run_mode=False, output_file = 'freqZ.dat', tj_name = 'tj.dat', ini_timeFactor=1e-3, timeFactor=1.02):
     """Create a tVG file and run ZimT with impedance device parameters
 
     Parameters
@@ -533,10 +537,8 @@ def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_
         Voltage at t=0
     del_V : float
         Voltage step
-    G : float
-        Amount of suns if gen_profile == 'calc', else amount of generated electron-hole pairs
-    gen_profile : string
-        Indicator for type of generation profile to set the correct header in the tVG file  
+    G_frac : float
+        Fractional light intensity
     run_mode : bool, optional
         Indicate whether the script is in 'web' mode (True) or standalone mode (False). Used to control the console output, by default False  
     output_file : string, optional
@@ -560,19 +562,19 @@ def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_
 
     # Do the steady state simulation to calculate the internal voltage in case of series resistance
     # Create tVG
-    result, message = create_tVG_SS(V_0, G, gen_profile, tVG_name, session_path)
+    result, message = create_tVG_SS(V_0, G_frac, tVG_name, session_path)
 
     # Get the device parameters and Rseries and Rshunt
-    dev_val = load_device_parameters(session_path, zimt_device_parameters)
-    for i in dev_val:
+    dev_val,lyrs_dum = load_device_parameters(session_path, zimt_device_parameters)
+    for i in dev_val[zimt_device_parameters]:
         if i[0] == 'Contacts':
             contacts = i
             break
 
     for i in contacts[1:]:
-        if i[1] == 'Rseries':
+        if i[1] == 'R_series':
             Rseries = float(i[2])
-        elif i[1] == 'Rshunt':
+        elif i[1] == 'R_shunt':
             Rshunt = float(i[2])
 
     if Rseries > 0:
@@ -583,11 +585,10 @@ def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_
 
             # Define mandatory options for ZimT to run well with impedance:
             Impedance_SS_args = [{'par':'dev_par_file','val':zimt_device_parameters},
-                                {'par':'tVG_file','val':tVG_name},
-                                {'par':'Gen_profile','val':gen_profile},
+                                {'par':'tVGFile','val':tVG_name},
                                 {'par':'tolPois','val':str(tolPois)},
-                                {'par':'LimitDigits','val':'0'},
-                                {'par':'CurrDiffInt','val':'2'},]
+                                {'par':'limitDigits','val':'0'},
+                                {'par':'currDiffInt','val':'2'},]
             
             result, message = utils_gen.run_simulation('zimt', Impedance_SS_args, session_path, run_mode)
     
@@ -607,7 +608,7 @@ def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_
 
     # Do the impedance simulation
     # Create tVG
-    result, message = create_tVG(V_0, del_V, G, gen_profile, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor)
+    result, message = create_tVG(V_0, del_V, G_frac, tVG_name, session_path, f_min, f_max, ini_timeFactor, timeFactor)
 
     # Check if tVG file is created
     if result == 0:
@@ -616,14 +617,13 @@ def run_impedance_simu(zimt_device_parameters, session_path, tVG_name, f_min, f_
 
         # Define mandatory options for ZimT to run well with impedance:
         Impedance_JV_args = [{'par':'dev_par_file','val':zimt_device_parameters},
-                             {'par':'tVG_file','val':tVG_name},
-                             {'par':'Gen_profile','val':gen_profile},
+                             {'par':'tVGFile','val':tVG_name},
                              {'par':'tolPois','val':str(tolPois)},
-                             {'par':'LimitDigits','val':'0'},
-                             {'par':'CurrDiffInt','val':'2'},
-                             # We reemove Rseries and Rshunt as the simulation is either to converge that way, we will correct the impedance afterwards
-                             {'par':'Rseries','val':str(0)},
-                             {'par':'Rshunt','val':str(-abs(Rshunt))}]
+                             {'par':'limitDigits','val':'0'},
+                             {'par':'currDiffInt','val':'2'},
+                             # We remove Rseries and Rshunt as the simulation is either to converge that way, we will correct the impedance afterwards
+                             {'par':'R_series','val':str(0)},
+                             {'par':'R_shunt','val':str(-abs(Rshunt))}]
         
         result, message = utils_gen.run_simulation('zimt', Impedance_JV_args, session_path, run_mode)
 
@@ -648,11 +648,7 @@ if __name__ == "__main__":
     V_0 = 1.0 # Float or 'oc' for the open-circuit voltage
     del_V = 1e-2 # org 1e-2
     # del_V = 1e-2
-    # G = 1 * 10**27
-    G = 1
-
-    # From device parameters file
-    gen_profile = 'calc'
+    G_frac = 1
 
     # Not user input
     ini_timeFactor = 1e-3 # Initial timestep factor, org 1e-3
@@ -664,7 +660,7 @@ if __name__ == "__main__":
     session_path = 'Zimt'
 
     # Run impedance spectroscopy
-    result, message = run_impedance_simu(zimt_device_parameters, session_path, tVG_name,f_min, f_max, f_steps, V_0, del_V, G, gen_profile, run_mode=True, ini_timeFactor=ini_timeFactor, timeFactor=timeFactor)
+    result, message = run_impedance_simu(zimt_device_parameters, session_path, tVG_name,f_min, f_max, f_steps, V_0, del_V, G_frac, run_mode=True, ini_timeFactor=ini_timeFactor, timeFactor=timeFactor)
 
     # Make the impedance plots
     plot_impedance(session_path)

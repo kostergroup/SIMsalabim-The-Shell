@@ -38,7 +38,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
             utils_gen_web.prepare_results_download(session_path, id_session, 'zimt', 'hysteresis')
-        st.session_state['run_simulation'] = False
+        st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
 
@@ -46,18 +46,18 @@ def show_results_Hysteresis_JV(session_path, id_session):
         # There is not a session folder yet, so nothing to show. Show an error.
         st.error('Save the device parameters first and run the simulation.')
     else:
-        if not st.session_state['tj_file'] in os.listdir(session_path):
+        if not st.session_state['tJFile'] in os.listdir(session_path):
             # The main results file (tj file by default) is not present, so no data can be shown. Show an error 
             st.error('No data available. SIMsalabim simulation did not run yet or the device parameters have been changed. Run the simulation first.')
         else:
             # Results data is present, or at least the files are there. 
 
-            # Read the main files/data (tj_file)
-            data_tj = pd.read_csv(os.path.join(session_path,st.session_state['tj_file']), sep=r'\s+')
+            # Read the main files/data (tJFile)
+            data_tj = pd.read_csv(os.path.join(session_path,st.session_state['tJFile']), sep=r'\s+')
 
-            if st.session_state["Exp_object"]['UseExpData'] == 1:
-                data_JVExp = hyst_exp.concatJVs(session_path, st.session_state["Exp_object"]['expJV_Vmin_Vmax'], st.session_state["Exp_object"]['expJV_Vmax_Vmin'], 
-                                                st.session_state["Exp_object"]['direction'])
+            if st.session_state["expObject"]['UseExpData'] == 1:
+                data_JVExp = hyst_exp.concatJVs(session_path, st.session_state["expObject"]['expJV_Vmin_Vmax'], st.session_state["expObject"]['expJV_Vmax_Vmin'], 
+                                                st.session_state["expObject"]['direction'])
 
             # Define plot type options
             plot_type = [plt.plot, plt.scatter]
@@ -69,7 +69,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
                     prepare_results(session_path, id_session)
 
                 # Button to download the ZIP file
-                if not st.session_state['run_simulation']:
+                if not st.session_state['runSimulation']:
                     with open('Simulations/simulation_results_' + id_session + '.zip', 'rb') as ff:
                         id_to_time_string = datetime.fromtimestamp(float(id_session) / 1e6).strftime("%Y-%d-%mT%H-%M-%SZ")
                         filename = 'simulation_result_' + id_to_time_string
@@ -90,9 +90,9 @@ def show_results_Hysteresis_JV(session_path, id_session):
 
             with col1_1:
                 # Show the rms error when comparing to experimental data
-                if st.session_state["Exp_object"]['UseExpData'] == 1:
+                if st.session_state["expObject"]['UseExpData'] == 1:
                     st.markdown('<br><br>', unsafe_allow_html=True)
-                    st.write(f'**RMS error between simulated and experimental data: {st.session_state["hyst_rms_error"]:.5f}**')
+                    st.write(f'**RMS error between simulated and experimental data: {st.session_state["hystRmsError"]:.5f}**')
             with col1_2:
                 # Init plot parameters
                 pars_hyst = {'Jext' : '$J_{ext}$'}
@@ -109,7 +109,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
                                 title_hyst, 1, fig1, ax1, plot_type[0], [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=False, 
                                 weight_key=par_weight_hyst, weight_label=weightlabel_hyst)
                 # Add the experimental data points to the plot
-                if st.session_state["Exp_object"]['UseExpData'] == 1:
+                if st.session_state["expObject"]['UseExpData'] == 1:
                     # Plot the experimental data and move it behind the simulated curve.
                     ax1.plot(data_JVExp['Vext'],data_JVExp['Jext'],'.b', zorder=0, markersize = 5)
                     ax1.legend(['Simulation', 'Experiments'])

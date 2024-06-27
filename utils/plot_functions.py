@@ -84,7 +84,7 @@ def get_nonzero_parameters(pars, data, choice_voltage):
 
 def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_no, fig, ax, plot_type,
                              cols, choice_voltage = 0, source_type = '', show_plot_param=True, show_yscale=True, yscale_init=0, xscale_init=0, 
-                             show_xscale=False, weight_key = '', weight_label = '', weight_norm = 'linear', error_x = '', error_y=''):
+                             show_xscale=False, weight_key = '', weight_label = '', weight_norm = 'linear', error_x = '', error_y='', show_legend=True,error_fmt='-'):
     """Create a plot for the provided data and place it into a column structure. 
     Add the plot options to the right of the plot when needed. 
     When plotting a 'Var' type file, plot only for the selected voltage
@@ -137,7 +137,18 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
         Dataframe key of the column with the error in x, by default ''
     error_y : string, optional
         Dataframe key of the column with the error in y, by default ''
-            """
+    show_legend : bool, optional
+        Toggle between showing the legend in the plot, by default True
+    error_fmt : str, optional
+        Format of the errorbars, by default '-'
+
+    Returns
+    -------
+    Figure
+        Updated Figure object
+    Axes
+        Updated Axes object 
+    """
     
     scale_options = ['linear', 'log']
     error_options = [True, False]
@@ -192,25 +203,25 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
             if xyerror and plot_type == plt.errorbar:
                 if error_x == '' and  error_y != '':
                     # Only y errorbar
-                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, y_error=data[error_y])
+                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, y_error=data[error_y],legend=show_legend,error_fmt=error_fmt)
                 elif error_x != '' and error_y == '':
                     # only x errorbar
-                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, x_error = data[error_x])
+                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, x_error = data[error_x],legend=show_legend,error_fmt=error_fmt)
                 elif error_x != '' and not error_y != '':
                     # both x and y errorbars
-                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, x_error = data[error_x], y_error=data[error_y])
+                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, x_error = data[error_x], y_error=data[error_y],legend=show_legend,error_fmt=error_fmt)
                 else:
                     # no errorbars
-                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type)
+                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type,legend=show_legend,error_fmt=error_fmt)
 
             else:
-                ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plt.plot)
+                ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plt.plot,legend=show_legend)
+        
         return fig,ax
-        # st.pyplot(fig, format='png')
 
 def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key, xlabel, ylabel_1, ylabel_2, title, fig, ax_1, ax_2, 
                              cols, show_plot_param=True, show_yscale_1=True, show_yscale_2 = True, 
-                              yscale_init_1 = 0, yscale_init_2 = 0, show_errors=True):
+                              yscale_init_1 = 0, yscale_init_2 = 0, show_errors=True, yerror_1 = [], yerror_2 = []):
     """_summary_
 
     Parameters
@@ -253,6 +264,10 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
         Initial scale of the right y-axis, used in yscale_options, by default 0
     show_errors : bool, optional
         Toggle between showing errors, by default True
+    yerror_1 : List, optional
+        List with error values for the left axis
+    yerror_2 : List, optional
+        List with error values for the right axis    
     """
     #Only support for impedance plot currently
     
@@ -296,7 +311,7 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
         # Create plot
         if yerror:
             ax = utils_plot_gen.plot_result_twinx(data_org, pars, selected_1, selected_2, x_key, xlabel, ylabel_1, ylabel_2, 'log', yscale_1, yscale_2, title,ax_1,ax_2, 
-                                        plt.errorbar,y_error_1 = data_org["ReErrZ"], y_error_2 = data_org["ImErrZ"])   
+                                        plt.errorbar,y_error_1 = yerror_1, y_error_2 = yerror_2)   
         else:
             ax = utils_plot_gen.plot_result_twinx(data_org, pars, selected_1, selected_2, x_key, xlabel, ylabel_1, ylabel_2, 'log', yscale_1, yscale_2, title,ax_1,ax_2, 
                                         plt.plot)

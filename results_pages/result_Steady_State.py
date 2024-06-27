@@ -37,7 +37,7 @@ def show_results_Steady_State(session_path, id_session):
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
             utils_gen_web.prepare_results_download(session_path, id_session, 'simss', '')
-        st.session_state['run_simulation'] = False
+        st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
 
@@ -45,22 +45,22 @@ def show_results_Steady_State(session_path, id_session):
         # There is not a session folder yet, so nothing to show. Show an error.
         st.error('Save the device parameters first and run the simulation.')
     else:
-        if not st.session_state['Var_file'] in os.listdir(session_path):
+        if not st.session_state['varFile'] in os.listdir(session_path):
             # The main results file (Var file by default) is not present, so no data can be shown. Show an error 
             st.error('No data available. SIMsalabim simulation did not run yet or the device parameters have been changed. Run the simulation first.')
         else:
             # Results data is present, or at least the files are there. 
 
             # Read the main files/data (Var, JV and optional ScPars)
-            data_var = pd.read_csv(os.path.join(session_path,st.session_state['Var_file']), sep=r'\s+')
+            data_var = pd.read_csv(os.path.join(session_path,st.session_state['varFile']), sep=r'\s+')
 
             # In some very rare situations the JV file is empty. Check the size of the file first to prevent breaking the page
-            if os.path.getsize(os.path.join(session_path,st.session_state['JV_file'])) != 0:
-                data_jv = pd.read_csv(os.path.join(session_path,st.session_state['JV_file']), sep=r'\s+')
+            if os.path.getsize(os.path.join(session_path,st.session_state['JVFile'])) != 0:
+                data_jv = pd.read_csv(os.path.join(session_path,st.session_state['JVFile']), sep=r'\s+')
+                showJV = True
             else:
                 # JV file is empty (can occur under certain specific conditions) initialize an empty dict to continue
-                data_jv = pd.DataFrame([], columns=['Vext', 'Jext', 'convIndex', 'P', 'Jphoto',
-                                                    'Jdir', 'JBulkSRH', 'JIntLeft', 'JIntRight', 'JminLeft', 'JminRight', 'JShunt'])
+                showJV = False
 
             # Read the solar cell parameter data from memory/state variable, even when they are not present. This will just result in an empty dictionary.
             scpars_data = st.session_state['sc_par'] 
@@ -99,7 +99,7 @@ def show_results_Steady_State(session_path, id_session):
                     prepare_results(session_path, id_session)
 
                 # Button to download the ZIP file
-                if not st.session_state['run_simulation']:
+                if not st.session_state['runSimulation']:
                     with open('Simulations/simulation_results_' + id_session + '.zip', 'rb') as ff:
                         id_to_time_string = datetime.fromtimestamp(float(id_session) / 1e6).strftime("%Y-%d-%mT%H-%M-%SZ")
                         filename = 'simulation_result_' + id_to_time_string
@@ -159,17 +159,21 @@ def show_results_Steady_State(session_path, id_session):
             col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
 
             with col1_2:
-                # Show the JV curve. Always visible
-                fig1, ax1 = plt.subplots()
-                if exp_jv is True:
-                    # Plot simulation and experimental curve. (Line and Scatter)
-                    ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv, df_exp_jv)
-                    ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv, df_exp_jv)
+                # Show the JV curve. Should always be visible, unless something went wrong.
+
+                if not showJV:
+                    st.warning('No data to show for the JV curve, the JV file did not contain any data.')
                 else:
-                    # plot only the simulation curve (Line and Scatter)
-                    ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv)
-                    ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv)
-                st.pyplot(fig1, format='png')
+                    fig1, ax1 = plt.subplots()
+                    if exp_jv is True:
+                        # Plot simulation and experimental curve. (Line and Scatter)
+                        ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv, df_exp_jv)
+                        ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv, df_exp_jv)
+                    else:
+                        # plot only the simulation curve (Line and Scatter)
+                        ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv)
+                        ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv)
+                    st.pyplot(fig1, format='png')
 
             # Show these output plot when sidebar checkbox is checked
             # Potential[2]
@@ -208,7 +212,7 @@ def show_results_Steady_State(session_path, id_session):
             # Carrier Density [4]
             if chk_density:
                 # Init plot parameters
-                pars_density = {'n':'$n$', 'p':'$p$', 'nion':'$n_{ion}$', 'pion':'$p_{ion}$'}
+                pars_density = {'n':'$n$', 'p':'$p$','ND':'$N_{D}$','NA':'$N_{A}$', 'anion':'$n_{anion}$', 'cation':'$p_{cation}$'}
                 xlabel_density = '$x$ [nm]'
                 par_x_density = 'x'
                 ylabel_density = 'Carrier density [m$^{-3}$]'
@@ -221,14 +225,14 @@ def show_results_Steady_State(session_path, id_session):
                 with col4_2:
                     st.pyplot(fig4, format='png')
 
-            # Filling of traps [5]
+            # Density of electrons trapped [5]
             if chk_fill:
                 # Init plot parameters
-                pars_fill = {'ftb1':'$ft_{b1}$', 'fti1':'$ft_{i1}$'}
+                pars_fill = {'ntb':'$n_{t,b}$', 'nti':'$n_{t,i}$'}
                 par_x_fill = 'x'
                 xlabel_fill = '$x$ [nm]'
-                ylabel_fill = 'Filling of traps [ ]'
-                title_fill = 'Filling of traps'
+                ylabel_fill = 'Density of trapped electrons [m$^{-3}$,m$^{-2}$]'
+                title_fill = 'Electrons in traps'
                 fig5, ax5 = plt.subplots()
                 col5_1, col5_2, col5_3 = st.columns([2, 5, 2])
 
@@ -240,7 +244,7 @@ def show_results_Steady_State(session_path, id_session):
             # Transport [6]
             if chk_transport:
                 # Init plot parameters
-                pars_transport = {'mun':'$\mu_{n}$', 'mup':'$\mu_{p}$'}
+                pars_transport = {'mun':r'$\mu_{n}$', 'mup':r'$\mu_{p}$'}
                 par_x_transport = 'x'
                 xlabel_transport = '$x$ [nm]'
                 ylabel_transport = 'Mobility [m$^{-2}$V$^{-1}$s$^{-1}$]'
@@ -256,7 +260,7 @@ def show_results_Steady_State(session_path, id_session):
             # Generation and Recombination [7]
             if chk_gen_recomb:
                 # Init plot parameters
-                pars_gen_recomb = {'Gehp':'$G_{ehp}$', 'Gfree':'$G_{free}$', 'Rdir':'$R_{dir}$', 'BulkSRHn':'$BulkSRH_{n}$', 'BulkSRHp':'$BulkSRH_{p}$', 'IntSRHn':'$IntSRH_{n}$', 'IntSRHp':'$IntSRH_{p}$'}
+                pars_gen_recomb = {'G_ehp':'$G_{ehp}$', 'Gfree':'$G_{free}$', 'Rdir':'$R_{dir}$', 'BulkSRHn':'$BulkSRH_{n}$', 'BulkSRHp':'$BulkSRH_{p}$', 'IntSRHn':'$IntSRH_{n}$', 'IntSRHp':'$IntSRH_{p}$'}
                 par_x_gen_recomb = 'x'                
                 xlabel_gen_recomb = '$x$ [nm]'
                 ylabel_gen_recomb = 'Generation/Recombination Rate [m$^{-3}$s$^{-1}$]'
@@ -272,7 +276,7 @@ def show_results_Steady_State(session_path, id_session):
             # Current [8]
             if chk_current:
                 # Init plot parameters
-                pars_current = {'Jn':'$J_{n}$', 'Jp':'$J_{p}$', 'Jtot':'$J_{tot}$'}
+                pars_current = {'Jn':'$J_{n}$', 'Jp':'$J_{p}$', 'Jint':'$J_{int}$'}
                 par_x_current = 'x'                
                 xlabel_current = '$x$ [nm]'
                 ylabel_current = 'Current density [Am$^{-2}$]'

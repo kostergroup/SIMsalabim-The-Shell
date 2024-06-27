@@ -3,6 +3,7 @@
 
 import streamlit as st
 from utils import general_web as utils_gen_web
+from menu import menu
 
 ######### Page configuration ######################################################################
 
@@ -11,6 +12,10 @@ st.set_page_config(layout="wide", page_title="SIMsalabim Help",
 
 # Load custom CSS
 utils_gen_web.local_css('./utils/style.css')
+
+# Session states for page navigation
+st.session_state['pagename'] = 'Getting help'
+st.session_state['def_pagename'] = 'Getting help'
 
 ######### Parameter Initialisation ################################################################
 
@@ -33,4 +38,7 @@ st.write("To keep up to date with the latest developments of SIMsalabim and inte
 
 #  Show the SIMsalabim logo in the sidebar
 with st.sidebar:
+    with st.sidebar:
+        # Show custom menu
+        menu()
     st.image('./logo/SIMsalabim_logo_cut_trans.png')

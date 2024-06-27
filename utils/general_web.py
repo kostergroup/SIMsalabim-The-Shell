@@ -45,7 +45,7 @@ def upload_file(file_desc, ill_chars, pattern, check_devpar='', nk_file_list = [
         When upload is succesfull (in memory), return the uploaded object. If failed, return False
     """
     # File upload component. Only accept txt files and one file at a time. 
-    uploaded_file = st.file_uploader(file_desc, type=['txt'], accept_multiple_files=False, label_visibility='collapsed')
+    uploaded_file = st.file_uploader(file_desc, type=['txt'], accept_multiple_files=False, label_visibility='visible')
     if uploaded_file is not None:
         data = uploaded_file.getvalue().decode('utf-8')
         # Basic validation of the uploaded file:
@@ -133,76 +133,71 @@ def prepare_results_download(session_path, id_session, sim_type, exp_type=''):
     os.makedirs(os.path.join(session_path, 'tmp'))
 
     # The relevant files for the simulation are selected by reading their corresponding session state variable. 
-    # If not 'none' the file must be copied to the temp folder to be downloaded.
+    # If not 'none' the file must be copied to the temp folder to be downloaded. # Can probably be done in s smarter/faster way?
+    target_path = os.path.join(session_path, 'tmp')
+    state = st.session_state
+
+    # Files to copy based on conditions
+    files_to_copy = {
+        state['varFile'], 
+        state['logFile'], 
+        *state['traps_bulk'], 
+        *state['traps_int'], 
+        *state['LayersFiles']
+    }
+
+    # Only applicable when uploaded generation profile has been used
+    if state['genProfile'] not in {'none', 'calc'}:
+        files_to_copy.add(state['genProfile'])
+
+    # SimSS specific files
+    if sim_type == 'simss':
+        files_to_copy.update({
+            state['simss_devpar_file'], 
+            state['JVFile'], 
+            state['scParsFile']
+        })
+        if state['expJV'] != 'none':
+            files_to_copy.add(state['expJV'])
+
+    # ZimT specific files (including experiments)
+    if sim_type == 'zimt':
+        files_to_copy.update({
+            state['zimt_devpar_file'], 
+            state['tJFile'], 
+            state['tVGFile']
+        })
+        if exp_type == 'hysteresis':
+            files_to_copy.add(state['hystPars'])
+            if state["expObject"]['UseExpData'] == 1:
+                files_to_copy.update({
+                    state["expObject"]['expJV_Vmin_Vmax'], 
+                    state["expObject"]['expJV_Vmax_Vmin']
+                })
+        if exp_type == 'impedance':
+            files_to_copy.update({
+                state['impedancePars'], 
+                state['freqZFile']
+            })
+        if exp_type == 'imps':
+            files_to_copy.update({
+                state['IMPSPars'], 
+                state['freqYFile']
+            })
+        if exp_type == 'CV':
+            files_to_copy.update({
+                state['CVPars'], 
+                state['CapVolFile']
+            })
+
+    # Walk through the directory and copy files
     for dirpath, dirnames, files in os.walk(session_path):
         for file in files:
-            # Standard SIMsalabim files
-            if file == st.session_state['Var_file'] or file == st.session_state['log_file']:
-                shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
+            if file in files_to_copy:
+                shutil.copy(os.path.join(session_path, file), target_path)
 
-            # Bulk trap file
-            if st.session_state['traps_bulk'] != 'none':
-                if file == st.session_state['traps_bulk']:
-                    shutil.copy(os.path.join(session_path, file), os.path.join(session_path, 'tmp'))
-
-            # Interface trap file
-            if st.session_state['traps_int'] != 'none':
-                if file == st.session_state['traps_int']:
-                    shutil.copy(os.path.join(session_path, file), os.path.join(session_path, 'tmp'))
-
-            # Generation profile. Note: also the option of 'calc' must be excluded here
-            if st.session_state['genProf'] != 'none' and st.session_state['genProf'] != 'calc':
-                if file == st.session_state['genProf']:
-                    shutil.copy(os.path.join(session_path, file), os.path.join(session_path, 'tmp'))
-
-            # SimSS specific files
-            if sim_type == 'simss':
-                # Device parameters
-                if file == st.session_state['simss_devpar_file']:
-                    shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-
-                # Standard SIMsalabim files
-                if file == st.session_state['JV_file'] or file == st.session_state['scPars_file']:
-                    shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))               
-
-                # Experimental JV file
-                if st.session_state['expJV'] != 'none':
-                    if file == st.session_state['expJV']:
-                        shutil.copy(os.path.join(session_path, file), os.path.join(session_path, 'tmp'))
-            
-            if sim_type == 'zimt':
-                # Device parameters
-                if file == st.session_state['zimt_devpar_file']:
-                    shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-
-                # Standard SIMsalabim files
-                if file == st.session_state['tj_file'] or file == st.session_state['tVG_file']:
-                    shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-                
-                if exp_type == 'hysteresis':
-                    if file == st.session_state['hyst_pars']:
-                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-                    if st.session_state["Exp_object"]['UseExpData'] == 1:
-                        if file == st.session_state["Exp_object"]['expJV_Vmin_Vmax'] or file == st.session_state["Exp_object"]['expJV_Vmax_Vmin']:
-                            shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-                if exp_type == 'impedance':
-                    if file == st.session_state['impedance_pars']:
-                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-                    if file == st.session_state['freqZ_file']:
-                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-                if exp_type == 'imps':
-                    if file == st.session_state['imps_pars']:
-                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-                    if file == st.session_state['freqY_file']:
-                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-                if exp_type == 'CV':
-                    if file == st.session_state['CV_pars']:
-                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-                    if file == st.session_state['CapVol_file']:
-                        shutil.copy(os.path.join(session_path, file),os.path.join(session_path, 'tmp'))
-            
     # When a calculated generation profile is used, retrieve the used nk data and spectrum files as well
-    if st.session_state['genProf'] == 'calc':
+    if st.session_state['genProfile'] == 'calc':
         # Create sub-directories to store the files
         os.makedirs(os.path.join(session_path,'tmp','Data_nk'))
         os.makedirs(os.path.join(session_path,'tmp','Data_spectrum'))
@@ -210,18 +205,18 @@ def prepare_results_download(session_path, id_session, sim_type, exp_type=''):
         # nk files
         for dirpath, dirnames, files in os.walk(os.path.join(session_path, 'Data_nk')):
             for file in files:
-                if os.path.join('Data_nk',file) in st.session_state['optics_files']:
+                if os.path.join('Data_nk',file) in st.session_state['opticsFiles']:
                     shutil.copy(os.path.join(session_path, 'Data_nk', file),os.path.join(session_path,'tmp','Data_nk'))
 
         # spectrum file
         for dirpath, dirnames, files in os.walk(os.path.join(session_path, 'Data_spectrum')):
             for file in files:
-                if os.path.join('Data_spectrum',file) in st.session_state['optics_files']:
+                if os.path.join('Data_spectrum',file) in st.session_state['opticsFiles']:
                     shutil.copy(os.path.join(session_path, 'Data_spectrum', file),os.path.join(session_path,'tmp','Data_spectrum'))
 
 
     # Create the summary and citation file
-    if st.session_state['genProf'] == 'calc':
+    if st.session_state['genProfile'] == 'calc':
         utils_sum.create_summary_and_cite(os.path.join(session_path,'tmp'),True)
     else:
         utils_sum.create_summary_and_cite(os.path.join(session_path,'tmp'),False)
