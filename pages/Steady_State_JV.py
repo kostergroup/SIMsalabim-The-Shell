@@ -1,7 +1,7 @@
 """Steady State JV (SimSS) Simulations"""
 ######### Package Imports #########################################################################
 
-import os,shutil, zipfile
+import os,shutil
 import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -319,45 +319,6 @@ else:
         """
         filename_split = os.path.split(option)
         return filename_split[1]
-    
-    # def create_zip(layers):
-    #     """ Create a ZIP archive from a list of filenames
-
-    #     Parameters
-    #     ----------
-    #     layers : List
-    #         List with all filenames/paths to be zipped, to be extracted from the layer object
-
-    #     Returns
-    #     -------
-    #     string
-    #         Filename of the ZIP archive
-    #     """
-
-    #     # Read all the file names to be zipped
-    #     files = []
-    #     for layer in layers:
-    #         # Check if a layer file is already added, as they can be reused for different layers. If so, there is no need in including it twice in the ZIP archive
-    #         if not os.path.join(session_path,layer[2]) in files:
-    #             files.append(os.path.join(session_path,layer[2]))
-
-    #     # Fixed name for the ZIP archive
-    #     zip_filename = 'Device_parameters.zip'
-
-    #     # Store the current date & time for the archive
-    #     current_datetime = datetime.now().timetuple()[:6]
-
-    #     with zipfile.ZipFile(zip_filename, 'w') as zipf:
-    #         dir_name = 'Device_parameters' #Name of the subfolder in ZIP archive
-    #         # get the current date and time to set the correct modified date for the subfolder, would otherwise be 01-01-1970 00:00
-    #         info = zipfile.ZipInfo(f'{dir_name}/')
-    #         info.date_time = current_datetime
-    #         zipf.writestr(info, '')
-
-    #         for file in files:
-    #             zipf.write(file, arcname=os.path.join(dir_name,os.path.basename(file)))
-
-    #     return zip_filename
 
     # Dialog window definitions. Placed within each page file due to the decorator.
 
@@ -621,7 +582,7 @@ else:
                     # create a list with the layer names to choose from
                     layer_names = st.session_state['availableLayerFiles'][:-3]
                     selected_layer = layer_names.index(layer[2])
-                    st.selectbox(layer[2],key=layer[1] + ' ' + layer[2], options=layer_names,index = selected_layer,format_func=lambda x: x, label_visibility="collapsed")
+                    layer[2] = st.selectbox(layer[2],key=layer[1] + ' ' + layer[2], options=layer_names,index = selected_layer,format_func=lambda x: x, label_visibility="collapsed")
                 with col_desc:
                     st.text_input(layer[3], value=layer[3],key=layer[1] + ' ' + layer[3], disabled=True, label_visibility="collapsed")
 

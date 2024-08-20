@@ -285,6 +285,6 @@ def show_results_Steady_State(session_path, id_session):
                 col8_1, col8_2, col8_3 = st.columns([2, 5, 2])
                 
                 fig8, ax8 = utils_plot.create_UI_component_plot(data_var, pars_current, par_x_current, xlabel_current, ylabel_current, 
-                                title_current, 8, fig8, ax8, plot_type[0], [col8_1, col8_2, col8_3], source_type = 'Var')
+                                title_current, 8, fig8, ax8, plot_type[0], [col8_1, col8_2, col8_3], choice_voltage, source_type = 'Var')
                 with col8_2:
                     st.pyplot(fig8, format='png')

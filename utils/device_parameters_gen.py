@@ -232,6 +232,14 @@ def save_parameters(dev_par, layers, session_path, dev_par_file):
     """
     # Write the device parameter List object to a txt string.
     i = 0 # Index for the different layers, 0 is always the simulation setup file
+    # First check what the most recent names of the layers are from the UI. Update the names in the dev_par object first
+    for layer in layers:
+        for section in dev_par[dev_par_file]:
+            if section[0] == 'Layers':
+                for param in section[1:]:
+                    if param[1] == layer[1]:
+                        param[2] = layer[2]
+                        
     for layer in layers:
         par_file = devpar_write_to_txt(dev_par[layer[2]])
         # Check if the layer is the simulation setup file or a layer file and set the name accordingly

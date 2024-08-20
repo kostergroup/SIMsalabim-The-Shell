@@ -593,7 +593,7 @@ else:
                         # create a list with the layer names to choose from
                         layer_names = st.session_state['availableLayerFiles'][:-3]
                         selected_layer = layer_names.index(layer[2])
-                        st.selectbox(layer[2],key=layer[1] + ' ' + layer[2], options=layer_names,index = selected_layer,format_func=lambda x: x, label_visibility="collapsed")
+                        layer[2] = st.selectbox(layer[2],key=layer[1] + ' ' + layer[2], options=layer_names,index = selected_layer,format_func=lambda x: x, label_visibility="collapsed")
                     with col_desc:
                         st.text_input(layer[3], value=layer[3],key=layer[1] + ' ' + layer[3], disabled=True, label_visibility="collapsed")
 

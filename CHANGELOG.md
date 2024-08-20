@@ -2,7 +2,11 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
-## [1.10] - ... - SH
+## [1.11] - 20-08-2024 - SH
+- Minor Bug Fix: When selecting a different layer file from the dropdown, the selected file name was not assigned correctly to a variable, hence it was not written to the main simulation_setup.txt file which resulted in the file being ignored.
+- Updated to SIMsalabim v5.14
+
+## [1.10] - 27-06-2024 - SH
 Major update
 - Updated to use SIMsalabim v5.11
 - Reworked core functions to support SIMsalabim v5.11.
