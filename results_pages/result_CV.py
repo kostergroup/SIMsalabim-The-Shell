@@ -2,12 +2,13 @@
 ######### Package Imports #########################################################################
 
 import os
-from datetime import datetime
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-from utils import plot_functions as utils_plot
-from utils import general_web as utils_gen_web
+from datetime import datetime
+from utils import plot_functions_UI as utils_plot_UI
+from utils import general_UI as utils_gen_UI
+from utils import plot_def
 
 ######### Page configuration ######################################################################
 
@@ -36,7 +37,7 @@ def show_results_CV(session_path, id_session):
         """
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
-            utils_gen_web.prepare_results_download(session_path, id_session, 'zimt', 'CV')
+            utils_gen_UI.prepare_results_download(session_path, id_session, 'zimt', 'CV')
         st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
@@ -82,13 +83,13 @@ def show_results_CV(session_path, id_session):
             with col1_2:
                 # Create a dictionary for all potential parameters to plot. Key matches the name in the dataFrame, value is the corresponding label. 
                 fig1, ax1 = plt.subplots()
-                pars_CV = {'cap':'C [F m$^{-2}$]'}
+                pars_CV = {'C':'C [F m$^{-2}$]'}
                 xlabel_CV =  'Voltage [V]'
                 par_x_CV = 'V' 
                 ylabel_CV = 'Capacitance [F m$^{-2}$]'
                 title_CV = 'Capacitance-Voltage'
 
-                fig1, ax1 = utils_plot.create_UI_component_plot(data_CapVol, pars_CV, par_x_CV, xlabel_CV, ylabel_CV, 
+                fig1, ax1 = utils_plot_UI.create_UI_component_plot(data_CapVol, pars_CV, par_x_CV, xlabel_CV, ylabel_CV, 
                                 title_CV, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_yscale=True, error_y = 'errC', show_plot_param=False)
                 with col1_2:
                     st.pyplot(fig1, format='png')

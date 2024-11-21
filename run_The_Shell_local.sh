@@ -12,6 +12,7 @@ if [ "$?" -eq 1 ]; then
     pip install packaging
 fi
 
+python3 get_pySIMsalabim.py
 python3 get_SIMsalabim.py
 
 if [ "$?" -eq 0 ]; then

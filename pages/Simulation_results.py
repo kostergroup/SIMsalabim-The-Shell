@@ -3,20 +3,23 @@
 
 import os
 import streamlit as st
-from utils import general_web as utils_gen_web
+from menu import menu
+from utils import general_UI as utils_gen_UI
 from results_pages import result_Steady_State as result_simss
 from results_pages import result_Hysteresis_JV as result_hyst
 from results_pages import result_Impedance as result_imp
 from results_pages import result_IMPS as result_imps
 from results_pages import result_CV as result_CV
-from menu import menu
 
 ######### Page configuration ######################################################################
 
 st.set_page_config(layout="wide", page_title="SIMsalabim simulation results", page_icon='./logo/SIMsalabim_logo_HAT.jpg')
 
+# Set the session identifier as query parameter in the URL
+st.query_params.from_dict({'session':st.session_state['id']})
+
 # Load custom CSS.
-utils_gen_web.local_css('./utils/style.css')
+utils_gen_UI.local_css('./utils/style.css')
 
 # Session states for page navigation
 st.session_state['pagename'] = 'Simulation results'

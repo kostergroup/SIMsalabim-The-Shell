@@ -3,6 +3,7 @@
 
 import os, random
 import streamlit as st
+from pySIMsalabim.utils import device_parameters as utils_devpar
 
 ######### Function Definitions ####################################################################
 
@@ -142,104 +143,97 @@ def store_file_names(dev_par, sim, dev_par_name, layers):
     layers : List
         List with all the layers in the device
     """
-    st.session_state['LayersFiles'] = []
-    for section in dev_par[dev_par_name][1:]:
-        # Generation profile
-        if section[0] == 'Optics':
-            for param in section:
-                if param[1] == 'genProfile':
-                    if param[2] != 'none' and param[2] != 'calc':
-                        st.session_state['genProfile'] = param[2]
-                    elif param[2] == 'calc':
-                        st.session_state['genProfile'] = 'calc'
-                    else:
-                        st.session_state['genProfile'] = 'none'
-        
-        # Files in USer Interface section
-        if section[0] == 'User interface':
-            for param in section:
-                if param[1] == 'varFile':
-                    st.session_state['varFile'] = param[2]
-                if param[1] == 'logFile':
-                    st.session_state['logFile'] = param[2]
-                if sim == 'simss':
-                    if param[1] == 'useExpData':
-                        if param[2] != '1':
-                            expjv_id = False
-                            st.session_state['expJV'] = 'none'
-                        else:
-                            expjv_id = True
-                    if param[1] == 'expJV' and expjv_id is True:
-                        st.session_state['expJV'] = param[2]
-                    if param[1] == 'JVFile':
-                        st.session_state['JVFile'] = param[2]
-                    if param[1] == 'scParsFile':
-                        st.session_state['scParsFile'] = param[2]
-                if sim == 'zimt':
-                    if param[1] == 'tVGFile':
-                        st.session_state['tVGFile'] = param[2]
-                    if param[1] == 'tJFile':
-                        st.session_state['tJFile'] = param[2]
+
+    retval = utils_devpar.store_file_names(dev_par, sim, dev_par_name, layers, run_mode=True)
+
+    st.session_state['LayersFiles'] = retval[0]
+    st.session_state['opticsFiles'] = retval[1]
+    st.session_state['genProfile'] = retval[2]
+    st.session_state['traps_int'] = retval[3]
+    st.session_state['traps_bulk'] = retval[4]
+    st.session_state['varFile'] = retval[6]
+    st.session_state['logFile'] = retval[7]
+
+    if sim == 'simss':
+        st.session_state['expJV'] = retval[5]
+        st.session_state['JVFile'] = retval[8]
+        st.session_state['scParsFile'] = retval[9]
+    else:
+        st.session_state['tVGFile'] = retval[10]
+        st.session_state['tJFile'] = retval[11]
+
+def save_parameters(dev_par, layers, session_path, dev_par_file):
+    """Write device parameters to the txt file.
+
+    Parameters
+    ----------
+    dev_par : List
+        List object with all parameters and comments.
+    layers : List
+        List with all the layers in the device
+    session_path : string
+        Folder path of the current simulation session
+    defv_par_file : string
+        name of the device parameters file
+    """
+    # Write the device parameter List object to a txt string.
+    i = 0 # Index for the different layers, 0 is always the simulation setup file
+    # First check what the most recent names of the layers are from the UI. Update the names in the dev_par object first
+    for layer in layers:
+        for section in dev_par[dev_par_file]:
+            if section[0] == 'Layers':
+                for param in section[1:]:
+                    if param[1] == layer[1]:
+                        param[2] = layer[2]
                         
+    for layer in layers:
+        par_file = utils_devpar.devpar_write_to_txt(dev_par[layer[2]])
+        # Check if the layer is the simulation setup file or a layer file and set the name accordingly
+        if layer[1]=='setup':
+            file_name = dev_par_file
+        else:
+            file_name = layer[2]
+        # Open the device_parameters file (in the id folder) and write content of par_file to it.
+
+        with open(os.path.join(session_path, file_name), 'w', encoding='utf-8') as fp_device_parameters:
+            fp_device_parameters.write(par_file)
+            fp_device_parameters.close()
+        i+=1
+
+def getLayersFromSetup(data):
+    """Retrieve the layers from the setup file
+
+    Parameters
+    ----------
+    data : string
+        Content of the setup file
+
+    Returns
+    -------
+    List
+        List with all the layers
+    """
+    # Write the uploaded file to a tmp file. This is necessary to read the file line by line.
+    tmp_id = random.randint(0, int(1e10))
+    destination_file_devpar = open('Simulations/tmp/devpar_' + str(tmp_id) + '.txt', "w", encoding='utf-8')
+    destination_file_devpar.write(data)
+    destination_file_devpar.close()
+
+    # Read the uploaded file line by line. Keep a record of the line number to eventually create a clear error message.
+    with open('Simulations/tmp/devpar_' + str(tmp_id) + '.txt', encoding='utf-8') as fp:
+        tmp_devpar = utils_devpar.devpar_read_from_txt(fp)
+
+    # File content has been stored in an object. Remove the tmp file.
+    for item_dir_list in os.listdir('Simulations/tmp'):
+        if str(tmp_id) in item_dir_list:
+            os.remove('Simulations/tmp/devpar_' + str(tmp_id) + '.txt')
+    
+    # Extract the layers from the tmp object
+    tmp_layers = []
+    for section in tmp_devpar:
         if section[0] == 'Layers':
             for param in section[1:]:
-                st.session_state['LayersFiles'].append(param[2])
-
-    # When the generation profile has been calculated, store the names of the nk and spectrum files. QQQ process for each layer!
-    if st.session_state['genProfile'] == 'calc':
-        st.session_state['opticsFiles'] = []
-        specfile = ''
-        # Get the spectrum and nk files from the simulation setup
-        for section in dev_par[dev_par_name][1:]:
-            if section[0] == 'Optics':
-                for param in section:
-                    if param[1].startswith('nk'):
-                        st.session_state['opticsFiles'].append(param[2])
-                    elif param[1]=='spectrum':
-                        specfile = param[2]
-
-
-# Go over the layer files for trap files and nk files
-    st.session_state['traps_int'] = []
-    st.session_state['traps_bulk'] = []
-
-    usedFiles= [] 
-    for layer in layers:
-        if not layer[2] in usedFiles: # We only want to check the layer parameter files that have been used in the simulation
-            usedFiles.append(layer[2])
-
-    # Get the nk file for each layer
-    for usedFile in usedFiles:
-        for section in dev_par[usedFile][1:]:
-            if st.session_state['genProfile'] == 'calc':
-                if section[0] == 'Generation and recombination':
-                    for param in section:
-                        if param[1].startswith('nk'):
-                            st.session_state['opticsFiles'].append(param[2])
-                
-            
-    # We need to check every layer files whether files for the trap distribution have been used for interface and/or bulk traps.
-    # If present, add file name to list, if not add 'none' to the list. We will process this when preparing the download of the files.
-            if section[0] == 'Interface-layer-to-right':
-                for param in section:
-                    if param[1] == 'intTrapFile':
-                        if param[2] != 'none':
-                            st.session_state['traps_int'].append(param[2])
-                        else:
-                            st.session_state['traps_int'].append('none')
-
-            if section[0] == 'Bulk trapping':
-                for param in section:
-                    if param[1] == 'bulkTrapFile':
-                        if param[2] != 'none':
-                            st.session_state['traps_bulk'].append(param[2])
-                        else:
-                            st.session_state['traps_bulk'].append('none')
-
-    # Add the name of the spectrum file to the end of the array
-    if st.session_state['genProfile'] == 'calc':
-        st.session_state['opticsFiles'].append(specfile)
-
-
-
+                tmp_layers.append(param[2])
+    
+    return tmp_layers
 

@@ -2,25 +2,25 @@
 ######### Package Imports #########################################################################
 
 import os, shutil
-from datetime import datetime, timezone
 import streamlit as st
-from utils import general_web as utils_gen_web
+from datetime import datetime, timezone
 from menu import menu
+from utils import general_UI as utils_gen_UI
 
 ######### Page configuration ######################################################################
 
 st.set_page_config(layout="wide", page_title="SIMsalabim - The Shell", page_icon='./logo/SIMsalabim_logo_HAT.jpg')
 
 # Load custom CSS.
-utils_gen_web.local_css('./utils/style.css')
+utils_gen_UI.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.11' # The Shell version
+version_theshell = '1.12' # The Shell version
 version_simsalabim = '5.14' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
-simulation_path = 'Simulations'
+simulation_path = os.path.join(os.getcwd(),'Simulations')
 # Folder name where the simulation resources are located, like standard device parameters or files with nk values or spectra
 resource_path = 'Resources'
 
@@ -177,5 +177,9 @@ Copyright Ⓒ 2023 - 2024 | S. Heester, F.D. Elhorst, P. Martin Fernandez, Dr. M
 #  Show the SIMsalabim logo in the sidebar
 with st.sidebar:
     menu()
+#    st.text(' ')
+#    st.text(' ')
+#    st.metric('Simulations (as of June 2023):','> 13000', delta=None, delta_color="normal", help=None, label_visibility="visible")
+#    st.write("---")
     st.image('./logo/SIMsalabim_logo_cut_trans.png')
 

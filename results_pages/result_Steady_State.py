@@ -2,12 +2,13 @@
 ######### Package Imports #########################################################################
 
 import os
-from datetime import datetime
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-from utils import plot_functions as utils_plot
-from utils import general_web as utils_gen_web
+from datetime import datetime
+from utils import plot_functions_UI as utils_plot_UI
+from utils import general_UI as utils_gen_UI
+from utils import plot_def
 
 ######### Page configuration ######################################################################
 
@@ -36,7 +37,7 @@ def show_results_Steady_State(session_path, id_session):
         """
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
-            utils_gen_web.prepare_results_download(session_path, id_session, 'simss', '')
+            utils_gen_UI.prepare_results_download(session_path, id_session, 'simss', '')
         st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
@@ -167,12 +168,12 @@ def show_results_Steady_State(session_path, id_session):
                     fig1, ax1 = plt.subplots()
                     if exp_jv is True:
                         # Plot simulation and experimental curve. (Line and Scatter)
-                        ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv, df_exp_jv)
-                        ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv, df_exp_jv)
+                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv, df_exp_jv)
+                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv, df_exp_jv)
                     else:
                         # plot only the simulation curve (Line and Scatter)
-                        ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv)
-                        ax1 = utils_plot.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv)
+                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv)
+                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv)
                     st.pyplot(fig1, format='png')
 
             # Show these output plot when sidebar checkbox is checked
@@ -187,7 +188,7 @@ def show_results_Steady_State(session_path, id_session):
                 fig2, ax2 = plt.subplots()
                 col2_1, col2_2, col2_3 = st.columns([2, 5, 2])
 
-                fig2, ax2 = utils_plot.create_UI_component_plot(data_var, pars_potential, par_x_potential, xlabel_potential, ylabel_potential, 
+                fig2, ax2 = utils_plot_UI.create_UI_component_plot(data_var, pars_potential, par_x_potential, xlabel_potential, ylabel_potential, 
                                 title_potential, 2, fig2, ax2, plot_type[0], [col2_1, col2_2, col2_3], choice_voltage, source_type = 'Var', show_plot_param=False)
                 with col2_2:
                     st.pyplot(fig2, format='png')
@@ -204,7 +205,7 @@ def show_results_Steady_State(session_path, id_session):
                 fig3, ax3 = plt.subplots()
                 col3_1, col3_2, col3_3 = st.columns([2, 5, 2])
 
-                fig3, ax3 = utils_plot.create_UI_component_plot(data_var, pars_energy, par_x_energy, xlabel_energy, ylabel_energy, 
+                fig3, ax3 = utils_plot_UI.create_UI_component_plot(data_var, pars_energy, par_x_energy, xlabel_energy, ylabel_energy, 
                                 title_energy, 3, fig3, ax3, plot_type[0], [col3_1, col3_2, col3_3],choice_voltage, source_type = 'Var', show_yscale=False)
                 with col3_2:
                     st.pyplot(fig3, format='png')
@@ -220,7 +221,7 @@ def show_results_Steady_State(session_path, id_session):
                 fig4, ax4 = plt.subplots()
                 col4_1, col4_2, col4_3 = st.columns([2, 5, 2])
 
-                fig4, ax4 = utils_plot.create_UI_component_plot(data_var, pars_density,par_x_density, xlabel_density, ylabel_density, 
+                fig4, ax4 = utils_plot_UI.create_UI_component_plot(data_var, pars_density,par_x_density, xlabel_density, ylabel_density, 
                                 title_density, 4, fig4, ax4, plot_type[0], [col4_1, col4_2, col4_3],choice_voltage, source_type = 'Var', yscale_init=1)
                 with col4_2:
                     st.pyplot(fig4, format='png')
@@ -236,7 +237,7 @@ def show_results_Steady_State(session_path, id_session):
                 fig5, ax5 = plt.subplots()
                 col5_1, col5_2, col5_3 = st.columns([2, 5, 2])
 
-                fig5, ax5 = utils_plot.create_UI_component_plot(data_var, pars_fill,par_x_fill, xlabel_fill, ylabel_fill, 
+                fig5, ax5 = utils_plot_UI.create_UI_component_plot(data_var, pars_fill,par_x_fill, xlabel_fill, ylabel_fill, 
                                 title_fill, 5, fig5, ax5, plot_type[0], [col5_1, col5_2, col5_3], choice_voltage, source_type = 'Var')
                 with col5_2:
                     st.pyplot(fig5, format='png')
@@ -252,7 +253,7 @@ def show_results_Steady_State(session_path, id_session):
                 fig6, ax6 = plt.subplots()
                 col6_1, col6_2, col6_3 = st.columns([2, 5, 2])
 
-                fig6, ax6 = utils_plot.create_UI_component_plot(data_var, pars_transport,par_x_transport, xlabel_transport, ylabel_transport, 
+                fig6, ax6 = utils_plot_UI.create_UI_component_plot(data_var, pars_transport,par_x_transport, xlabel_transport, ylabel_transport, 
                                title_transport, 6, fig6, ax6, plot_type[0], [col6_1, col6_2, col6_3],choice_voltage, source_type = 'Var', yscale_init=1)
                 with col6_2:
                     st.pyplot(fig6, format='png')
@@ -268,7 +269,7 @@ def show_results_Steady_State(session_path, id_session):
                 fig7, ax7 = plt.subplots()
                 col7_1, col7_2, col7_3 = st.columns([2, 5, 2])
 
-                fig7, ax7 = utils_plot.create_UI_component_plot(data_var, pars_gen_recomb, par_x_gen_recomb, xlabel_gen_recomb, ylabel_gen_recomb, 
+                fig7, ax7 = utils_plot_UI.create_UI_component_plot(data_var, pars_gen_recomb, par_x_gen_recomb, xlabel_gen_recomb, ylabel_gen_recomb, 
                                 title_gen_recomb, 7, fig7, ax7, plot_type[0], [col7_1, col7_2, col7_3], choice_voltage, source_type = 'Var')
                 with col7_2:
                     st.pyplot(fig7, format='png')
@@ -284,7 +285,7 @@ def show_results_Steady_State(session_path, id_session):
                 fig8, ax8 = plt.subplots()
                 col8_1, col8_2, col8_3 = st.columns([2, 5, 2])
                 
-                fig8, ax8 = utils_plot.create_UI_component_plot(data_var, pars_current, par_x_current, xlabel_current, ylabel_current, 
+                fig8, ax8 = utils_plot_UI.create_UI_component_plot(data_var, pars_current, par_x_current, xlabel_current, ylabel_current, 
                                 title_current, 8, fig8, ax8, plot_type[0], [col8_1, col8_2, col8_3], choice_voltage, source_type = 'Var')
                 with col8_2:
                     st.pyplot(fig8, format='png')

@@ -2,13 +2,14 @@
 ######### Package Imports #########################################################################
 
 import os
-from datetime import datetime
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-from utils import plot_functions as utils_plot
-from utils import general_web as utils_gen_web
-from Experiments import hysteresis as hyst_exp
+from datetime import datetime
+from pySIMsalabim.experiments import hysteresis as hyst_exp
+from utils import plot_functions_UI as utils_plot_UI
+from utils import general_UI as utils_gen_UI
+from utils import plot_def
 
 ######### Page configuration ######################################################################
 
@@ -37,7 +38,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
         """
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
-            utils_gen_web.prepare_results_download(session_path, id_session, 'zimt', 'hysteresis')
+            utils_gen_UI.prepare_results_download(session_path, id_session, 'zimt', 'hysteresis')
         st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
@@ -105,7 +106,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
                 fig1, ax1 = plt.subplots()
 
                 # Create the plot
-                fig1,ax1 = utils_plot.create_UI_component_plot(data_tj, pars_hyst, par_x_hyst, xlabel_hyst, ylabel_hyst, 
+                fig1,ax1 = utils_plot_UI.create_UI_component_plot(data_tj, pars_hyst, par_x_hyst, xlabel_hyst, ylabel_hyst, 
                                 title_hyst, 1, fig1, ax1, plot_type[0], [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=False, 
                                 weight_key=par_weight_hyst, weight_label=weightlabel_hyst)
                 # Add the experimental data points to the plot

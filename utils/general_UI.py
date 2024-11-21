@@ -1,10 +1,12 @@
 """Functions for general use, WEB only!"""
 ######### Package Imports #########################################################################
 
-import os, re, shutil
+import os, re, shutil, zipfile
 import streamlit as st
+from datetime import datetime
 from werkzeug.utils import secure_filename
-from utils import device_parameters as utils_devpar
+from subprocess import run, PIPE
+from pySIMsalabim.utils import device_parameters as utils_devpar
 from utils import summary_and_citation as utils_sum
 
 ######### Function Definitions ####################################################################
@@ -231,3 +233,116 @@ def prepare_results_download(session_path, id_session, sim_type, exp_type=''):
 
     # Copy the ZIP file to the 'main' simulations folder
     shutil.move(zip_file_name, 'Simulations/')
+
+def exchangeDevPar(session_path, source , target):
+    """Exchanges the device parameters (SimSS, ZimT) of source to target using the exchangeDevPar executable.
+
+    Parameters
+    ----------
+    session_path : string
+        path to the current session folder, where device parameter files are located
+    source : string
+        source file name
+    target : string
+        target file name
+
+    Returns
+    -------
+    integer
+        the returncode of the exchangedevpar executable
+    """   
+    
+    result = run(['./exchangeDevPar', source, target], cwd=session_path, stdout=PIPE, check=False)
+    return result.returncode
+
+def upload_single_file_to_folder(uploaded_file, session_path, is_dev_par = False, dev_par_name = ''):
+    """ Read and decode the uploaded file and write to a file in the session folder.
+
+    Parameters
+    ----------
+    uploaded_file : UploadedFile
+        Object with the contents of the uploaded file
+    session_path : string
+        Path of the simulation folder for this session
+    is_dev_par : boolean
+        True when a  device parameters file is uploaded
+    dev_par_name : string
+        Fixed name of the device parameters file
+    """
+    # Decode the uploaded file (utf-8)
+    data = uploaded_file.getvalue().decode('utf-8')
+
+    # Setup the write directory. When a device parameters file is uplaoded, use the fixed/pre-set name, otherwise use the name of the uploaded file.
+    if is_dev_par == True:
+        target_path = os.path.join(session_path, dev_par_name)
+    else:
+        target_path = os.path.join(session_path, uploaded_file.name)
+
+    # Write the contents of the uploaded file to a file in the SimSS folder
+    destination_file = open(target_path, "w", encoding='utf-8')
+    destination_file.write(data)
+    destination_file.close()
+
+def upload_multiple_files_to_folder(uploaded_files, session_path):
+    """ Read and decode the uploaded file and write to a file in the session folder.
+
+    Parameters
+    ----------
+    uploaded_files : List
+        List object with each element being the contents of a uploaded file
+    session_path : string
+        Path of the simulation folder for this session
+    """
+            
+    for i in range(len(uploaded_files)):
+        # Decode the uploaded file (utf-8)
+        data = uploaded_files[i].getvalue().decode('utf-8')
+
+        # Setup the write directory
+        target_path = os.path.join(session_path, uploaded_files[i].name)
+
+        # Write the contents of the uploaded file to a file in the SimSS folder
+        destination_file_nk = open(target_path, "w", encoding='utf-8')
+        destination_file_nk.write(data)
+        destination_file_nk.close()
+
+def create_zip(session_path, layers):
+    """ Create a ZIP archive from a list of filenames
+
+    Parameters
+    ----------
+    session_path : string
+        path to the current session folder, where device parameter files are located
+    layers : List
+        List with all filenames/paths to be zipped, to be extracted from the layer object
+
+    Returns
+    -------
+    string
+        Filename of the ZIP archive
+    """
+
+    # Read all the file names to be zipped
+    files = []
+    for layer in layers:
+        # Check if a layer file is already added, as they can be reused for different layers. If so, there is no need in including it twice in the ZIP archive
+        if not os.path.join(session_path,layer[2]) in files:
+            files.append(os.path.join(session_path,layer[2]))
+
+    # Fixed name for the ZIP archive
+    zip_filename = os.path.join(session_path, 'Device_parameters.zip')
+
+    # Store the current date & time for the archive
+    current_datetime = datetime.now().timetuple()[:6]
+
+    with zipfile.ZipFile(zip_filename, 'w') as zipf:
+        dir_name = 'Device_parameters' #Name of the subfolder in ZIP archive
+        # get the current date and time to set the correct modified date for the subfolder, would otherwise be 01-01-1970 00:00
+        info = zipfile.ZipInfo(f'{dir_name}/')
+        info.date_time = current_datetime
+        zipf.writestr(info, '')
+
+        for file in files:
+            zipf.write(file, arcname=os.path.join(dir_name,os.path.basename(file)))
+
+    return zip_filename

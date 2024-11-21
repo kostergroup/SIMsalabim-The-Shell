@@ -5,25 +5,28 @@ import os,shutil
 import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
-from utils import device_parameters as utils_devpar
-from utils import device_parameters_gen as utils_devpar_gen
-from utils import band_diagram as utils_bd
-from utils import general as utils_gen
-from utils import general_web as utils_gen_web
-from utils import steady_state as utils_simss
-from utils import plot_functions as utils_plot
-from Experiments import EQE as eqe_exp
 from datetime import datetime
 from menu import menu
-
+from pySIMsalabim.experiments import JV_steady_state as JV_exp
+from pySIMsalabim.experiments import EQE as eqe_exp
+from pySIMsalabim.utils import device_parameters as utils_devpar
+from pySIMsalabim.utils import general as utils_gen
+from utils import device_parameters_UI as utils_devpar_UI
+from utils import band_diagram as utils_bd
+from utils import general_UI as utils_gen_UI
+from utils import steady_state as utils_simss
+from utils import plot_functions_UI as utils_plot_UI
 
 ######### Page configuration ######################################################################
 
 st.set_page_config(layout="wide", page_title="SIMsalabim Steady State JV",
                    page_icon='./logo/SIMsalabim_logo_HAT.jpg')
 
+# Set the session identifier as query parameter in the URL
+st.query_params.from_dict({'session':st.session_state['id']})
+
 # Load custom CSS
-utils_gen_web.local_css('./utils/style.css')
+utils_gen_UI.local_css('./utils/style.css')
 
 # Remove the +/- toggles on number inputs
 st.markdown("""<style>
@@ -76,11 +79,8 @@ else:
         Save the used file names in global states to use them in the results.
         """
         with st.toast('Simulation started'):
-            # Specify the arguments to be attached to the cmd
-            SS_JV_args = [{'par':'dev_par_file','val':simss_device_parameters}]
-
             # Run the simulation
-            result, message = utils_gen.run_simulation('simss', SS_JV_args, session_path, True)
+            result, message = JV_exp.run_SS_JV(simss_device_parameters, session_path, G_fracs=None)
 
         if result.returncode == 0 or result.returncode == 95:
             # Simulation succeeded, continue with the process
@@ -96,7 +96,7 @@ else:
             # Set the state variable to true to indicate that a new simulation has been run and a new ZIP file with results must be created
             st.session_state['runSimulation'] = True
             # Store the assigned file names from the saved device parameters in session state variables.
-            utils_devpar.store_file_names(dev_par, 'simss', simss_device_parameters, layers)
+            utils_devpar_UI.store_file_names(dev_par, 'simss', simss_device_parameters, layers)
 
             res = 'SUCCESS'
 
@@ -116,8 +116,8 @@ else:
         # Use this 'layer/inbetween' function to make sure the most recent device parameters are saved
         layersAvail = [simss_device_parameters]
         layersAvail.extend(st.session_state['availableLayerFiles'])
-        utils_devpar_gen.save_parameters(dev_par, layers, session_path, simss_device_parameters)
-        utils_gen.exchangeDevPar(session_path, simss_device_parameters, zimt_device_parameters) ## update zimt parameters with simss parameters.
+        utils_devpar_UI.save_parameters(dev_par, layers, session_path, simss_device_parameters)
+        utils_gen_UI.exchangeDevPar(session_path, simss_device_parameters, zimt_device_parameters) ## update zimt parameters with simss parameters.
 
         if show_toast:
             st.toast('Saved device parameters', icon="✔️")
@@ -147,7 +147,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
 
         # Update the UseExpData to 1 and change the ExpJV file name to the name of the just uploaded file.
         for section in dev_par[simss_device_parameters][1:]:
@@ -174,7 +174,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
 
         # Update the Gen_profile name with the name of the just uploaded file.
         for section in dev_par[simss_device_parameters][1:]:
@@ -199,7 +199,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
         st.session_state['trapFiles'].append(uploaded_file.name)
         save_parameters()
 
@@ -219,7 +219,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_multiple_files_to_folder(uploaded_files, os.path.join(session_path,'Data_nk'))
+        utils_gen_UI.upload_multiple_files_to_folder(uploaded_files, os.path.join(session_path,'Data_nk'))
 
         save_parameters()
 
@@ -238,7 +238,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, os.path.join(session_path,'Data_spectrum',))
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, os.path.join(session_path,'Data_spectrum',))
 
         save_parameters()
 
@@ -261,8 +261,8 @@ else:
             Display a streamlit success message
         """
         uploaded_file.name = simss_device_parameters
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
-        utils_gen.upload_multiple_files_to_folder(uploaded_files, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_multiple_files_to_folder(uploaded_files, session_path)
 
         return st.success('Upload device parameters complete')
     
@@ -279,7 +279,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
 
         return st.success('Upload device parameters complete')
     
@@ -336,7 +336,7 @@ else:
         # Show the actual file uploader. Some file types have special requirements.
         fileDesc = f'Select {uploadChoice}:'
         if (uploadChoice == 'Experimental JV') or (uploadChoice == 'Generation profile') or(uploadChoice == 'Trap distribution') or(uploadChoice == 'Spectrum'):
-            uploadedFile = utils_gen_web.upload_file(fileDesc, ['=', '@', '0x09', '0x0D'], '', False)
+            uploadedFile = utils_gen_UI.upload_file(fileDesc, ['=', '@', '0x09', '0x0D'], '', False)
         elif uploadChoice == 'n,k values':
             # Special to allow multiple files to be uploaded.
             uploadedFiles = st.file_uploader("Select one or more files with n,k values",type=['txt'], accept_multiple_files=True, label_visibility='visible')
@@ -346,7 +346,7 @@ else:
             uploadedFile = st.file_uploader(fileDesc, type=['txt'], accept_multiple_files=False, label_visibility='visible')
             if (uploadedFile != None and uploadedFile != False):
                 data = uploadedFile.getvalue().decode('utf-8')
-                tmp_layers = utils_devpar_gen.getLayersFromSetup(data)
+                tmp_layers = utils_devpar_UI.getLayersFromSetup(data)
                 
                 uploadedFiles = st.file_uploader("Select all the layer parameter files associated with the simulation setup",type=['txt'], accept_multiple_files=True, label_visibility='visible')
                 layerNames = []
@@ -518,7 +518,7 @@ else:
     spectrum_file_list.sort(key=str.casefold)
 
     # Load the device_parameters file and create a List object.
-    dev_par, layers = utils_devpar_gen.load_device_parameters(session_path, simss_device_parameters, simss_path, availLayers = st.session_state['availableLayerFiles'][:-3])
+    dev_par, layers = utils_devpar.load_device_parameters(session_path, simss_device_parameters, simss_path, availLayers = st.session_state['availableLayerFiles'][:-3])
 
     with st.sidebar:
         # Show custom menu
@@ -531,7 +531,7 @@ else:
         st.button('Save device parameters', on_click=save_parameters_BD)
 
         # Prepare a ZIP archive to download the device parameters
-        zip_filename = utils_gen.create_zip(session_path, layers)
+        zip_filename = utils_gen_UI.create_zip(session_path, layers)
 
         # Show a button to download the ZIP archive
         with open(zip_filename, 'rb') as fp:
@@ -547,7 +547,7 @@ else:
     # When the reset button is pressed, empty the container and create a List object from the default .txt file. Next, save the default parameters to the parameter file.
     if reset_device_parameters:
         main_container_simss.empty()
-        dev_par, layers = utils_devpar_gen.load_device_parameters(session_path, simss_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3])
+        dev_par, layers = utils_devpar.load_device_parameters(session_path, simss_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3],run_mode = True)
         save_parameters()
 
     # Start building the UI for the actual page
@@ -759,7 +759,7 @@ else:
             ylabel_EQE = 'EQE [%]'
             title_EQE = 'External quantum efficiency (EQE)'
 
-            fig1, ax1 = utils_plot.create_UI_component_plot(data_EQE, pars_EQE, par_x_EQE, xlabel_EQE, ylabel_EQE, 
+            fig1, ax1 = utils_plot_UI.create_UI_component_plot(data_EQE, pars_EQE, par_x_EQE, xlabel_EQE, ylabel_EQE, 
                             title_EQE, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_yscale=False, error_y = 'EQEerr', show_plot_param=False, show_legend=False, error_fmt = 'o')
                  
             with col1_2:

@@ -1,6 +1,11 @@
+""" Functions to create the summary and citation file"""
+######### Package Imports #########################################################################
+
 import os
 import streamlit as st
 from utils.ref_optics import nk_ref_dict, spectrum_ref_dict
+
+######### Function Definitions ####################################################################    
 
 # Fixed references
 SIMsalabim_cite = 'M. Koopmans, V.M. Le Corre, and L.J.A. Koster, SIMsalabim: An open-source drift-diffusion simulator for semiconductor devices, J. Open Source Softw. 7, 3727 (2022).'

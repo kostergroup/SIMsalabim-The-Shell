@@ -2,6 +2,9 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.12] - 20-11-2024 - SH, VLC
+- Refactored The Shell to fully separate UI components from Python utility functions for SIMsalabim. All Python utility functions have been moved to the pySIMsalabim repository, including experimental scripts.
+
 ## [1.11] - 20-08-2024 - SH
 - Minor Bug Fix: When selecting a different layer file from the dropdown, the selected file name was not assigned correctly to a variable, hence it was not written to the main simulation_setup.txt file which resulted in the file being ignored.
 - Updated to SIMsalabim v5.14

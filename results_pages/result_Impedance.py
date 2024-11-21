@@ -2,12 +2,13 @@
 ######### Package Imports #########################################################################
 
 import os
-from datetime import datetime
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-from utils import plot_functions as utils_plot
-from utils import general_web as utils_gen_web
+from datetime import datetime
+from utils import plot_functions_UI as utils_plot_UI
+from utils import general_UI as utils_gen_UI
+from utils import plot_def
 
 ######### Page configuration ######################################################################
 
@@ -36,7 +37,7 @@ def show_results_impedance(session_path, id_session):
         """
         # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
         with st.spinner('Preparing results...'):
-            utils_gen_web.prepare_results_download(session_path, id_session, 'zimt', 'impedance')
+            utils_gen_UI.prepare_results_download(session_path, id_session, 'zimt', 'impedance')
         st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
@@ -94,7 +95,7 @@ def show_results_impedance(session_path, id_session):
                 ylabel_2_bode = '-Im Z [Ohm m$^2$]'
                 title_bode = 'Bode plot'
 
-                utils_plot.create_UI_component_plot_twinx(data_freqZ, pars_bode, selected_1_bode, selected_2_bode, par_x_bode, xlabel_bode, ylabel_1_bode, 
+                utils_plot_UI.create_UI_component_plot_twinx(data_freqZ, pars_bode, selected_1_bode, selected_2_bode, par_x_bode, xlabel_bode, ylabel_1_bode, 
                                                           ylabel_2_bode, title_bode,fig1, ax11, ax12, [col1_1, col1_2, col1_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2)
 
             # Nyquist [1]
@@ -112,7 +113,7 @@ def show_results_impedance(session_path, id_session):
                 title_nyq = 'Nyquist plot'
 
                 # Plot the nyquist plot with or without errorbars
-                fig2, ax2 = utils_plot.create_UI_component_plot(data_freqZ, pars_nyq, par_x_nyq, xlabel_nyq, ylabel_nyq, 
+                fig2, ax2 = utils_plot_UI.create_UI_component_plot(data_freqZ, pars_nyq, par_x_nyq, xlabel_nyq, ylabel_nyq, 
                                 title_nyq, 1, fig2, ax2, plt.colorbar, [col2_1, col2_2, col2_3], show_plot_param=False, show_yscale=True, show_xscale=True,
                                 weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq)
                 st.pyplot(fig2, format='png')
@@ -134,5 +135,5 @@ def show_results_impedance(session_path, id_session):
                 ylabel_2_cap_cond = 'Capacitance [F m$^{-2}$]'
                 title_cap_cond = 'Conductance & Capacitance'
 
-                utils_plot.create_UI_component_plot_twinx(data_freqZ, pars_cap_cond, selected_1_cap_cond, selected_2_cap_cond, par_x_cap_cond, xlabel_cap_cond, ylabel_1_cap_cond, 
+                utils_plot_UI.create_UI_component_plot_twinx(data_freqZ, pars_cap_cond, selected_1_cap_cond, selected_2_cap_cond, par_x_cap_cond, xlabel_cap_cond, ylabel_1_cap_cond, 
                                                           ylabel_2_cap_cond, title_cap_cond,fig3, ax31, ax32, [col3_1, col3_2, col3_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2,show_errors=True, yscale_init_2 = 1)

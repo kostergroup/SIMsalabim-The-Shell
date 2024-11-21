@@ -3,23 +3,26 @@
 
 import os, shutil
 import streamlit as st
-from utils import device_parameters as utils_devpar
-from utils import device_parameters_gen as utils_devpar_gen
-from utils import band_diagram as utils_bd
-from utils import general as utils_gen
-from utils import general_web as utils_gen_web
-from utils import hysteresis_func as utils_hyst
-from Experiments import hysteresis as hyst_exp
 from datetime import datetime
 from menu import menu
+from pySIMsalabim.experiments import hysteresis as hyst_exp
+from pySIMsalabim.utils import device_parameters as utils_devpar
+from pySIMsalabim.utils import general as utils_gen
+from utils import band_diagram as utils_bd
+from utils import device_parameters_UI as utils_devpar_UI
+from utils import general_UI as utils_gen_UI
+from utils import hysteresis_func as utils_hyst
 
 ######### Page configuration ######################################################################
 
 st.set_page_config(layout="wide", page_title="SIMsalabim Hysteresis JV",
                    page_icon='./logo/SIMsalabim_logo_HAT.jpg')
 
+# Set the session identifier as query parameter in the URL
+st.query_params.from_dict({'session':st.session_state['id']})
+
 # Load custom CSS
-utils_gen_web.local_css('./utils/style.css')
+utils_gen_UI.local_css('./utils/style.css')
 
 # Session states for page navigation
 st.session_state['pagename'] = 'Hysteresis JV'
@@ -98,7 +101,7 @@ else:
             st.error(message)
             res = 'FAILED'
         else:
-            if result.returncode == 0 or result.returncode == 95:
+            if result == 0 or result == 95:
                 # Simulation succeeded, continue with the process
                 st.success(message)
                 st.session_state['simulation_results'] = 'Hysteresis JV' # Init the results page to display Steady State results
@@ -120,7 +123,7 @@ else:
                 st.session_state['runSimulation'] = True
 
                 # Store the assigned file names from the saved device parameters in session state variables.
-                utils_devpar.store_file_names(dev_par, 'zimt', zimt_device_parameters, layers)
+                utils_devpar_UI.store_file_names(dev_par, 'zimt', zimt_device_parameters, layers)
 
                 res = 'SUCCESS'
 
@@ -145,8 +148,8 @@ else:
         # Use this 'layer/inbetween' function to make sure the most recent device parameters are saved 
         layersAvail = [zimt_device_parameters]
         layersAvail.extend(st.session_state['availableLayerFiles'])
-        utils_devpar_gen.save_parameters(dev_par, layers, session_path, zimt_device_parameters)
-        utils_gen.exchangeDevPar(session_path, zimt_device_parameters, simss_device_parameters) ## update simss parameters with zimt parameters.
+        utils_devpar_UI.save_parameters(dev_par, layers, session_path, zimt_device_parameters)
+        utils_gen_UI.exchangeDevPar(session_path, zimt_device_parameters, simss_device_parameters) ## update simss parameters with zimt parameters.
 
         if show_toast:
             st.toast('Saved device parameters', icon="✔️")
@@ -171,7 +174,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
 
         # Update the Gen_profile name with the name of the just uploaded file.
         for section in dev_par[zimt_device_parameters][1:]:
@@ -196,7 +199,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
         st.session_state['trapFiles'].append(uploaded_file.name)
         save_parameters()
 
@@ -216,7 +219,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_multiple_files_to_folder(uploaded_files, os.path.join(session_path,'Data_nk'))
+        utils_gen_UI.upload_multiple_files_to_folder(uploaded_files, os.path.join(session_path,'Data_nk'))
 
         save_parameters()
 
@@ -235,7 +238,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, os.path.join(session_path,'Data_spectrum',))
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, os.path.join(session_path,'Data_spectrum',))
 
         save_parameters()
 
@@ -254,7 +257,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_multiple_files_to_folder(uploaded_files, os.path.join(session_path))
+        utils_gen_UI.upload_multiple_files_to_folder(uploaded_files, os.path.join(session_path))
 
         save_parameters()
 
@@ -277,8 +280,8 @@ else:
             Display a streamlit success message
         """
         uploaded_file.name = zimt_device_parameters
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
-        utils_gen.upload_multiple_files_to_folder(uploaded_files, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_multiple_files_to_folder(uploaded_files, session_path)
 
         return st.success('Upload device parameters complete')
 
@@ -295,7 +298,7 @@ else:
         success
             Display a streamlit success message
         """
-        utils_gen.upload_single_file_to_folder(uploaded_file, session_path)
+        utils_gen_UI.upload_single_file_to_folder(uploaded_file, session_path)
 
         return st.success('Upload device parameters complete')
     
@@ -352,7 +355,7 @@ else:
         # Show the actual file uploader. Some file types have special requirements.
         fileDesc = f'Select {uploadChoice}:'
         if (uploadChoice == 'Generation profile') or(uploadChoice == 'Trap distribution') or(uploadChoice == 'Spectrum'):
-            uploadedFile = utils_gen_web.upload_file(fileDesc, ['=', '@', '0x09', '0x0D'], '', False)
+            uploadedFile = utils_gen_UI.upload_file(fileDesc, ['=', '@', '0x09', '0x0D'], '', False)
         elif uploadChoice == 'Experimental JVs':
             uploadedFiles = st.file_uploader("Select experimental current voltage characteristics",type=['txt'], accept_multiple_files=True, label_visibility='visible')
         elif uploadChoice == 'n,k values':
@@ -364,7 +367,7 @@ else:
             uploadedFile = st.file_uploader(fileDesc, type=['txt'], accept_multiple_files=False, label_visibility='visible')
             if (uploadedFile != None and uploadedFile != False):
                 data = uploadedFile.getvalue().decode('utf-8')
-                tmp_layers = utils_devpar_gen.getLayersFromSetup(data)
+                tmp_layers = utils_devpar_UI.getLayersFromSetup(data)
                 
                 uploadedFiles = st.file_uploader("Select all the layer parameter files associated with the simulation setup",type=['txt'], accept_multiple_files=True, label_visibility='visible')
                 layerNames = []
@@ -537,7 +540,7 @@ else:
     spectrum_file_list.sort(key=str.casefold)
 
     # Load the device_parameters file and create a List object.
-    dev_par, layers = utils_devpar_gen.load_device_parameters(session_path, zimt_device_parameters, zimt_path, availLayers = st.session_state['availableLayerFiles'][:-3])
+    dev_par, layers = utils_devpar.load_device_parameters(session_path, zimt_device_parameters, zimt_path, availLayers = st.session_state['availableLayerFiles'][:-3])
 
     with st.sidebar:
          # Show custom menu
@@ -550,7 +553,7 @@ else:
         st.button('Save device parameters', on_click=save_parameters_BD)
 
         # Prepare a ZIP archive to download the device parameters
-        zip_filename = utils_gen.create_zip(session_path, layers)
+        zip_filename = utils_gen_UI.create_zip(session_path, layers)
 
         # Show a button to download the ZIP archive
         with open(zip_filename, 'rb') as fp:
@@ -563,7 +566,7 @@ else:
     # When the reset button is pressed, empty the container and create a List object from the default .txt file. Next, save the default parameters to the parameter file.
     if reset_device_parameters:
         main_container_hysteresis_JV.empty()
-        dev_par, layers = utils_devpar_gen.load_device_parameters(session_path, zimt_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3])
+        dev_par, layers = utils_devpar.load_device_parameters(session_path, zimt_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3])
         save_parameters()
 
     with main_container_hysteresis_JV.container():

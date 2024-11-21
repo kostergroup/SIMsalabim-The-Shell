@@ -1,7 +1,11 @@
 """Functions for page: Simulation_results"""
+######### Package Imports #########################################################################
+
 import matplotlib.pyplot as plt
 import streamlit as st
-from utils import plot_functions_gen as utils_plot_gen
+from pySIMsalabim.plots import plot_functions as utils_plot
+
+######### Function Definitions ####################################################################    
 
 def plot_result_JV(data, choice_voltage, plot_funcs, ax, exp, data_exp=''):
     """Make a plot of the JV curve based on the 'JV.dat" file
@@ -197,25 +201,25 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
         # Create plot
         fig, ax = plt.subplots()
         if weight_key != '':
-            ax,fig = utils_plot_gen.plot_result_colorbar_single( data[x_key],data[options[0]],data[weight_key], ax,fig, xlabel, 
+            ax,fig = utils_plot.plot_result_colorbar_single( data[x_key],data[options[0]],data[weight_key], ax,fig, xlabel, 
                                                                 ylabel, weight_label,weight_norm, title,xscale, yscale,)
         else:
             if xyerror and plot_type == plt.errorbar:
                 if error_x == '' and  error_y != '':
                     # Only y errorbar
-                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, y_error=data[error_y],legend=show_legend,error_fmt=error_fmt)
+                    ax = utils_plot.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, y_error=data[error_y],legend=show_legend,error_fmt=error_fmt)
                 elif error_x != '' and error_y == '':
                     # only x errorbar
-                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, x_error = data[error_x],legend=show_legend,error_fmt=error_fmt)
+                    ax = utils_plot.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, x_error = data[error_x],legend=show_legend,error_fmt=error_fmt)
                 elif error_x != '' and not error_y != '':
                     # both x and y errorbars
-                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, x_error = data[error_x], y_error=data[error_y],legend=show_legend,error_fmt=error_fmt)
+                    ax = utils_plot.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type, x_error = data[error_x], y_error=data[error_y],legend=show_legend,error_fmt=error_fmt)
                 else:
                     # no errorbars
-                    ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type,legend=show_legend,error_fmt=error_fmt)
+                    ax = utils_plot.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plot_type,legend=show_legend,error_fmt=error_fmt)
 
             else:
-                ax = utils_plot_gen.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plt.plot,legend=show_legend)
+                ax = utils_plot.plot_result(data, pars, options, x_key, xlabel, ylabel,xscale, yscale, title, ax, plt.plot,legend=show_legend)
         
         return fig,ax
 
@@ -310,9 +314,9 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
     with cols[1]:
         # Create plot
         if yerror:
-            ax = utils_plot_gen.plot_result_twinx(data_org, pars, selected_1, selected_2, x_key, xlabel, ylabel_1, ylabel_2, 'log', yscale_1, yscale_2, title,ax_1,ax_2, 
+            ax = utils_plot.plot_result_twinx(data_org, pars, selected_1, selected_2, x_key, xlabel, ylabel_1, ylabel_2, 'log', yscale_1, yscale_2, title,ax_1,ax_2, 
                                         plt.errorbar,y_error_1 = yerror_1, y_error_2 = yerror_2)   
         else:
-            ax = utils_plot_gen.plot_result_twinx(data_org, pars, selected_1, selected_2, x_key, xlabel, ylabel_1, ylabel_2, 'log', yscale_1, yscale_2, title,ax_1,ax_2, 
+            ax = utils_plot.plot_result_twinx(data_org, pars, selected_1, selected_2, x_key, xlabel, ylabel_1, ylabel_2, 'log', yscale_1, yscale_2, title,ax_1,ax_2, 
                                         plt.plot)
         st.pyplot(fig, format='png')
