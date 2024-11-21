@@ -1,7 +1,9 @@
 # SIMsalabim - The Shell
-An easy-to-use web interface for SIMsalabim, build on the Streamlit framework and Python. 
+An easy-to-use web interface for SIMsalabim, build on the Streamlit framework and Python.
 
-Note: The Shell does not support all features and functionality that SIMsalabim has to offer. To use all functionality, download and run the SIMSalabim project on your machine as described in the [SIMsalabim Project readme](https://github.com/sheester/SIMsalabim-web/tree/development/SIMsalabim#quickstart-guide). For a full overview of the functionality of SIMSalabim, refer to the [SIMsalabim manual](https://raw.githubusercontent.com/kostergroup/SIMsalabim/master/Docs/Manual.pdf).
+Note1: This repository only provides the components needed to create and build the UI. For SIMsalabim refer to the [SIMsalabim repository](https://github.com/kostergroup/SIMsalabim). For the implementation of several well-known experiments and useful tools to set up and run simulations as well as tools to analyze and visualize the results refer to the [pySIMsalabim repository](https://github.com/kostergroup/pySIMsalabim).
+
+Note2: The Shell does not support all features and functionality that SIMsalabim has to offer. To use all functionality, download and run the SIMSalabim project on your machine as described in the [SIMsalabim Project readme](https://github.com/sheester/SIMsalabim-web/tree/development/SIMsalabim#quickstart-guide). For a full overview of the functionality of SIMSalabim, refer to the [SIMsalabim manual](https://raw.githubusercontent.com/kostergroup/SIMsalabim/master/Docs/Manual.pdf).
 
 Currently supported functionality in The Shell is:
 - Define your device via the device parameters on a template or upload your own device parameters.
