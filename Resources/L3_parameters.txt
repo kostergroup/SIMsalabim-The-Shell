@@ -1,7 +1,7 @@
 ** SIMsalabim Layer parameters:
 ** Don't change the order of the parameters, comments can be added anywhere,
 ** but only after an '*'. Use '**' if you want your comment to be left-justified.
-** version: 5.14
+** version: 5.18
 
 **General**************************************************************************
 L = 10E-9                     * m, device length/thickness
@@ -21,7 +21,7 @@ gamma_n = 0                   * (m/V)^0.5, field dependence of mob, Poole-Frenke
 gamma_p = 0                   * (m/V)^0.5, field dependence of mob, Poole-Frenkel form
 
 **Interface-layer-to-right**********************************************************
-nu_int_e = 1E3                * m/s, interface transfer velocity, to layer to the right
+nu_int_n = 1E3                * m/s, interface transfer velocity, to layer to the right
 nu_int_p = 1E3                * m/s, interface transfer velocity, to layer to the right
 N_t_int = 4E12                * m^-2, trap density at interface with layer to the right
 E_t_int = 4.7                 * eV, energy level of traps at interface

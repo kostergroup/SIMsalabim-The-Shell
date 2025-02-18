@@ -9,15 +9,15 @@ from utils import general_UI as utils_gen_UI
 
 ######### Page configuration ######################################################################
 
-st.set_page_config(layout="wide", page_title="SIMsalabim - The Shell", page_icon='./logo/SIMsalabim_logo_HAT.jpg')
+st.set_page_config(layout="wide", page_title="SIMsalabim - The Shell", page_icon='./Figures/SIMsalabim_logo_HAT.jpg')
 
 # Load custom CSS.
 utils_gen_UI.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.12' # The Shell version
-version_simsalabim = '5.14' # SIMsalabim version
+version_theshell = '1.13' # The Shell version
+version_simsalabim = '5.18' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
 simulation_path = os.path.join(os.getcwd(),'Simulations')
@@ -75,6 +75,7 @@ st.session_state.key = 'tJFile'
 st.session_state.key = 'tVGFile'
 st.session_state.key = 'hystPars'
 st.session_state.key = 'hystRmsError'
+st.session_state.key = 'hystIndex'
 st.session_state.key = 'impedancePars'
 st.session_state.key = 'expObject'
 st.session_state.key = 'freqZFile'
@@ -171,7 +172,7 @@ st.write('The paper can be viewed [here](https://joss.theoj.org/papers/10.21105/
 
 st.text('''
 
-Copyright Ⓒ 2023 - 2024 | S. Heester, F.D. Elhorst, P. Martin Fernandez, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.
+Copyright Ⓒ 2023 - 2025 | S. Heester, F.D. Elhorst, P. Martin Fernandez, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.
 ''')
         
 #  Show the SIMsalabim logo in the sidebar
@@ -179,7 +180,7 @@ with st.sidebar:
     menu()
 #    st.text(' ')
 #    st.text(' ')
-#    st.metric('Simulations (as of June 2023):','> 13000', delta=None, delta_color="normal", help=None, label_visibility="visible")
+#    st.metric('Simulations (as of June 2023):','> #####', delta=None, delta_color="normal", help=None, label_visibility="visible")
 #    st.write("---")
-    st.image('./logo/SIMsalabim_logo_cut_trans.png')
+    st.image('./Figures/SIMsalabim_logo_cut_trans.png')
 

@@ -13,7 +13,7 @@ from results_pages import result_CV as result_CV
 
 ######### Page configuration ######################################################################
 
-st.set_page_config(layout="wide", page_title="SIMsalabim simulation results", page_icon='./logo/SIMsalabim_logo_HAT.jpg')
+st.set_page_config(layout="wide", page_title="SIMsalabim simulation results", page_icon='./Figures/SIMsalabim_logo_HAT.jpg')
 
 # Set the session identifier as query parameter in the URL
 st.query_params.from_dict({'session':st.session_state['id']})

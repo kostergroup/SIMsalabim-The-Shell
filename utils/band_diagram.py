@@ -3,6 +3,7 @@
 
 import matplotlib.pyplot as plt
 import streamlit as st
+import numpy as np
 
 plt.rcParams.update({'font.size': 24}) # Set font size larger for the band diagram for readability
 
@@ -133,6 +134,64 @@ def create_UI_band_diagram(fig, msg):
                 # Scale disclaimer
                 st.markdown('''<em>Note: Band diagram is not to scale</em>''', unsafe_allow_html=True)
 
+def get_WF_sfb(layer, dev_par, dev_par_name):
+    """Calculate the work function of an electrode for a semi-lat band based on the net doping of the layer
+
+    Parameters
+    ----------
+    layer : List
+        List with the layer data
+    dev_par : dict
+        Dictionary with all data
+    dev_par_name : string
+        Name of the device parameter file
+
+    Returns
+    -------
+    float
+        Work function of the electrode [eV]
+    """
+
+    # Constants
+    q = 1.6022e-19  	#[C] elementary charge
+    k = 1.3807e-23;     #[J/K] Boltzmann's constant
+
+    # Get the temperature
+    for section in dev_par[dev_par_name]:
+        if section[0] == 'General':
+            for param in section:
+                if 'T' in param[1]:
+                    T = float(param[2])
+    
+    # Get the relevant parameters from the layer file
+    for section in dev_par[layer[2]]:
+        if section[0] == 'General':
+            for param in section:
+                if 'E_c' in param[1]:
+                    E_c = float(param[2])
+                elif 'E_v' in param[1]:
+                    E_v = float(param[2])
+                elif 'N_c' in param[1]:
+                    N_c = float(param[2])
+                elif 'N_D' in param[1]:
+                    N_D = float(param[2])
+                elif 'N_A' in param[1]:
+                    N_A = float(param[2])
+    
+
+    netDoping = N_A - N_D
+    
+    if netDoping > 0: # effectively p-doped
+        WF = E_v - k*T/q * np.log(N_c/netDoping)
+    elif netDoping < 0: # effectively n-doped
+        WF = E_c + k*T/q * np.log(-N_c/netDoping)
+    else: # intrinsic or fully compensated
+        WF = (E_c + E_v)/2
+    
+    WF = round(WF,2) # Round to 2 decimal places to prevent long float in fig
+
+    return WF
+                
 def get_param_band_diagram(dev_par, layers, dev_par_name, run_mode = True):
     """Create and display the band diagram on the UI based on the relevant parameters from the dict object
 
@@ -160,10 +219,18 @@ def get_param_band_diagram(dev_par, layers, dev_par_name, run_mode = True):
         if section[0] == 'Contacts':
             for param in section:
                 if 'W_L' in param[1]:
-                    W_L = -float(param[2])
-                elif 'W_R' in param[1]:
-                    W_R = -float(param[2])
+                    # semi-flat band, calculate from net doping at electrode
+                    if 'sfb' in param[2]:
+                        W_L = -get_WF_sfb(layers[1],dev_par,dev_par_name)
+                    else:
+                        W_L = -float(param[2])
 
+                elif 'W_R' in param[1]:
+                    if 'sfb' in param[2]:
+                        # semi-flat band, calculate from net doping at electrode
+                        W_R = -get_WF_sfb(layers[-1],dev_par,dev_par_name)
+                    else:
+                        W_R = -float(param[2])
 
     # Get the thicknesses and energy levels from the respective layer files
     for layer in layers[1:]:
@@ -212,11 +279,11 @@ def get_param_band_diagram(dev_par, layers, dev_par_name, run_mode = True):
 
     # Left Electrode
     ax.plot([-0.06*L_total, 0], [W_L, W_L], color='k')
-    create_energy_label(-0.08*L_total, 0, sum(L), W_L, 'WL', L_total, ax, W_L_pos)
+    create_energy_label(-0.12*L_total, 0, sum(L), W_L, 'WL', L_total, ax, W_L_pos)
 
     # Right Electrode
     ax.plot([L_total, L_total+0.06*L_total], [W_R, W_R], color='k')
-    create_energy_label(L_total, L_total+0.08*L_total, sum(L), W_R, 'WR', L_total, ax, W_R_pos)
+    create_energy_label(L_total, L_total+0.12*L_total, sum(L), W_R, 'WR', L_total, ax, W_R_pos)
 
     # Hide the figure axis
     ax.axis('off')

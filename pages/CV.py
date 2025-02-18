@@ -17,7 +17,7 @@ from utils import CV_func as utils_CV
 ######### Page configuration ######################################################################
 
 st.set_page_config(layout="wide", page_title="SIMsalabim CV",
-                   page_icon='./logo/SIMsalabim_logo_HAT.jpg')
+                   page_icon='./Figures/SIMsalabim_logo_HAT.jpg')
 
 # Set the session identifier as query parameter in the URL
 st.query_params.from_dict({'session':st.session_state['id']})
@@ -535,7 +535,7 @@ else:
     # When the reset button is pressed, empty the container and create a List object from the default .txt file. Next, save the default parameters to the parameter file.
     if reset_device_parameters:
         main_container_CV.empty()
-        dev_par, layers = utils_devpar.load_device_parameters(session_path, zimt_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3])
+        dev_par, layers = utils_devpar.load_device_parameters(session_path, zimt_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3],run_mode = True)
         save_parameters()
 
     with main_container_CV.container():
@@ -682,4 +682,4 @@ else:
     #  Show the SIMsalabim logo in the sidebar
     with st.sidebar:
         st.markdown('<hr>', unsafe_allow_html=True)
-        st.image('./logo/SIMsalabim_logo_cut_trans.png')
+        st.image('./Figures/SIMsalabim_logo_cut_trans.png')

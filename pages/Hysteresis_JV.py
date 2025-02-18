@@ -16,7 +16,7 @@ from utils import hysteresis_func as utils_hyst
 ######### Page configuration ######################################################################
 
 st.set_page_config(layout="wide", page_title="SIMsalabim Hysteresis JV",
-                   page_icon='./logo/SIMsalabim_logo_HAT.jpg')
+                   page_icon='./Figures/SIMsalabim_logo_HAT.jpg')
 
 # Set the session identifier as query parameter in the URL
 st.query_params.from_dict({'session':st.session_state['id']})
@@ -90,7 +90,7 @@ else:
             hyst_par_obj = utils_hyst.read_hysteresis_parameters(hyst_par, dev_par[zimt_device_parameters])
 
             # Run the JV Hysteresis script
-            result, message, rms_error = hyst_exp.Hysteresis_JV(zimt_device_parameters, session_path, hyst_par_obj['UseExpData'], 
+            result, message, output_vals = hyst_exp.Hysteresis_JV(zimt_device_parameters, session_path, hyst_par_obj['UseExpData'], 
                                                       hyst_par_obj['scan_speed'], hyst_par_obj['direction'], hyst_par_obj['G_frac'], 
                                                         hyst_par_obj['tVGFile'], run_mode = True, Vmin = hyst_par_obj['Vmin'], 
                                                         Vmax =hyst_par_obj['Vmax'],steps = hyst_par_obj['steps'],
@@ -117,7 +117,10 @@ else:
                 st.session_state['hystPars'] = hyst_pars_file
                 if hyst_par_obj['UseExpData'] == 1:
                     # Share the rms error with the results page
-                    st.session_state['hystRmsError'] = rms_error
+                    st.session_state['hystRmsError'] = output_vals['rms']
+                
+                # Store the hysteresis index in the session state
+                st.session_state['hystIndex'] = output_vals['hyst_index']
 
                 # Set the state variable to true to indicate that a new simulation has been run and a new ZIP file with results must be created
                 st.session_state['runSimulation'] = True
@@ -566,7 +569,7 @@ else:
     # When the reset button is pressed, empty the container and create a List object from the default .txt file. Next, save the default parameters to the parameter file.
     if reset_device_parameters:
         main_container_hysteresis_JV.empty()
-        dev_par, layers = utils_devpar.load_device_parameters(session_path, zimt_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3])
+        dev_par, layers = utils_devpar.load_device_parameters(session_path, zimt_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3],run_mode = True)
         save_parameters()
 
     with main_container_hysteresis_JV.container():
@@ -714,4 +717,4 @@ else:
     #  Show the SIMsalabim logo in the sidebar
     with st.sidebar:
         st.markdown('<hr>', unsafe_allow_html=True)
-        st.image('./logo/SIMsalabim_logo_cut_trans.png')
+        st.image('./Figures/SIMsalabim_logo_cut_trans.png')

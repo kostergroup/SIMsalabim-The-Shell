@@ -71,6 +71,10 @@ def read_impedance_par_file(session_path, impedanceParsFile, impedancePars):
                 for item in impedancePars:
                     if item[0] == 'fstep':
                         item[1] = int(line_element[1].strip())
+            elif line_element[0].strip() == 'V0':
+                for item in impedancePars:
+                    if item[0] == 'V0':
+                        item[1] = str(line_element[1].strip())
             else:
                 for item in impedancePars:
                     if item[0] == line_element[0].strip():

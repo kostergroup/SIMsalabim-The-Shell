@@ -108,7 +108,7 @@ def show_results_Steady_State(session_path, id_session):
 
                 #  Show the SIMsalabim logo in the sidebar
                 st.markdown('<hr>', unsafe_allow_html=True)
-                st.image('./logo/SIMsalabim_logo_cut_trans.png')
+                st.image('./Figures/SIMsalabim_logo_cut_trans.png')
 
             # Initialize the columns to display the results. Adjust based onthe solar cell parameters.
             if not scpars_data == {}:
@@ -159,6 +159,18 @@ def show_results_Steady_State(session_path, id_session):
             # JV curve [1]
             col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
 
+            with col1_3:
+                # Figure options
+                st.markdown('<br>', unsafe_allow_html=True)
+                st.markdown('<hr>', unsafe_allow_html=True)
+
+                # Show options to change scale of axis.
+                # Note: when changing the y-axis (Current density) to log scale, the absolute value of the current density is shown.
+                with st.expander('Figure options', expanded=False):
+                    scale_options = ['linear', 'log']
+                    xscale = st.radio('x-scale', scale_options, index = 0, key = 'JV-x-scale')
+                    yscale = st.radio('y-scale', scale_options, index = 0, key = 'JV-y-scale')
+
             with col1_2:
                 # Show the JV curve. Should always be visible, unless something went wrong.
 
@@ -168,12 +180,12 @@ def show_results_Steady_State(session_path, id_session):
                     fig1, ax1 = plt.subplots()
                     if exp_jv is True:
                         # Plot simulation and experimental curve. (Line and Scatter)
-                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv, df_exp_jv)
-                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv, df_exp_jv)
+                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv, df_exp_jv, xscale = xscale, yscale = yscale)
+                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv, df_exp_jv, xscale = xscale, yscale = yscale)
                     else:
                         # plot only the simulation curve (Line and Scatter)
-                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv)
-                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv)
+                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv, xscale = xscale, yscale = yscale)
+                        ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv, xscale = xscale, yscale = yscale)
                     st.pyplot(fig1, format='png')
 
             # Show these output plot when sidebar checkbox is checked

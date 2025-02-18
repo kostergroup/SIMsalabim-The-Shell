@@ -2,6 +2,17 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.13] - 18-092-2025 - SH
+- Updated to SIMsalabim v5.18
+- Updated to pySIMsalabim v1.01
+- Removed extra lines in several nk_files
+- Updated parameter files to run faster and better, i.e. maxAcc is now 0.1 and tolVint is now 1E-8
+- Added option to change aaxis scaling JV plot in Steady State
+- Fixed bug in band diagram, where one could not use the option 'sfb' for work function, because drawing the band diagram expected a float and not a string. We now calculate a value when 'sfb' is used with the same procedure as in SIMsalabim
+- Reset device parameters did not work because of missing argument/incorrect default setting
+- We now display the Hysteresis Index, including its definition when showing the results of a Hysteresis JV simualtion
+- Created Figures folder to hold all static figures, such as SIMsalabim logo and HI definition
+
 ## [1.12] - 20-11-2024 - SH, VLC
 - Refactored The Shell to fully separate UI components from Python utility functions for SIMsalabim. All Python utility functions have been moved to the pySIMsalabim repository, including experimental scripts.
 

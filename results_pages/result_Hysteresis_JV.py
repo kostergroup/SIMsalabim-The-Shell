@@ -78,7 +78,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
 
                 #  Show the SIMsalabim logo in the sidebar
                 st.markdown('<hr>', unsafe_allow_html=True)
-                st.image('./logo/SIMsalabim_logo_cut_trans.png')
+                st.image('./Figures/SIMsalabim_logo_cut_trans.png')
 
             st.title("Simulation Results")
             st.subheader(str(st.session_state['simulation_results']))
@@ -90,6 +90,24 @@ def show_results_Hysteresis_JV(session_path, id_session):
             col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
 
             with col1_1:
+                st.markdown('<br>', unsafe_allow_html=True)
+                st.markdown(f'<h4>Hysteresis Index (HI): {st.session_state["hystIndex"]:.3f}</h4>', unsafe_allow_html=True)
+
+                st.markdown('<br>', unsafe_allow_html=True)
+
+                # Create a popover window where the defintion of the Hysteresis Index is shown
+                with st.popover("Show Hysteresis Index definition"):
+                    HI_def = r'''
+                    #### Hysteresis Index (HI) defintion
+                    The Hysteresis Index is defined as the difference area between the forward and backward scan of the JV curve normalised by the maximum spanned area.
+                    $$ 
+                    \mathrm{HI} = \frac{\int_{V_{\rm min}}^{V_{\rm max}} \left|J_{1} - J_{2}\right|\mathrm{d}V}{\left(J_{\rm max}-J_{\rm min}\right)\left(V_{\rm max}-V_{\rm min}\right)}
+                    $$ 
+
+                    '''
+                    st.write(HI_def)
+                    st.image('Figures/Hysteresis_Index_def.png')
+
                 # Show the rms error when comparing to experimental data
                 if st.session_state["expObject"]['UseExpData'] == 1:
                     st.markdown('<br><br>', unsafe_allow_html=True)
@@ -102,7 +120,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
                 xlabel_hyst = '$V_{ext}$ [V]'
                 ylabel_hyst = '$J_{ext}$ [Am$^{-2}$]'
                 weightlabel_hyst = '$t$ [s]'
-                title_hyst = 'JV curve'
+                title_hyst = ''
                 fig1, ax1 = plt.subplots()
 
                 # Create the plot
@@ -115,6 +133,4 @@ def show_results_Hysteresis_JV(session_path, id_session):
                     ax1.plot(data_JVExp['Vext'],data_JVExp['Jext'],'.b', zorder=0, markersize = 5)
                     ax1.legend(['Simulation', 'Experiments'])
                 # Show the plot
-                st.pyplot(fig1, format='png')
-                
-            
+                st.pyplot(fig1, format='png')        

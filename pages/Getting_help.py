@@ -8,7 +8,7 @@ from utils import general_UI as utils_gen_UI
 ######### Page configuration ######################################################################
 
 st.set_page_config(layout="wide", page_title="SIMsalabim Help",
-                   page_icon='./logo/SIMsalabim_logo_HAT.jpg')
+                   page_icon='./Figures/SIMsalabim_logo_HAT.jpg')
 
 # Set the session identifier as query parameter in the URL
 st.query_params.from_dict({'session':st.session_state['id']})
@@ -44,4 +44,4 @@ with st.sidebar:
     with st.sidebar:
         # Show custom menu
         menu()
-    st.image('./logo/SIMsalabim_logo_cut_trans.png')
+    st.image('./Figures/SIMsalabim_logo_cut_trans.png')

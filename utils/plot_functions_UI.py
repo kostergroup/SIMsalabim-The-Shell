@@ -7,7 +7,7 @@ from pySIMsalabim.plots import plot_functions as utils_plot
 
 ######### Function Definitions ####################################################################    
 
-def plot_result_JV(data, choice_voltage, plot_funcs, ax, exp, data_exp=''):
+def plot_result_JV(data, choice_voltage, plot_funcs, ax, exp, data_exp='', xscale = 'linear', yscale = 'linear'):
     """Make a plot of the JV curve based on the 'JV.dat" file
 
     Parameters
@@ -24,11 +24,26 @@ def plot_result_JV(data, choice_voltage, plot_funcs, ax, exp, data_exp=''):
         True if experimental JV curve needs to be plotted.
     data_exp : DataFrame
         Optional argument when an experimental JV curve is supplied
+    xscale : string, optional
+        Scale of the x-axis, by default 'lin'
+    yscale : string, optional
+        Scale of the y-axis, by default 'lin'
+
     Returns
     -------
     axes
         Updated Axes object for the plot
     """
+
+
+    # If the yscale is log, we need to take the absolute value of the current to not lose the negative part of the curve. 
+    if yscale == 'log':
+        data['Jext'] = data['Jext'].abs()
+        data['Jext'] = data['Jext'].replace(0, 1e-20) # Avoid log(0) error
+        if exp is True:
+            data_exp['Jext'] = data_exp['Jext'].abs()
+            data_exp['Jext'] = data_exp['Jext'].replace(0, 1e-20) # Avoid log(0) error
+
     # We only need one label when making the line and scatter plot.
     if plot_funcs == plt.plot:
         plot_funcs(data['Vext'], data['Jext'], label='Simulated')
@@ -39,6 +54,8 @@ def plot_result_JV(data, choice_voltage, plot_funcs, ax, exp, data_exp=''):
     ax.axvline(choice_voltage, color='k', linestyle='--')
 
     # Configure plot
+    ax.set_xscale(xscale)
+    ax.set_yscale(yscale)
     ax.set_xlabel('$V_{ext}$ [V]')
     ax.set_ylabel('$J_{ext}$ [Am$^{-2}$]')
     ax.set_title('Current-voltage characteristic')

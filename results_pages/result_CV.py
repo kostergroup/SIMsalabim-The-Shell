@@ -69,7 +69,7 @@ def show_results_CV(session_path, id_session):
 
                 #  Show the SIMsalabim logo in the sidebar
                 st.markdown('<hr>', unsafe_allow_html=True)
-                st.image('./logo/SIMsalabim_logo_cut_trans.png')
+                st.image('./Figures/SIMsalabim_logo_cut_trans.png')
 
             st.title("Simulation Results")
             st.subheader(str(st.session_state['simulation_results']))
