@@ -2,7 +2,16 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
-## [1.13] - 18-092-2025 - SH
+## [1.14] - 21-03-2025 - SH
+- Updated to SIMsalabim v5.19
+- Added QFLS to the results of Steady State JV
+- One can now set the x,y limits for all figures/plots in the all results. 
+- In the steady state results, the checkboxes for different plots have been replaced with toggle switches
+- Changed the way to run The Shell locally from the run_The_Shell_local.py file. Instead of running the pipenv on the system, we now create and use a python virtual environment (venv) in which we run The Shell, still through pipenv. This prevents any potential package conflicts/restrictions on the system. 
+- Improved message/information handling (including errors and failures) when setting up The Shell locally and retrieving (py)SIMsalabim from the repository. 
+
+
+## [1.13] - 18-02-2025 - SH
 - Updated to SIMsalabim v5.18
 - Updated to pySIMsalabim v1.01
 - Removed extra lines in several nk_files

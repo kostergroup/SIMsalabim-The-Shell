@@ -78,7 +78,7 @@ def show_results_CV(session_path, id_session):
             st.markdown('<hr>', unsafe_allow_html=True)
 
             # Capacitance-Voltage [1]
-            col1_1, col1_2, col1_3 = st.columns([1, 5, 1])
+            col1_1, col1_2, col1_3 = st.columns([1, 6, 3])
 
             with col1_2:
                 # Create a dictionary for all potential parameters to plot. Key matches the name in the dataFrame, value is the corresponding label. 
@@ -90,6 +90,6 @@ def show_results_CV(session_path, id_session):
                 title_CV = 'Capacitance-Voltage'
 
                 fig1, ax1 = utils_plot_UI.create_UI_component_plot(data_CapVol, pars_CV, par_x_CV, xlabel_CV, ylabel_CV, 
-                                title_CV, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_yscale=True, error_y = 'errC', show_plot_param=False)
+                                title_CV, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_yscale=True, error_y = 'errC', show_plot_param=False, yrange_format="%.2e")
                 with col1_2:
                     st.pyplot(fig1, format='png')

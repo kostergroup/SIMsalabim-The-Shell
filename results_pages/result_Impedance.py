@@ -1,4 +1,4 @@
-""" UI to display the Impedance spectroscopy results"""
+""" UI to display the Impedance spectroscopy results""" 
 ######### Package Imports #########################################################################
 
 import os
@@ -79,7 +79,7 @@ def show_results_impedance(session_path, id_session):
             st.markdown('<hr>', unsafe_allow_html=True)
 
             # Bode [1]
-            col1_1, col1_2, col1_3 = st.columns([1, 5, 1])
+            col1_1, col1_2, col1_3 = st.columns([1, 6, 3])
 
             with col1_2:
                 fig1, ax11 = plt.subplots()
@@ -99,7 +99,7 @@ def show_results_impedance(session_path, id_session):
                                                           ylabel_2_bode, title_bode,fig1, ax11, ax12, [col1_1, col1_2, col1_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2)
 
             # Nyquist [1]
-            col2_1, col2_2, col2_3 = st.columns([1, 6, 1])
+            col2_1, col2_2, col2_3 = st.columns([1, 6, 3])
 
             with col2_2:
                 fig2, ax2 = plt.subplots()
@@ -115,11 +115,11 @@ def show_results_impedance(session_path, id_session):
                 # Plot the nyquist plot with or without errorbars
                 fig2, ax2 = utils_plot_UI.create_UI_component_plot(data_freqZ, pars_nyq, par_x_nyq, xlabel_nyq, ylabel_nyq, 
                                 title_nyq, 1, fig2, ax2, plt.colorbar, [col2_1, col2_2, col2_3], show_plot_param=False, show_yscale=True, show_xscale=True,
-                                weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq)
+                                weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq, xrange_format = "%.2e",yrange_format="%.2e")
                 st.pyplot(fig2, format='png')
 
             # Capacitance & Conductance 
-            col3_1, col3_2, col3_3 = st.columns([1, 5, 1])
+            col3_1, col3_2, col3_3 = st.columns([1, 6, 3])
 
             with col3_2:
                 fig3, ax31 = plt.subplots()

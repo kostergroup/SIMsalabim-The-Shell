@@ -80,13 +80,14 @@ def show_results_Steady_State(session_path, id_session):
                 st.subheader('Plots')
 
                 #  List of checkboxes to show/hide different plotsz
-                chk_potential = st.checkbox('Potential')
-                chk_energy = st.checkbox('Energy band diagram')
-                chk_density = st.checkbox('Carrier densities')
-                chk_fill = st.checkbox('Filling levels')
-                chk_transport = st.checkbox('Transport')
-                chk_gen_recomb = st.checkbox('Generation and recombination')
-                chk_current = st.checkbox('Current densities')
+                chk_potential = st.toggle('Potential')
+                chk_QFLS = st.toggle('Quasi-Fermi level splitting')
+                chk_energy = st.toggle('Energy band diagram')
+                chk_density = st.toggle('Carrier densities')
+                chk_fill = st.toggle('Filling levels')
+                chk_transport = st.toggle('Transport')
+                chk_gen_recomb = st.toggle('Generation and recombination')
+                chk_current = st.toggle('Current densities')
 
                 # Slider for Vext to update the parameter plots and show curves for the selected Vext. Using the slider updates the plots automatically.
                 voltages = list(set(data_var['Vext']))
@@ -157,19 +158,67 @@ def show_results_Steady_State(session_path, id_session):
             st.markdown('<hr>', unsafe_allow_html=True)
 
             # JV curve [1]
-            col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
+            col1_1, col1_2, col1_3 = st.columns([1, 6, 3])
 
             with col1_3:
                 # Figure options
                 st.markdown('<br>', unsafe_allow_html=True)
                 st.markdown('<hr>', unsafe_allow_html=True)
 
-                # Show options to change scale of axis.
+                # Show options to change scale and limits of the axis.
                 # Note: when changing the y-axis (Current density) to log scale, the absolute value of the current density is shown.
-                with st.expander('Figure options', expanded=False):
+                with st.expander('Figure options', expanded=True):
                     scale_options = ['linear', 'log']
-                    xscale = st.radio('x-scale', scale_options, index = 0, key = 'JV-x-scale')
-                    yscale = st.radio('y-scale', scale_options, index = 0, key = 'JV-y-scale')
+                    
+                    st.text('x-scale:')
+                    xscale = st.radio('x-scale', scale_options, index = 0, key = 'JV-x-scale', label_visibility='collapsed',horizontal=True)
+                    st.text('y-scale:')
+                    yscale = st.radio('y-scale', scale_options, index = 0, key = 'JV-y-scale', label_visibility='collapsed',horizontal=True)
+  
+                    # Have input fields for the x and y axis range.
+                    st.text('Set the x-axis range:')
+                    col1_x, col2_x, = st.columns([1,1])
+                    with col1_x:
+                        # Initially add some margin around the curve to avoid the curve to be on the edge of the plot. We take 5% of the total interval of the data.
+                        xlow_init = min(data_jv['Vext']) - abs((max(data_jv['Vext']) - min(data_jv['Vext'])) * 0.05)
+                        xlow = st.number_input('X-range', value = xlow_init, key = 'JV-xrange_low',label_visibility="collapsed")
+                    with col2_x:
+                        # Initially add some margin around the curve to avoid the curve to be on the edge of the plot. We take 5% of the total interval of the data.
+                        xup_init = max(data_jv['Vext']) + abs((max(data_jv['Vext']) - min(data_jv['Vext'])) * 0.05)
+                        xup = st.number_input('X-range', value=xup_init, key = 'JV-xrange_up',label_visibility="collapsed")
+
+                    st.text('Set the y-axis range:')
+                    col1_y, col2_y, = st.columns([1,1])
+    
+                    with col1_y:
+                        # Take into account whether experimental data is present or not, adjust the initial limits accordingly. Still take 5% of the total interval of the data.
+                        if exp_jv:
+                            if yscale == 'log':
+                                # When using a log scale, we show tha abs value of the current density, adjust the initial lower limit accordingly
+                                ylow_init = min(min(abs(data_jv['Jext'])),min(abs(df_exp_jv['Jext']))) - abs((max(max(abs(data_jv['Jext'])),max(abs(df_exp_jv['Jext']))) - min(min(abs(data_jv['Jext'])),min(abs(df_exp_jv['Jext'])))) * 0.05)
+                            else:
+                                ylow_init = min(min(data_jv['Jext']),min(df_exp_jv['Jext'])) - abs((max(max(data_jv['Jext']),max(df_exp_jv['Jext'])) - min(min(data_jv['Jext']),min(df_exp_jv['Jext']))) * 0.05)
+                            ylow = st.number_input('Y-range', value=ylow_init, key = 'JV-yrange_low',label_visibility="collapsed")
+                        else:
+                            if yscale == 'log':
+                                # When using a log scale, we show tha abs value of the current density, adjust the initial lower limit accordingly
+                                ylow_init = min(abs(data_jv['Jext'])) - abs((max(abs(data_jv['Jext'])) - min(abs(data_jv['Jext']))) * 0.05)
+                            else:
+                                ylow_init = min(data_jv['Jext']) - abs((max(data_jv['Jext']) - min(data_jv['Jext'])) * 0.05)
+                            ylow = st.number_input('Y-range', value=ylow_init, key = 'JV-yrange_low',label_visibility="collapsed")
+                    with col2_y:
+                        if exp_jv:
+                            if yscale == 'log':
+                                yup_init = max(max(abs(data_jv['Jext'])),max(abs(df_exp_jv['Jext']))) + abs((max(max(abs(data_jv['Jext'])),max(abs(df_exp_jv['Jext']))) - min(min(abs(data_jv['Jext'])),min(abs(df_exp_jv['Jext'])))) * 0.05)
+                            else:
+                                yup_init = max(max(data_jv['Jext']),max(df_exp_jv['Jext'])) + abs((max(max(data_jv['Jext']),max(df_exp_jv['Jext'])) - min(min(data_jv['Jext']),min(df_exp_jv['Jext']))) * 0.05)
+                            yup = st.number_input('Y-range', value=yup_init, key = 'JV-yrange_up',label_visibility="collapsed")
+                        else:
+                            if yscale == 'log':
+                                yup_init = max(abs(data_jv['Jext'])) + abs((max(abs(data_jv['Jext'])) - min(abs(data_jv['Jext']))) * 0.05)
+                            else:
+                                yup_init = max(data_jv['Jext']) + abs((max(data_jv['Jext']) - min(data_jv['Jext'])) * 0.05)
+                            yup = st.number_input('Y-range', value=yup_init, key = 'JV-yrange_up',label_visibility="collapsed")
 
             with col1_2:
                 # Show the JV curve. Should always be visible, unless something went wrong.
@@ -186,6 +235,11 @@ def show_results_Steady_State(session_path, id_session):
                         # plot only the simulation curve (Line and Scatter)
                         ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[0], ax1, exp_jv, xscale = xscale, yscale = yscale)
                         ax1 = utils_plot_UI.plot_result_JV(data_jv, choice_voltage, plot_type[1], ax1, exp_jv, xscale = xscale, yscale = yscale)
+
+                    # Set the x,y range, independent of plot type and/or errorbars
+                    ax1.set_xlim(xlow, xup)
+                    ax1.set_ylim(ylow, yup)
+
                     st.pyplot(fig1, format='png')
 
             # Show these output plot when sidebar checkbox is checked
@@ -198,12 +252,35 @@ def show_results_Steady_State(session_path, id_session):
                 ylabel_potential = '$V$ [V]'
                 title_potential = 'Potential'
                 fig2, ax2 = plt.subplots()
-                col2_1, col2_2, col2_3 = st.columns([2, 5, 2])
+                col2_1, col2_2, col2_3 = st.columns([1, 6, 3])
 
                 fig2, ax2 = utils_plot_UI.create_UI_component_plot(data_var, pars_potential, par_x_potential, xlabel_potential, ylabel_potential, 
-                                title_potential, 2, fig2, ax2, plot_type[0], [col2_1, col2_2, col2_3], choice_voltage, source_type = 'Var', show_plot_param=False)
+                                title_potential, 2, fig2, ax2, plot_type[0], [col2_1, col2_2, col2_3], choice_voltage, source_type = 'Var', yrange_format="%.2e", show_plot_param=False)
                 with col2_2:
                     st.pyplot(fig2, format='png')
+
+            if chk_QFLS:
+                # Init plot parameters
+                # print all column names from data_jv dataframe
+                JV_cols = data_jv.columns.values
+                # Only keep the columns that contain 'QFLS' in the name
+                JV_cols = [col for col in JV_cols if 'QFLS' in col]
+
+                # Put a space between QFLS and layer number for display purposes
+                JV_cols = {col:col.replace('QFLS', 'QFLS ') for col in JV_cols}
+
+                pars_QFLS = JV_cols
+                par_x_QFLS = 'Vext'
+                xlabel_QFLS = '$V_{ext}$ [V]'
+                ylabel_QFLS = 'QFLS [eV]'
+                title_QFLS = 'Quasi-Fermi Level Splitting'
+                fig2a, ax2a = plt.subplots()
+                col2a_1, col2a_2, col2a_3 = st.columns([1, 6, 3])
+
+                fig2a, ax2a = utils_plot_UI.create_UI_component_plot(data_jv, pars_QFLS, par_x_QFLS, xlabel_QFLS, ylabel_QFLS, 
+                                title_QFLS, 22, fig2a, ax2a, plot_type[0], [col2a_1, col2a_2, col2a_3],yrange_format="%.2f", show_yscale=False)
+                with col2a_2:
+                    st.pyplot(fig2a, format='png')
 
             # Energy [3]
             if chk_energy:
@@ -215,10 +292,10 @@ def show_results_Steady_State(session_path, id_session):
                 ylabel_energy = 'Energy level [eV]'
                 title_energy = 'Energy Band Diagram'
                 fig3, ax3 = plt.subplots()
-                col3_1, col3_2, col3_3 = st.columns([2, 5, 2])
+                col3_1, col3_2, col3_3 = st.columns([1, 6, 3])
 
                 fig3, ax3 = utils_plot_UI.create_UI_component_plot(data_var, pars_energy, par_x_energy, xlabel_energy, ylabel_energy, 
-                                title_energy, 3, fig3, ax3, plot_type[0], [col3_1, col3_2, col3_3],choice_voltage, source_type = 'Var', show_yscale=False)
+                                title_energy, 3, fig3, ax3, plot_type[0], [col3_1, col3_2, col3_3],choice_voltage, source_type = 'Var',yrange_format="%.2f", show_yscale=False)
                 with col3_2:
                     st.pyplot(fig3, format='png')
 
@@ -231,10 +308,10 @@ def show_results_Steady_State(session_path, id_session):
                 ylabel_density = 'Carrier density [m$^{-3}$]'
                 title_density = 'Carrier Densities'
                 fig4, ax4 = plt.subplots()
-                col4_1, col4_2, col4_3 = st.columns([2, 5, 2])
+                col4_1, col4_2, col4_3 = st.columns([1, 6, 3])
 
                 fig4, ax4 = utils_plot_UI.create_UI_component_plot(data_var, pars_density,par_x_density, xlabel_density, ylabel_density, 
-                                title_density, 4, fig4, ax4, plot_type[0], [col4_1, col4_2, col4_3],choice_voltage, source_type = 'Var', yscale_init=1)
+                                title_density, 4, fig4, ax4, plot_type[0], [col4_1, col4_2, col4_3],choice_voltage, source_type = 'Var',yrange_format="%.2e", yscale_init=1)                
                 with col4_2:
                     st.pyplot(fig4, format='png')
 
@@ -247,10 +324,10 @@ def show_results_Steady_State(session_path, id_session):
                 ylabel_fill = 'Density of trapped electrons [m$^{-3}$,m$^{-2}$]'
                 title_fill = 'Electrons in traps'
                 fig5, ax5 = plt.subplots()
-                col5_1, col5_2, col5_3 = st.columns([2, 5, 2])
+                col5_1, col5_2, col5_3 = st.columns([1, 6, 3])
 
                 fig5, ax5 = utils_plot_UI.create_UI_component_plot(data_var, pars_fill,par_x_fill, xlabel_fill, ylabel_fill, 
-                                title_fill, 5, fig5, ax5, plot_type[0], [col5_1, col5_2, col5_3], choice_voltage, source_type = 'Var')
+                                title_fill, 5, fig5, ax5, plot_type[0], [col5_1, col5_2, col5_3], choice_voltage, source_type = 'Var',yrange_format="%.2e")
                 with col5_2:
                     st.pyplot(fig5, format='png')
 
@@ -263,10 +340,10 @@ def show_results_Steady_State(session_path, id_session):
                 ylabel_transport = 'Mobility [m$^{-2}$V$^{-1}$s$^{-1}$]'
                 title_transport = 'Mobilities'
                 fig6, ax6 = plt.subplots()
-                col6_1, col6_2, col6_3 = st.columns([2, 5, 2])
+                col6_1, col6_2, col6_3 = st.columns([1, 6, 3])
 
                 fig6, ax6 = utils_plot_UI.create_UI_component_plot(data_var, pars_transport,par_x_transport, xlabel_transport, ylabel_transport, 
-                               title_transport, 6, fig6, ax6, plot_type[0], [col6_1, col6_2, col6_3],choice_voltage, source_type = 'Var', yscale_init=1)
+                               title_transport, 6, fig6, ax6, plot_type[0], [col6_1, col6_2, col6_3],choice_voltage, source_type = 'Var',yrange_format="%.2e", yscale_init=1)
                 with col6_2:
                     st.pyplot(fig6, format='png')
 
@@ -279,10 +356,10 @@ def show_results_Steady_State(session_path, id_session):
                 ylabel_gen_recomb = 'Generation/Recombination Rate [m$^{-3}$s$^{-1}$]'
                 title_gen_recomb = 'Generation and Recombination Rates'
                 fig7, ax7 = plt.subplots()
-                col7_1, col7_2, col7_3 = st.columns([2, 5, 2])
+                col7_1, col7_2, col7_3 = st.columns([1, 6, 3])
 
                 fig7, ax7 = utils_plot_UI.create_UI_component_plot(data_var, pars_gen_recomb, par_x_gen_recomb, xlabel_gen_recomb, ylabel_gen_recomb, 
-                                title_gen_recomb, 7, fig7, ax7, plot_type[0], [col7_1, col7_2, col7_3], choice_voltage, source_type = 'Var')
+                                title_gen_recomb, 7, fig7, ax7, plot_type[0], [col7_1, col7_2, col7_3], choice_voltage, source_type = 'Var',yrange_format="%.2e")
                 with col7_2:
                     st.pyplot(fig7, format='png')
 
@@ -295,9 +372,9 @@ def show_results_Steady_State(session_path, id_session):
                 ylabel_current = 'Current density [Am$^{-2}$]'
                 title_current = 'Current densities'
                 fig8, ax8 = plt.subplots()
-                col8_1, col8_2, col8_3 = st.columns([2, 5, 2])
+                col8_1, col8_2, col8_3 = st.columns([1, 6, 3])
                 
                 fig8, ax8 = utils_plot_UI.create_UI_component_plot(data_var, pars_current, par_x_current, xlabel_current, ylabel_current, 
-                                title_current, 8, fig8, ax8, plot_type[0], [col8_1, col8_2, col8_3], choice_voltage, source_type = 'Var')
+                                title_current, 8, fig8, ax8, plot_type[0], [col8_1, col8_2, col8_3], choice_voltage, source_type = 'Var',yrange_format="%.2e")
                 with col8_2:
                     st.pyplot(fig8, format='png')

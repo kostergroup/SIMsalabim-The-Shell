@@ -760,7 +760,7 @@ else:
             title_EQE = 'External quantum efficiency (EQE)'
 
             fig1, ax1 = utils_plot_UI.create_UI_component_plot(data_EQE, pars_EQE, par_x_EQE, xlabel_EQE, ylabel_EQE, 
-                            title_EQE, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_yscale=False, error_y = 'EQEerr', show_plot_param=False, show_legend=False, error_fmt = 'o')
+                            title_EQE, 1, fig1, ax1, plt.errorbar, [col1_1, col1_2, col1_3], show_yscale=False, error_y = 'EQEerr', show_plot_param=False, show_legend=False, error_fmt = '-o')
                  
             with col1_2:
                 st.pyplot(fig1, format='png')            

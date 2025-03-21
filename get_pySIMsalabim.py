@@ -1,4 +1,4 @@
-import sys, subprocess, shutil, os, requests, zipfile, io
+import sys, shutil, os, requests, zipfile, io
 from pathlib import Path
 
 ######### Parameter Definitions ###################################################################
@@ -128,6 +128,7 @@ def get_pySIMsalabim_source(cwd, folder_name='kostergroup-pySIMsalabim-',verbose
 
 ######### Script ##################################################################################
 
-# Get pySIMsalabim source code
-result_pySIMsalabim = get_pySIMsalabim_source(cwd, folder_name)
-sys.exit(result_pySIMsalabim)
+if __name__ == "__main__":
+    # Get pySIMsalabim source code
+    result_pySIMsalabim = get_pySIMsalabim_source(cwd, folder_name)
+    sys.exit(result_pySIMsalabim)

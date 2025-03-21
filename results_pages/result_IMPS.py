@@ -83,7 +83,7 @@ def show_results_imps(session_path, id_session):
             st.markdown('<hr>', unsafe_allow_html=True)
 
             # ImZ plot [1]
-            col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
+            col1_1, col1_2, col1_3 = st.columns([1, 6, 3])
 
             with col1_2:
                 fig2, ax2 = plt.subplots()
@@ -99,5 +99,5 @@ def show_results_imps(session_path, id_session):
                 # Plot the Cole-Cole plot with or without errorbars
                 fig2, ax2 = utils_plot_UI.create_UI_component_plot(data_freqY, pars_nyq, par_x_nyq, xlabel_nyq, ylabel_nyq, 
                                 title_nyq, 1, fig2, ax2, plt.colorbar, [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=True, show_xscale=True,
-                                weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq)
+                                weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq, xrange_format="%.2e", yrange_format="%.2e")
                 st.pyplot(fig2, format='png')

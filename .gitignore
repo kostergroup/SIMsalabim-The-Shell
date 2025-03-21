@@ -1,4 +1,5 @@
 SIMsalabim/*
+pySIMsalabim/*
 *.zip
 Simulations/*
 !/Simulations/tmp*
@@ -7,3 +8,4 @@ Simulations/*
 /temp_dev/*
 Pipfile
 Pipfile.lock
+/venv_TheShell/*

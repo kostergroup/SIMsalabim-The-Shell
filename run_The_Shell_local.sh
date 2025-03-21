@@ -1,46 +1,78 @@
 #!/bin/bash
-# CHeck for non-standard Python modules needed for the get_SIMsalabim.py script
-python3 -c "import requests"
 
-if [ "$?" -eq 1 ]; then
-    pip install requests
+# Check if python3 is installed
+if ! command -v python3 &> /dev/null
+then
+    echo "Python3 could not be found. Please make sure Python3 is installed and try again."
+    exit 1
 fi
 
-python3 -c "import packaging"
+# Create a local Python virtual environment
+echo "Creating a local Python virtual environment..."
+python3 -m venv venv_TheShell
 
 if [ "$?" -eq 1 ]; then
-    pip install packaging
+    echo "Failed to create a virtual environment. Make sure Python is installed correctly and that you have the necessary permissions."
+    exit 1
+else
+    echo "Local virtual python environment created successfully."
 fi
+
+# Activate the virtual environment
+source venv_TheShell/bin/activate
+
+if [ "$?" -eq 1 ]; then
+    echo "Failed to activate the virtual environment. Make sure the virtual environment was created successfully."
+    exit 1
+else
+    echo "Virtual Python environment activated."
+fi
+
+# Install the required packages in the virtual environment
+echo "Installing the required packages in the virtual environment..."
+pip install -r requirements.txt
+
+if [ "$?" -eq 1 ]; then
+    exit 1
+else
+    echo -e "Finished installing the required packages.\n"
+fi
+
+# Get the pySIMsalabim and SIMsalabim
+echo "Getting pySIMsalabim and SIMsalabim..."
 
 python3 get_pySIMsalabim.py
-python3 get_SIMsalabim.py
 
-if [ "$?" -eq 0 ]; then
-    echo -e "\nCompile SimSS and ZimT"
-    fpc SIMsalabim/SimSS/simss
-    fpc SIMsalabim/ZimT/zimt
+# if results does not equal zero, exit
+if [ "$?" -ne 0 ]; then
+    echo "Failed to get pySIMsalabim"
+    exit 1
 fi
 
+echo # Add empty line for readability
+
+python3 get_SIMsalabim.py
+
 if [ "$?" -eq 0 ] || [ "$?" -eq 1 ]; then
-    # Check whether pip/pipenv is installed
-    if ! command pip -V >& /dev/null 
-    then
-        sudo apt-get install python3-pip
-        pip3 install pipenv
+    if [ "$?" -eq 0 ]; then
+        echo -e "\nCompile SimSS and ZimT"
+        fpc SIMsalabim/SimSS/simss
+        fpc SIMsalabim/ZimT/zimt
+        if [ "$?" -ne 0 ]; then
+            exit 1
+        else
+            echo # Add empty line for readability
+        fi 
     fi
-
-    # Check if a Pipfile / pipenv already exists. If not, create a new one and install packages in requirements.txt
-    FILE=Pipfile
-    if ! test -f "$FILE"; then 
-        pipenv install -r requirements.txt
-    fi
-
     # Run a pip env shell and start streamlit app 
     pipenv run streamlit run SIMsalabim.py
-elif [ "$?" -eq 2 ]; then
-    echo "Script Failed"
-elif [ "$?" -eq 3 ]; then
-    echo "Script terminated manually"
 else
-     echo "Failed"
+    if [ "$?" -eq 2 ]; then
+        echo "Script Failed"
+    elif [ "$?" -eq 3 ]; then
+        echo "Script terminated manually by user"
+    else
+        echo "Failed"
+    fi
+    sys.exit 1
 fi

@@ -87,7 +87,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
             st.markdown('<hr>', unsafe_allow_html=True)
 
             # JV curve [1]
-            col1_1, col1_2, col1_3 = st.columns([2, 5, 2])
+            col1_1, col1_2, col1_3 = st.columns([2, 8, 4])
 
             with col1_1:
                 st.markdown('<br>', unsafe_allow_html=True)
@@ -126,7 +126,7 @@ def show_results_Hysteresis_JV(session_path, id_session):
                 # Create the plot
                 fig1,ax1 = utils_plot_UI.create_UI_component_plot(data_tj, pars_hyst, par_x_hyst, xlabel_hyst, ylabel_hyst, 
                                 title_hyst, 1, fig1, ax1, plot_type[0], [col1_1, col1_2, col1_3], show_plot_param=False, show_yscale=False, 
-                                weight_key=par_weight_hyst, weight_label=weightlabel_hyst)
+                                weight_key=par_weight_hyst, weight_label=weightlabel_hyst,yrange_format="%.2e")
                 # Add the experimental data points to the plot
                 if st.session_state["expObject"]['UseExpData'] == 1:
                     # Plot the experimental data and move it behind the simulated curve.

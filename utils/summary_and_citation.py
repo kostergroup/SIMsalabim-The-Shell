@@ -88,10 +88,7 @@ def create_summary_and_cite(session_path, used_optics):
             # Impedance
             fp.write(st.session_state['simulation_results'] + ' variables are stored in impedancePars.txt\n')
             fp.write(f'Frequency range: {st.session_state["expObject"]["fmin"]:.2E} to {st.session_state["expObject"]["fmax"]:.2E} Hz\n')
-            # if 'oc' in st.session_state["expObject"]["V0"]:
-            fp.write(f'Applied Voltage: {st.session_state["expObject"]["V0"]}\n')
-            # else:
-            #     fp.write(f'Applied Voltage: {st.session_state["expObject"]["V0"]:.3f} V\n')
+            fp.write(f'Applied Voltage: {st.session_state["expObject"]["V0"]} V\n')
             fp.write(f'Voltage step size: {st.session_state["expObject"]["delV"]:f} V\n')
             fp.write(f'Fractional Generation rate: {st.session_state["expObject"]["G_frac"]:.3E} (Fraction of the light intensity/generation rate)\n')
 
