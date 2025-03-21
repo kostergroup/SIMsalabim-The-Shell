@@ -2,6 +2,12 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.15] - 21-03-2025 - SH
+- Updated to SIMsalabim v5.21
+- Added labels for cathode/anode to the band diagram figure
+- Switched order of buttons in the sidebar menu
+- Fixed warning for future deprecation when selecting the min/max value of a dataframe for x,y limits
+
 ## [1.14] - 21-03-2025 - SH
 - Updated to SIMsalabim v5.19
 - Added QFLS to the results of Steady State JV

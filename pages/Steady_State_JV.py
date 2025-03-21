@@ -523,12 +523,16 @@ else:
     with st.sidebar:
         # Show custom menu
         menu()
-        # Open a dialog window to upload a file
-        if st.button('Upload a file'):
-            uploadFileDialog()
+
+        # Run simulation
+        st.button('Run Simulation', on_click=run_SS_JV)
 
         # Device Parameter button to save, download or reset a file
         st.button('Save device parameters', on_click=save_parameters_BD)
+
+        # Open a dialog window to upload a file
+        if st.button('Upload a file'):
+            uploadFileDialog()
 
         # Prepare a ZIP archive to download the device parameters
         zip_filename = utils_gen_UI.create_zip(session_path, layers)
@@ -539,7 +543,6 @@ else:
 
         # Reset the device parameters to the default values.
         reset_device_parameters = st.button('Reset device parameters')
-        st.button('Run Simulation', on_click=run_SS_JV)
 
     # # Load the device_parameters file and create a List object.
     # dev_par, layers = utils_devpar_gen.load_device_parameters(session_path, simss_device_parameters, simss_path, availLayers = st.session_state['availableLayerFiles'][:-3])

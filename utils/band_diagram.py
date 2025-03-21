@@ -58,7 +58,7 @@ def plot_device_widths(ax, y_min, L, L_original):
     ax.vlines(sum(L), y_min-1.2, y_min-1.6, color='k')
 
     # Add label with unit of [nm] to the end of the horizontal label
-    ax.text(1.04*sum(L), y_min-2.0, '[nm]', color='k')
+    ax.text(1.04*sum(L), y_min-2.2, '[nm]', color='k')
 
 
 def create_energy_label(x_left, x_right, L, y, band_type, position, ax, vert_pos='top'):
@@ -218,7 +218,10 @@ def get_param_band_diagram(dev_par, layers, dev_par_name, run_mode = True):
     for section in dev_par[dev_par_name]:
         if section[0] == 'Contacts':
             for param in section:
-                if 'W_L' in param[1]:
+                if 'leftElec' in param[1]:
+                    # Is the left electrode cathode (-1) or anode (1)? Used to ad the correct label to the band diagram
+                    leftElec = int(param[2])
+                elif 'W_L' in param[1]:
                     # semi-flat band, calculate from net doping at electrode
                     if 'sfb' in param[2]:
                         W_L = -get_WF_sfb(layers[1],dev_par,dev_par_name)
@@ -277,13 +280,18 @@ def get_param_band_diagram(dev_par, layers, dev_par_name, run_mode = True):
         W_L_pos = 'bot'
         W_R_pos = 'top'   
 
+    Label_left_elec = 'Cathode' if leftElec == -1 else 'Anode'
+    Label_right_elec = 'Cathode' if leftElec == 1 else 'Anode'
+
     # Left Electrode
-    ax.plot([-0.06*L_total, 0], [W_L, W_L], color='k')
-    create_energy_label(-0.12*L_total, 0, sum(L), W_L, 'WL', L_total, ax, W_L_pos)
+    ax.plot([-0.06*L_total, 0], [W_L, W_L], color='k') # Horizontal line
+    create_energy_label(-0.12*L_total, 0, sum(L), W_L, 'WL', L_total, ax, W_L_pos) # Value label
+    ax.text(-15E-9, E_high-1.52, Label_left_elec,horizontalalignment='right',style='italic' ) # Cathode/Anode label
 
     # Right Electrode
-    ax.plot([L_total, L_total+0.06*L_total], [W_R, W_R], color='k')
-    create_energy_label(L_total, L_total+0.12*L_total, sum(L), W_R, 'WR', L_total, ax, W_R_pos)
+    ax.plot([L_total, L_total+0.06*L_total], [W_R, W_R], color='k')# Horizontal line
+    create_energy_label(L_total, L_total+0.12*L_total, sum(L), W_R, 'WR', L_total, ax, W_R_pos) # Value label
+    ax.text(sum(L)+15E-9, E_high-1.52, Label_right_elec,horizontalalignment='left',style='italic' ) # Cathode/Anode label
 
     # Hide the figure axis
     ax.axis('off')

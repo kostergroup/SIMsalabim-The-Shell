@@ -430,8 +430,15 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
 
             # Use 5% of the interval
             x_5p = abs((xup_init - xlow_init) * 0.05)
+
             # Subtract this value from the lower limit
-            xlow_init -= x_5p
+            # In a log plot, the lower limit should be above zero
+            if xlow_init - x_5p <= 0:
+                xlow_init = xlow_init
+            else:
+                # Subtract this value from the lower limit
+                xlow_init -= x_5p
+
             # Add this value to the upper limit
             xup_init += x_5p
 
@@ -444,8 +451,8 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
 
             # Set the y (Left) range
             # Get the lowest and highest value of the selected parameters
-            ylow_init_left = data_org[selected_1].min()[0]
-            yup_init_left = data_org[selected_1].max()[0]
+            ylow_init_left = data_org[selected_1].min().iloc[0]
+            yup_init_left = data_org[selected_1].max().iloc[0]
 
             # Use 5% of the interval
             y_5p_left = abs((yup_init_left - ylow_init_left) * 0.05)
@@ -469,8 +476,8 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
 
             # Set the y (Right) range
             # Get the lowest and highest value of the selected parameters
-            ylow_init_right = data_org[selected_2].min()[0]
-            yup_init_right = data_org[selected_2].max()[0]
+            ylow_init_right = data_org[selected_2].min().iloc[0]
+            yup_init_right = data_org[selected_2].max().iloc[0]
 
             # Use 5% of the interval
             y_5p_right = abs((yup_init_right - ylow_init_right) * 0.05)
