@@ -16,8 +16,8 @@ utils_gen_UI.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.15' # The Shell version
-version_simsalabim = '5.21' # SIMsalabim version
+version_theshell = '1.16' # The Shell version
+version_simsalabim = '5.24' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
 simulation_path = os.path.join(os.getcwd(),'Simulations')
@@ -145,7 +145,7 @@ st.warning('''Note: The Shell does not support all features and functionality th
 To use all functionality, download and run the SIMsalabim project on your machine as described in the 
 [SIMsalabim Project readme](https://github.com/kostergroup/SIMsalabim). 
 For a full overview of the functionality of SIMsalabim, refer to the 
-[SIMsalabim manual](https://raw.githubusercontent.com/kostergroup/SIMsalabim/master/Docs/Manual.pdf).''')
+[SIMsalabim manual](http://simsalabim-online.com/manual).''')
 
 st.write('''Currently supported functionality in The Shell is:
 - Define your device via the device parameters on a template or upload your own device parameters.

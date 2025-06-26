@@ -2,6 +2,10 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.16] - 26-06-2025 - SH
+- Updated to SIMsalabim v5.24
+- Replaced the URL for the pdf version of the SIMsalabim manual to the URL for the online SIMsalabim manual: http://simsalabim-online.com/manual
+
 ## [1.15] - 21-03-2025 - SH
 - Updated to SIMsalabim v5.21
 - Added labels for cathode/anode to the band diagram figure

@@ -556,7 +556,7 @@ else:
                 st.write("SIMsalabim " + version[0][1])
                 # Reference to the SIMsalabim manual
                 st.write("""For more information about the device parameters or SIMsalabim itself, refer to the
-                                [Manual](https://raw.githubusercontent.com/kostergroup/SIMsalabim/master/Docs/Manual.pdf)""")
+                                [Manual](http://simsalabim-online.com/manual)""")
                 
         with container_CV_par.container():
             st.subheader('CV parameters')

@@ -29,7 +29,7 @@ st.session_state['def_pagename'] = 'Getting help'
 st.subheader('SIMsalabim project')
 st.write("For more information on the SIMsalabim project and how to run it locally, visit the [projects Github page](https://github.com/kostergroup/SIMsalabim).")
 st.subheader('Manual')
-st.write('''A detailed description of the functionality and possibilities of SIMsalabim can be found in the [SIMsalabim manual](https://raw.githubusercontent.com/kostergroup/SIMsalabim/master/Docs/Manual.pdf). This includes among other things:
+st.write('''A detailed description of the functionality and possibilities of SIMsalabim can be found in the [SIMsalabim manual](http://simsalabim-online.com/manual). This includes among other things:
 - Included physics in SIMsalabim
 - Description of all device parameters
 - Preparing input files, for example expirmental JV curves
