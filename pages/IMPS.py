@@ -329,6 +329,7 @@ else:
             uploadedFile = utils_gen_UI.upload_file(fileDesc, ['=', '@', '0x09', '0x0D'], '', False)
         elif uploadChoice == 'n,k values':
             # Special to allow multiple files to be uploaded.
+            uploadedFile = None
             uploadedFiles = st.file_uploader("Select one or more files with n,k values",type=['txt'], accept_multiple_files=True, label_visibility='visible')
         elif uploadChoice == 'Simulation setup':
             st.warning('Note: You can only upload a Simulation setup file in combination with the associated layer parameter files!')

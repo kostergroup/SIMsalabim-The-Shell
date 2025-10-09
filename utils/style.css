@@ -1,50 +1,28 @@
 @media (prefers-color-scheme: light) {
-    .st-cb {
-        color: rgb(49, 51, 63)
-    }
-
-    .st-dk {
-        -webkit-text-fill-color: rgb(49, 51, 63)
-    }
-
-    .st-dq {
-        -webkit-text-fill-color: rgb(49, 51, 63)
-    }
-
     th {
-        color: black !important;
+        /* color: black !important; */
         font-size: 1.2rem !important;
-        background-color: rgba(49, 51, 63, 0.05) !important;
+        font-weight: bold !important;
+        /* background-color: rgba(49, 51, 63, 0.05) !important; */
     }
 
     td {
-        color: black !important;
-        font-size: 1.2rem !important
+        /* color: black !important; */
+        font-size: 1.2rem !important;
+        font-weight: bold !important;
     }
 }
 
 @media (prefers-color-scheme: dark) {
-    .st-cb {
-        color: white
-    }
-
-    .st-dq {
-        -webkit-text-fill-color: white
-    }
-
-    .st-dk {
-        -webkit-text-fill-color: white
-    }
-
     th {
-        color: white !important;
+        /* color: white !important; */
         font-size: 1.2rem !important;
-        background-color: white !important;
+        /* background-color: white !important; */
     }
 
     td {
-        color: white !important;
-        font-size: 1.2rem !important
+        /* color: white !important; */
+        font-size: 1.2rem !important;
     }
 }
 

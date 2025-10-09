@@ -63,8 +63,13 @@ def show_results_Steady_State(session_path, id_session):
                 # JV file is empty (can occur under certain specific conditions) initialize an empty dict to continue
                 showJV = False
 
-            # Read the solar cell parameter data from memory/state variable, even when they are not present. This will just result in an empty dictionary.
-            scpars_data = st.session_state['sc_par'] 
+
+            if (st.session_state['scParsFile'] in os.listdir(session_path) )and (os.path.getsize(os.path.join(session_path,st.session_state['scParsFile'])) != 0):
+                data_scPars = pd.read_csv(os.path.join(session_path,st.session_state['scParsFile']), sep=r'\s+')
+                showscPars = True
+            else:
+                # scPars file is empty or does not exist
+                showscPars = False
 
             # Define plot type options
             plot_type = [plt.plot, plt.scatter]
@@ -111,25 +116,18 @@ def show_results_Steady_State(session_path, id_session):
                 st.markdown('<hr>', unsafe_allow_html=True)
                 st.image('./Figures/SIMsalabim_logo_cut_trans.png')
 
-            # Initialize the columns to display the results. Adjust based onthe solar cell parameters.
-            if not scpars_data == {}:
-                # When the simulation has been run before with experimental JV data, sc_pars_data can exist and still be filled. 
-                # The state parameter 'experimental' is however leading. 
-                if 'Experimental' in scpars_data:
-                    if len(scpars_data['Experimental']) == 0:
-                        # No expJV data used, use a wide column for the header title and a small column for the ScPars
-                        exp_jv = False
-                        col1_head, col2_head = st.columns([4, 2])
-                    else:
-                        # expJV data present, use a small column for the header title and a wide column for the ScPars
-                        col1_head, col2_head = st.columns([2, 3])
-                        exp_jv = True
-                        df_exp_jv = pd.read_csv(os.path.join(session_path, st.session_state['expJV']), sep=r'\s+')
-                else:
-                    # No experimental ScPars data present, use the default column layout with a wide column for the header title.
-                    col1_head, col2_head = st.columns([4, 2])
-                    exp_jv = False
 
+            # Check if the file specified by st.session_state['scParsFile'] exists in the session folder
+            if st.session_state['expJV'] in os.listdir(session_path):
+                # Experimental JV data file is present, so experimental data must have been used.
+                exp_jv = True
+                df_exp_jv = pd.read_csv(os.path.join(session_path, st.session_state['expJV']), sep=r'\s+')
+            else:
+                exp_jv = False
+
+            # Initialize the columns to display the results. Adjust based onthe solar cell parameters.
+            if showscPars:
+                col1_head, col2_head = st.columns([4, 2])
                 # Header title column
                 with col1_head:
                     st.title("Simulation Results")
@@ -138,14 +136,12 @@ def show_results_Steady_State(session_path, id_session):
                 # Header ScPars column
                 with col2_head:
                     st.subheader('Solar cell parameters')
-                    # Show the solar cell parameters (simulated and experimental if available)
-                    # Remove Experimental and Deviation column from dict when they are not filled. (UseExpData=0)
-                    if 'Experimental' in scpars_data and len(scpars_data['Experimental']) == 0:
-                        scpars_data.pop('Experimental')
-                        scpars_data.pop('Deviation')
-                    # Create a DataFrame from the dict and show in table (readonly)
-                    df = pd.DataFrame.from_dict(scpars_data, orient='columns')
+                    # Show the solar cell parameters 
+                    dict_scPars = {'Simulated': {'Jsc [Am\u207b\u00b2]': f'{data_scPars['Jsc'][0]}+/-{data_scPars["ErrJsc"][0]}', 'Vmpp [V]': f'{data_scPars["Vmpp"][0]}+/-{data_scPars["ErrVmpp"][0]}', 'MPP [Wm\u207b\u00b2]': f'{data_scPars["MPP"][0]}+/-{data_scPars["ErrMPP"][0]}', 'Voc [V]': f'{data_scPars["Voc"][0]}+/-{data_scPars["ErrVoc"][0]}', 'FF ': f'{data_scPars["FF"][0]}+/-{data_scPars["ErrFF"][0]}'}}
+                    # put the dict in a st.table
+                    df = pd.DataFrame.from_dict(dict_scPars, orient='columns')
                     st.table(df)
+            
             else:
                 # No ScPars data at all, use the default column layout with a wide column for the header title.
                 col1_head, col2_head = st.columns([4, 2])
@@ -264,10 +260,10 @@ def show_results_Steady_State(session_path, id_session):
                 # print all column names from data_jv dataframe
                 JV_cols = data_jv.columns.values
                 # Only keep the columns that contain 'QFLS' in the name
-                JV_cols = [col for col in JV_cols if 'QFLS' in col]
+                JV_cols = [col for col in JV_cols if 'QLFS' in col]
 
                 # Put a space between QFLS and layer number for display purposes
-                JV_cols = {col:col.replace('QFLS', 'QFLS ') for col in JV_cols}
+                JV_cols = {col:col.replace('QLFS', 'QFLS ') for col in JV_cols}
 
                 pars_QFLS = JV_cols
                 par_x_QFLS = 'Vext'

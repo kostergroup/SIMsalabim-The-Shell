@@ -57,13 +57,6 @@ else:
     # Object to hold device parameters
     dev_par = {}
 
-    # Object to hold solar cell parameters. 
-    # Needs to be initialized to prevent missing object errors when no solar cell parameters have been calculated.
-    sc_par = {'Simulated': {'Jsc': 0, 'Vmpp': 0, 'MPP': 0, 'Voc': 0, 'FF': 0}, 'Experimental': {}, 'Deviation': {}} 
-
-    # Initialise a session state to hold the solar cell parameters (read from the console output of SIMSalabim) so they can be shared among pages.
-    st.session_state.key = 'sc_par'
-
     # UI Containers
     layer_container_simss = st.empty()
     main_container_simss = st.empty()
@@ -79,19 +72,22 @@ else:
         Save the used file names in global states to use them in the results.
         """
         with st.toast('Simulation started'):
-            # Run the simulation
-            result, message = JV_exp.run_SS_JV(simss_device_parameters, session_path, G_fracs=None)
 
-        if result.returncode == 0 or result.returncode == 95:
+            # We need to ge the varFile name to prevent it from being init as none
+            for section in dev_par[simss_device_parameters][1:]:
+                # Files in USer Interface section
+                if section[0] == 'User interface':
+                    for param in section:
+                        if param[1] == 'varFile':
+                            varFile = param[2]
+
+            # Run the simulation
+            result, message = JV_exp.run_SS_JV(simss_device_parameters, session_path, G_fracs=None, varFile = varFile)
+        if result == 0 or result == 95:
+
             # Simulation succeeded, continue with the process
             st.success(message)
             st.session_state['simulation_results'] = 'Steady State JV' # Init the results page to display Steady State results
-
-            # Read and decode the console output.
-            console_output_decoded = result.stdout.decode('utf-8')
-
-            # Read and process the solar cell parameters (if any) from the console output 
-            utils_simss.read_scPar(console_output_decoded, dev_par, simss_device_parameters)
 
             # Set the state variable to true to indicate that a new simulation has been run and a new ZIP file with results must be created
             st.session_state['runSimulation'] = True
@@ -339,6 +335,7 @@ else:
             uploadedFile = utils_gen_UI.upload_file(fileDesc, ['=', '@', '0x09', '0x0D'], '', False)
         elif uploadChoice == 'n,k values':
             # Special to allow multiple files to be uploaded.
+            uploadedFile = None
             uploadedFiles = st.file_uploader("Select one or more files with n,k values",type=['txt'], accept_multiple_files=True, label_visibility='visible')
         elif uploadChoice == 'Simulation setup':
             st.warning('Note: You can only upload a Simulation setup file in combination with the associated layer parameter files!')
