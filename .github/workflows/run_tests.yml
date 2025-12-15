@@ -23,27 +23,15 @@ jobs:
           python -m pip install --upgrade pip  
           pip install -r requirements.txt
           pip install pySIMsalabim
-          pip install pytest pytest-cov
+          pip install pytest
 
       - name: Test with pytest  
         run: |  
-          coverage run -m pytest -v -s Tests --junitxml=Tests/results.xml --cov=.
-          
-      - name: Generate Coverage Report
-        run: |
-          coverage report -m
-          coverage xml
-          
+          pytest -v -s Tests --junitxml=Tests/results.xml
+                    
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pytest-results
           path: Tests/results.xml
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage.xml
