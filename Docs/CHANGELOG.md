@@ -7,7 +7,7 @@ Note: This does not include changes to the SIMsalabim simulation software itself
 - cleaned pages of duplicate code
 - Removed all non-UI functionality from the pages and placed it in the Utils folder. Some functions have been replaced by wrappers to ensure proper functionality and synchronization
 - Updated SIMsalabim to v5.25
-- Added unit tests for all functions in utils
+- Added unit tests for all functions in utils, included them in Github Actions
 - Renamed Hysteresis JV to the more appropiate Transient JV
 - Added a manual and developer guidelines
 

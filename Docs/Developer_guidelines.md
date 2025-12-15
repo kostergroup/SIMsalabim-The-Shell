@@ -84,6 +84,6 @@ These tests primarily cover the functionality defined in the utils/ modules, but
 
 ## 5. Report issues
 
-If you encounter issues or bugs using The Shell, please don't hesitate to open an issue or contact us. Also check the documentation of SIMsalabim, for details on the drift-diffusion model. Provide as much information as possible, including the exact configuration of your device, and steps to reproduce the bug or issue. If you
+If you encounter issues or bugs using The Shell, please don't hesitate to open an issue or contact us. Also check the documentation of SIMsalabim, for details on the drift-diffusion model. Provide as much information as possible, including the exact configuration of your device, and steps to reproduce the bug or issue.
 
 
