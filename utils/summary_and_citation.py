@@ -69,9 +69,9 @@ def create_summary_and_cite(session_path, used_optics):
 
     # Write the important experiment specific parameters (not for Steady State JV)
     if not st.session_state['simulation_results'] == 'Steady State JV':
-        if st.session_state['simulation_results'] == 'Hysteresis JV':
-            # Hysteresis JV
-            fp.write(st.session_state['simulation_results'] + ' variables are stored in hystPars.txt\n')
+        if st.session_state['simulation_results'] == 'Transient JV':
+            # Transient JV
+            fp.write(st.session_state['simulation_results'] + ' variables are stored in transientPars.txt\n')
             if st.session_state["expObject"]['UseExpData'] == 0:
                 fp.write(f'Voltage range: {st.session_state["expObject"]["Vmin"]:.3f} to {st.session_state["expObject"]["Vmax"]:.3f} V\n')
             else:
@@ -150,10 +150,10 @@ def create_description(type):
     type : string
         Name of the simulation/experiment performed. Taken from the state parameter 'simulation_results'
     """
-    if type == 'Hysteresis JV':
-        # Hysteresis JV
+    if type == 'Transient JV':
+        # Transient JV
         desc = '''
-Simulate a JV hysteresis experiment with SIMsalabim.
+Simulate a JV Transient experiment with SIMsalabim.
 Create a linear (forward and backward) sweep across the voltages specified by Vmin (low voltage) and Vmax (high voltage) over time using the voltage scan speed. 
 The voltage sweep order is specified via the direction, either  1 for forward | backward [ Vmin-Vmax | Vmax-Vmin ] or -1 for backward-forward[ Vmax-Vmin | Vmin-Vmax ]
         '''

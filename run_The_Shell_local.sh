@@ -64,8 +64,8 @@ if [ "$?" -eq 0 ] || [ "$?" -eq 1 ]; then
             echo # Add empty line for readability
         fi 
     fi
-    # Run a pip env shell and start streamlit app 
-    pipenv run streamlit run SIMsalabim.py
+    # Run a env shell and start streamlit app
+    streamlit run SIMsalabim.py
 else
     if [ "$?" -eq 2 ]; then
         echo "Script Failed"

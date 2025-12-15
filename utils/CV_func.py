@@ -2,78 +2,87 @@
 ######### Package Imports #########################################################################
 
 import os
+from datetime import datetime
+import streamlit as st
+from pySIMsalabim.experiments import CV as CV_exp
+from utils import device_parameters_UI as utils_devpar_UI
 
 ######### Function Definitions ####################################################################    
 
-def read_CV_parameters(CV_par, dev_par):
-    """Store all CV related parameters into a single dictionary
+def run_CV(zimt_device_parameters, session_path, dev_par, layers, id_session, CV_par, CV_pars_file):
+    """Run the CV simulation with the saved device parameters. 
+    Display an error message (From SIMsalabim or a generic one) when the simulation did not succeed. 
+    Save the used file names in global states to use them in the results.
 
     Parameters
     ----------
-    CV_par : List
-        List with CV specific parmaters
-    dev_par : List
-        List with the device parameters
+    zimt_device_parameters : str
+        The device parameter file name
+    session_path : str
+        The path to the session folder
+    dev_par : list
+        The device parameters as a list of nested lists
+    layers : List
+        List with all layers in the device.
+    id_session : str
+        Session ID string.
+    CV_par : dict
+        The CV specific parameters
+    CV_pars_file : str
+        The name of the file to save the CV parameters to.
 
     Returns
     -------
-    dict
-        Dictionary with CV related parameters
+    str
+        'SUCCESS' if the simulation succeeded, 'FAILED' if it failed due to known issues (like creating tVG file), 
+        'ERROR' for other errors.
     """
-    CV_par_obj = {}
-    CV_par_obj['freq'] = CV_par[0][1] 
-    CV_par_obj['Vmin'] = CV_par[1][1] 
-    CV_par_obj['Vmax'] = CV_par[2][1] 
-    CV_par_obj['delV'] = CV_par[3][1] 
-    CV_par_obj['Vstep'] = CV_par[4][1]
-    CV_par_obj['G_frac'] = CV_par[5][1] 
+    with st.toast('Simulation started'):
+        # Store all CV specific parameters into a single object.
+        CV_keys = ["freq", "Vmin", "Vmax", "delV", "Vstep", "G_frac"]
+        CV_keys_extract = {"tVGFile", "tJFile"}
+        CV_par_obj = utils_devpar_UI.read_exp_parameters(CV_par, dev_par[zimt_device_parameters], CV_keys, CV_keys_extract)
 
-    for section in dev_par[1:]:
-    # tVG file location
-        if section[0] == 'User interface':
-            for param in section:
-                if param[1] == 'tVGFile':
-                    CV_par_obj['tVGFile'] = param[2]
-                if param[1] == 'tJFile':
-                    CV_par_obj['tJFile'] = param[2]
+        # Run the CV script
+        result, message = CV_exp.run_CV_simu(zimt_device_parameters, session_path, CV_par_obj["freq"], CV_par_obj["Vmin"],CV_par_obj["Vmax"],
+                                                            CV_par_obj["Vstep"],CV_par_obj["G_frac"], CV_par_obj["delV"], run_mode =True, 
+                                                            tVG_name = CV_par_obj["tVGFile"], tj_name=CV_par_obj['tJFile'])
     
-    return CV_par_obj
+    if result == 1:
+        # Creating the tVG file for the CV failed                
+        st.error(message)
+        res = 'FAILED'
+    else:
+        if result == 0 or result == 95:
+            # Simulation succeeded, continue with the process
+            st.success('Simulation complete. Output can be found in the Simulation results.')
+            st.session_state['simulation_results'] = 'CV' # Init the results page to display Steady State results
 
-def read_CV_par_file(session_path, CVParsFile, CVPars):
-    """When the CV parameter file already exists, use these parameters.
+            # Save the CV parameters in a file
+            if os.path.isfile(os.path.join(session_path, CV_pars_file)):
+                    os.remove(os.path.join(os.path.join(session_path, CV_pars_file)))
+            with open(os.path.join(session_path, CV_pars_file), 'w') as fp_CV:
+                for key,value in CV_par_obj.items():
+                    fp_CV.write('%s = %s\n' % (key, value))
 
-    Parameters
-    ----------
-    session_path : string
-        Path of the simulation folder for this session
-    CVParsFile : string
-        Name of the CV parameter file
-    CVPars : List 
-        List with the CV parameters to show
+            st.session_state['expObject'] = CV_par_obj
+            st.session_state['CVPars'] = CV_pars_file
+            st.session_state['CapVolFile'] = 'CapVol.dat' # Currently a fixed name
 
-    Returns
-    -------
-    List
-        List with updated CV parameters to show
-    """
-    #ToDo fix setting correct param!
-    with open(os.path.join(session_path, CVParsFile), encoding='utf-8') as fp_CV:
-        for line in fp_CV:
-            line_element = line.split('=')
-            if line_element[0].strip() == 'tVGFile' or line_element[0].strip() == 'tJFile':
-                continue
-            elif line_element[0].strip() == 'G_frac':
-                for item in CVPars:
-                    if item[0] == 'G_frac':
-                        item[1] = float(line_element[1].strip())
-            elif line_element[0].strip() == 'fstep':
-                for item in CVPars:
-                    if item[0] == 'fstep':
-                        item[1] = int(line_element[1].strip())
-            else:
-                for item in CVPars:
-                    if item[0] == line_element[0].strip():
-                        item[1] = float(line_element[1].strip())
-    fp_CV.close()
+            # Set the state variable to true to indicate that a new simulation has been run and a new ZIP file with results must be created
+            st.session_state['runSimulation'] = True
 
-    return CVPars
+            # Store the assigned file names from the saved device parameters in session state variables.
+            utils_devpar_UI.store_file_names(dev_par, 'zimt', zimt_device_parameters, layers)
+
+            res = 'SUCCESS'
+
+        else:
+            # Simulation failed, show the error message
+            st.error(message)
+
+            res = 'ERROR'
+
+    # Log the simulation result in the log file
+    with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
+        f.write(id_session + ' CV ' + res + ' ' + str(datetime.now()) + '\n')

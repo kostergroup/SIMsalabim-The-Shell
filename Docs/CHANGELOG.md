@@ -2,6 +2,15 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.18] - 15-12-2025 - SH
+- Placed fileupload functions + dialogs into single file
+- cleaned pages of duplicate code
+- Removed all non-UI functionality from the pages and placed it in the Utils folder. Some functions have been replaced by wrappers to ensure proper functionality and synchronization
+- Updated SIMsalabim to v5.25
+- Added unit tests for all functions in utils
+- Renamed Hysteresis JV to the more appropiate Transient JV
+- Added a manual and developer guidelines
+
 ## [1.17] - 09-10-2025 - SH
 - Fixed bug in FileUploader related to uploading n,k files. As multiple files can be uploaded here, the uploadedFile variable was not initialized, resulting in a failure upon submitting the selected files. The uploadedFile variable is now initialized as None.
 - Updated to pySIMsalabim v1.03
@@ -45,7 +54,7 @@ Note: This does not include changes to the SIMsalabim simulation software itself
 - Minor Bug Fix: When selecting a different layer file from the dropdown, the selected file name was not assigned correctly to a variable, hence it was not written to the main simulation_setup.txt file which resulted in the file being ignored.
 - Updated to SIMsalabim v5.14
 
-## [1.10] - 27-06-2024 - SH
+## [1.10] - 27-06-2024 - SH, PMF
 Major update
 - Updated to use SIMsalabim v5.11
 - Reworked core functions to support SIMsalabim v5.11.
@@ -117,7 +126,7 @@ Major update
 - Modified functions to seperate web/streamlit parts to allow sharing between web and standalone scripts
 - Updated the device parameters
 
-## [1.00] - 09-01-2023 - SH
+## [1.00] - 09-01-2023 - SH, MK
 - Run SIMsalabim Steady State simulations
 - Modify/adjust device parameters
 - Upload device parameters, experimental JV curve, generation profile, traps

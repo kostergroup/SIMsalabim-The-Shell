@@ -6,7 +6,7 @@ import streamlit as st
 from menu import menu
 from utils import general_UI as utils_gen_UI
 from results_pages import result_Steady_State as result_simss
-from results_pages import result_Hysteresis_JV as result_hyst
+from results_pages import result_Transient_JV as result_transient
 from results_pages import result_Impedance as result_imp
 from results_pages import result_IMPS as result_imps
 from results_pages import result_CV as result_CV
@@ -43,9 +43,9 @@ else:
     if st.session_state['simulation_results'] == 'Steady State JV':
         # Steady State (SimSS) results
         result_simss.show_results_Steady_State(session_path, id_session)
-    elif st.session_state['simulation_results'] == 'Hysteresis JV':
-        # Hysteresis JV results
-        result_hyst.show_results_Hysteresis_JV(session_path, id_session)
+    elif st.session_state['simulation_results'] == 'Transient JV':
+        # Transient JV results
+        result_transient.show_results_Transient_JV(session_path, id_session)
     elif st.session_state['simulation_results'] == 'Impedance':
         # Impedance results
         result_imp.show_results_impedance(session_path, id_session)

@@ -1,4 +1,4 @@
-"""Impedance Simulations"""
+"""Transient JV Simulations"""
 ######### Package Imports #########################################################################
 
 import os
@@ -8,12 +8,12 @@ from pySIMsalabim.utils import device_parameters as utils_devpar
 from utils import band_diagram as utils_bd
 from utils import device_parameters_UI as utils_devpar_UI
 from utils import general_UI as utils_gen_UI
-from utils import impedance_func as utils_impedance
+from utils import transient_JV_func as utils_transient
 from utils import dialog_UI as utils_dialog_UI
 
 ######### Page configuration ######################################################################
 
-st.set_page_config(layout="wide", page_title="SIMsalabim Impedance",
+st.set_page_config(layout="wide", page_title="SIMsalabim Transient JV",
                    page_icon='./Figures/SIMsalabim_logo_HAT.jpg')
 
 # Set the session identifier as query parameter in the URL
@@ -30,8 +30,8 @@ st.markdown("""<style>
                 </style>""",unsafe_allow_html=True)
 
 # Session states for page navigation
-st.session_state['pagename'] = 'Impedance'
-st.session_state['def_pagename'] = 'Impedance'
+st.session_state['pagename'] = 'Transient JV'
+st.session_state['def_pagename'] = 'Transient JV'
 
 ######### Parameter Initialisation ################################################################
 
@@ -47,39 +47,45 @@ else:
     simss_device_parameters = str(st.session_state['simss_devpar_file'])
     zimt_device_parameters = str(st.session_state['zimt_devpar_file'])
     session_path = os.path.join(str(st.session_state['simulation_path']), id_session)
-    impedance_pars_file = 'impedance_pars.txt'
+    transient_pars_file = 'transient_pars.txt'
+
+    # default transient parameters
+    transient_par = [['scan_speed', 10.0, 'V/s, Scan speed'],
+                ['direction', 1, 'Voltage sweep order, 1 for [ Vmin-Vmax | Vmax-Vmin ], -1 for [ Vmax-Vmin | Vmin-Vmax ]'], 
+                ['G_frac',1.0,'Fractional Generation rate.'],
+                ['UseExpData',0,'If 1, use experimental JV data as specified in expJV_Vmin_Vmax, expJV_Vmax_Vmin.'],
+                ['Vmin', 0.0, 'V, Lower voltage boundary. Ignored when UseExpData = 1'], 
+                ['Vmax',1.2, 'V, Higher voltage boundary. Ignored when UseExpData = 1'], 
+                ['steps',200, 'Number of time steps. Ignored when UseExpData = 1'],
+                ['expJV_Vmin_Vmax','none', 'Name of experimental JV file with sweep from low to high voltage. Ignored when UseExpData = 0'],
+                ['expJV_Vmax_Vmin','none', 'Name of experimental JV file with sweep from high to low voltage. Ignored when UseExpData = 0']]
     
-    # default impedance parameters
-    impedance_par = [['fmin', 1E-1, 'Hz, Minimum frequency'],
-                     ['fmax', 1E+06, 'Hz, Maximum frequency'],
-                     ['fstep', 20, 'Number of frequency steps'],
-                     ['V0', 0.6, 'V, Applied voltage'],
-                     ['delV', 1e-2, 'V, Voltage step size. Keep this around 1 - 10 mV.'],
-                     ['G_frac',1.0, 'Fractional Generation rate']]
+    # Init the rms error parameter
+    rms_error = 0.0
 
-    # Object to hold device parameters and impedance specific parameters (with defaults)
+    # Objects to hold device parameters and transient specific parameters (with defaults)
     dev_par = {}
-
-    # Read impedance parameters from file if it exists
-    if os.path.isfile(os.path.join(session_path, impedance_pars_file)):
-        impedance_skip_keys = {"tVGFile","tJFile"} # These keys are read from the simulation setup
-        impedance_int_keys = {"fstep"} # Keys that should be read as integers
-        impedance_string_keys = {"V0"} # Keys that should be read as strings
-        impedance_par = utils_devpar_UI.read_exp_file(session_path, impedance_pars_file, impedance_par, skip_keys=impedance_skip_keys,int_keys=impedance_int_keys, string_keys=impedance_string_keys)
+    if os.path.isfile(os.path.join(session_path, transient_pars_file)):
+        transient_skip_keys = {"tVGFile"}
+        transient_int_keys = {"direction", "steps", "UseExpData"}
+        transient_string_keys = {"expJV_Vmin_Vmax", "expJV_Vmax_Vmin"}
+        transient_par = utils_devpar_UI.read_exp_file(session_path, transient_pars_file, transient_par, skip_keys=transient_skip_keys,int_keys=transient_int_keys, string_keys=transient_string_keys)
 
     # UI Containers
-    main_container_impedance = st.empty()
-    container_impedance_par = st.empty()
-    layer_container_impedance = st.empty()
+    main_container_transient_JV = st.empty()
+    container_transient_par = st.empty()
+    layer_container_transient_JV = st.empty()
     container_device_par = st.empty()
     bd_container_title = st.empty()
     bd_container_plot = st.empty()
 
     ######### Function Definitions ####################################################################
-    def run_Impedance(zimt_device_parameters, session_path, dev_par, layers, id_session, impedance_par, impedance_pars_file):
-        """ UI wrapper to run the Impedance simulation. This function exists so Streamlit on_click can call an external 
+
+    def run_Transient_JV(zimt_device_parameters, session_path, dev_par, layers, id_session, transient_par, transient_pars_file):
+        """
+        UI wrapper to run the transient JV simulation. This function exists so Streamlit on_click can call an external 
         function with local variables. It simply forwards args to the utils function that implements the full run.
-        
+
         Parameters
         ----------
         zimt_device_parameters : str
@@ -92,16 +98,16 @@ else:
             List with all layers in the device.
         id_session : str
             Session ID string.
-        impedance_par : List
-            List with nested lists for all Impedance parameters.
-        impedance_pars_file : str
-            Name of the Impedance parameters file.
+        transient_par : List
+            List with nested lists for all transient JV parameters.
+        transient_pars_file : str
+            Name of the transient JV parameters file.
 
         Returns
         -------
         None
         """
-        return utils_impedance.run_Impedance(zimt_device_parameters, session_path, dev_par, layers, id_session, impedance_par, impedance_pars_file)
+        return utils_transient.run_Transient_JV(zimt_device_parameters, session_path, dev_par, layers, id_session, transient_par, transient_pars_file)
 
     def save_parameters_local():
         """ local function to save the device parameters when selecting a different layer to edit, 
@@ -129,9 +135,9 @@ else:
         None
         """
         utils_gen_UI.save_parameters(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters, show_toast=True)
+
         # Draw the band diagram
         utils_bd.get_param_band_diagram(dev_par, layers, zimt_device_parameters)
-
 
     # Dialog window wrappers. Placed within each page file due to the decorator.
     # Dialog window to upload a file.
@@ -149,6 +155,7 @@ else:
     def removeLayerDialogWrapper(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters):
         dev_par, layers = utils_dialog_UI.removeLayerDialog(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters)
 
+
     ######### UI layout ###############################################################################
 
     # Create lists containing the names of available nk and spectrum files. Including user uploaded ones.
@@ -161,11 +168,11 @@ else:
     dev_par, layers = utils_devpar.load_device_parameters(session_path, zimt_device_parameters, zimt_path, availLayers = st.session_state['availableLayerFiles'][:-3])
 
     with st.sidebar:
-        # Show custom menu
+         # Show custom menu
         menu()
 
         # Run simulation
-        st.button('Run Simulation', on_click=run_Impedance,args=(zimt_device_parameters, session_path, dev_par, layers, id_session, impedance_par, impedance_pars_file))
+        st.button('Run Simulation', on_click=run_Transient_JV, args=(zimt_device_parameters, session_path, dev_par, layers, id_session, transient_par, transient_pars_file))
 
         # Device Parameter button to save, download or reset a file
         st.button('Save device parameters', on_click=save_parameters_BD)
@@ -186,18 +193,14 @@ else:
 
     # When the reset button is pressed, empty the container and create a List object from the default .txt file. Next, save the default parameters to the parameter file.
     if reset_device_parameters:
-        main_container_impedance.empty()
+        main_container_transient_JV.empty()
         dev_par, layers = utils_devpar.load_device_parameters(session_path, zimt_device_parameters, resource_path, True, availLayers=st.session_state['availableLayerFiles'][:-3],run_mode = True)
         utils_gen_UI.save_parameters(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters)
 
-    with main_container_impedance.container():
+    with main_container_transient_JV.container():
     # Start building the UI for the actual page
-        st.title("Impedance spectroscopy")
-        st.write("""
-            Simulate an impedance spectroscopy experiment with SIMsalabim (ZimT). The impedance is calculated at the applied voltage. 
-            A small one time pertubation at t=0 is introduced at this voltage, defined by the voltage step size. 
-            The impedance is calculated using Fourier decomposition, based on the method desrcibed in *S.E. Laux, IEEE Trans. Electron Dev. 32 (10), 2028 (1985)*.
-        """)
+        st.title("Transient JV")
+        st.write("Simulate a transient JV experiment with SIMsalabim.")
 
         for par_section in dev_par[zimt_device_parameters]: # ToDo check if correct
             if par_section[0] == 'Description': 
@@ -209,32 +212,30 @@ else:
                 st.write("""For more information about the device parameters or SIMsalabim itself, refer to the
                                 [Manual](http://simsalabim-online.com/manual)""")
                 
-        with container_impedance_par.container():
-            st.subheader('Impedance parameters')
-            col_par_impedance, col_val_impedance, col_desc_impedance = st.columns([2, 2, 8],)
-            for impedance_item in impedance_par:
-                with col_par_impedance:
-                    st.text_input(impedance_item[0], value=impedance_item[0], disabled=True, label_visibility="collapsed")
+        with container_transient_par.container():
+            st.subheader('Transient JV parameters')
+            col_par_transient, col_val_transient, col_desc_transient = st.columns([2, 2, 8],)
+            for transient_item in transient_par:
+                with col_par_transient:
+                    st.text_input(transient_item[0], value=transient_item[0], disabled=True, label_visibility="collapsed")
 
                 # Parameter value
-                with col_val_impedance:
-                    if impedance_item[0] == 'fstep':
-                        # Show these parameters as a float
-                        impedance_item[1] = st.number_input(impedance_item[0] + '_val', value=impedance_item[1], label_visibility="collapsed")
-                    elif impedance_item[0] == 'V0':
-                        impedance_item[1] = st.text_input(impedance_item[0] + '_val', value=impedance_item[1], label_visibility="collapsed")
-                    elif impedance_item[0] == 'delV' or impedance_item[0] == 'G_frac':
-                        # Show these parameters as a float
-                        impedance_item[1] = st.number_input(impedance_item[0] + '_val', value=impedance_item[1], label_visibility="collapsed", format="%f")
+                with col_val_transient:
+                    if transient_item[0] == 'scan_speed':
+                        transient_item[1] = st.number_input(transient_item[0] + '_val', value=transient_item[1], label_visibility="collapsed", format="%e")
+                    elif transient_item[0] == 'Vmin' or transient_item[0] == 'Vmax' or transient_item[0] == 'G_frac':
+                        transient_item[1] = st.number_input(transient_item[0] + '_val', value=transient_item[1], label_visibility="collapsed", format="%f")
+                    elif transient_item[0] == 'expJV_Vmin_Vmax' or transient_item[0] == 'expJV_Vmax_Vmin':
+                        transient_item[1] = st.text_input(transient_item[0] + '_val', value=transient_item[1], label_visibility="collapsed")
                     else:
-                        # Show all other parameters in scientific notation e.g. 1e+2
-                        impedance_item[1] = st.number_input(impedance_item[0] + '_val', value=impedance_item[1], label_visibility="collapsed", format="%e")
+                        transient_item[1] = st.number_input(transient_item[0] + '_val', value=transient_item[1], label_visibility="collapsed")
+                
                 # Parameter description
-                with col_desc_impedance:
-                    st.text_input(impedance_item[0] + '_desc', value=impedance_item[2], disabled=True, label_visibility="collapsed")
+                with col_desc_transient:
+                    st.text_input(transient_item[0] + '_desc', value=transient_item[2], disabled=True, label_visibility="collapsed")
             st.markdown('<hr>', unsafe_allow_html=True)
 
-        with layer_container_impedance.container():
+        with layer_container_transient_JV.container():
             # Device layer setup        
             st.subheader("Device setup")
 

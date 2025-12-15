@@ -16,8 +16,8 @@ utils_gen_UI.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.17' # The Shell version
-version_simsalabim = '5.24' # SIMsalabim version
+version_theshell = '1.18' # The Shell version
+version_simsalabim = '5.25' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
 simulation_path = os.path.join(os.getcwd(),'Simulations')
@@ -34,15 +34,6 @@ zimt_devpar_file = 'simulation_setup_zimt.txt'
 
 # Create and assign paths to a reusable session state. 
 # Note: When changing the name of the key of a session state, process the changed name in all occurences of the session state key
-st.session_state.key = 'SIMsalabim_version'
-st.session_state.key = 'TheShell_version'
-st.session_state.key = 'simulation_path'
-st.session_state.key = 'simss_path'
-st.session_state.key = 'simss_devpar_file'
-st.session_state.key = 'zimt_path'
-st.session_state.key = 'zimt_devpar_file'
-st.session_state.key = 'simulation_results'
-
 st.session_state['SIMsalabim_version'] = version_simsalabim
 st.session_state['TheShell_version'] = version_theshell
 st.session_state['simulation_path'] = simulation_path
@@ -54,47 +45,13 @@ st.session_state['zimt_devpar_file'] = zimt_devpar_file
 st.session_state['simulation_results'] = '' # Empty string, because it depends on the session id which is not fixed.
 
 # Session states for page navigation + init for current page
-st.session_state.key = 'pagename'
-st.session_state.key = 'def_pagename'
 st.session_state['pagename'] = 'SIMsalabim'
 st.session_state['def_pagename'] = 'SIMsalabim'
-
-# Initialise session states for output/input file names.
-# Note: When changing the name of the key of a session state, process the changed name in all occurences of the session state key
-st.session_state.key = 'LayersFiles'
-st.session_state.key = 'expJV'
-st.session_state.key = 'genProfile'
-st.session_state.key = 'traps_bulk'
-st.session_state.key = 'traps_int'
-st.session_state.key = 'JVFile'
-st.session_state.key = 'varFile'
-st.session_state.key = 'scParsFile'
-st.session_state.key = 'logFile'
-st.session_state.key = 'opticsFiles'
-st.session_state.key = 'tJFile'
-st.session_state.key = 'tVGFile'
-st.session_state.key = 'hystPars'
-st.session_state.key = 'hystRmsError'
-st.session_state.key = 'hystIndex'
-st.session_state.key = 'impedancePars'
-st.session_state.key = 'expObject'
-st.session_state.key = 'freqZFile'
-st.session_state.key = 'IMPSPars'
-st.session_state.key = 'freqYFile'
-st.session_state.key = 'CVPars'
-st.session_state.key = 'CapVolFile'
-
-st.session_state.key = 'trapFiles' # Holds the names of uploaded trap distributions
-
-st.session_state.key = 'runSimulation' # Boolean to indicate whether a simulation has already been run and we should show output.
-
-st.session_state.key = 'availableLayerFiles' # Holds all the layer parameter files, not just the ones currently used in the simulation setup.
 
 # Check if the user already has an id. If not, create it for the user to identify input/output files. Currently UTC timestamp is used as an identifier.
 if 'id' not in st.session_state:
     # Create an id based on the utc timestamp and store it in a state
     id_user = int(datetime.now(timezone.utc).timestamp()*1e6)
-    st.session_state.key = 'id'
     st.session_state['id'] = id_user
 
     # st.experimental_set_query_params(session=id_user)
@@ -108,25 +65,23 @@ if 'id' not in st.session_state:
     # Copy the content of the Resource folder to the session folder. Also copy SimSS and ZimT executable from the SIMsalabim folder.
     shutil.copytree(resource_path,session_path,dirs_exist_ok=True)
 
-    for dirpath, dirnames, filenames in os.walk(simss_path):
-        for filename in filenames:
-            if filename == 'simss':
-                shutil.copy(os.path.join(simss_path, filename), session_path)
+    # Copy simss/zimt executables if they exist
+    simss_exec = os.path.join(simss_path, 'simss')
+    if os.path.isfile(simss_exec):
+        shutil.copy(simss_exec, session_path)
 
-        for dirpath, dirnames, filenames in os.walk(zimt_path):
-            for filename in filenames:
-                if filename == 'zimt':
-                    shutil.copy(os.path.join(zimt_path, filename), session_path)
+    zimt_exec = os.path.join(zimt_path, 'zimt')
+    if os.path.isfile(zimt_exec):
+        shutil.copy(zimt_exec, session_path)
     
     # Init the available layer file list to select   
     availFilesInit = [file for file in os.listdir(session_path) if file.endswith('_parameters.txt')]
     availFilesInit.sort()
-    # Add the names/placeholders for the standard files (PVSK, ETL, HTL)
-    availFilesInit.extend(['PVSK','ETL','HTL'])
+    availFilesInit.extend(['PVSK','ETL','HTL']) # Add the names/placeholders for the standard files (PVSK, ETL, HTL)
     st.session_state['availableLayerFiles'] = availFilesInit
 
     ## Init the available trap files
-    st.session_state['trapFiles'] = ['none'] ## This is the default option for not using a file.
+    st.session_state['trapFiles'] = ['none'] # This is the default option for not using a file.
 
 ######### Function Definitions ####################################################################
 
@@ -157,7 +112,7 @@ st.write('''Currently supported functionality in The Shell is:
 - Plot, analyze and download the simulation results
 - Simulate Steady State JV curves
 - Simulate the EQE of a device
-- Simulate a JV hysteresis experiment and compare it to an experimental JV curve
+- Simulate a Transient JV experiment and compare it to an experimental JV curve
 - Simulate an impedance spectroscopy experiment
 - Simulate an IMPS experiment
 - Simulate a capacitance-voltage experiment

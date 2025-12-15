@@ -4,9 +4,9 @@
 import os, re, shutil, zipfile
 import streamlit as st
 from datetime import datetime
-from werkzeug.utils import secure_filename
 from subprocess import run, PIPE
 from pySIMsalabim.utils import device_parameters as utils_devpar
+from utils import device_parameters_UI as utils_devpar_UI
 from utils import summary_and_citation as utils_sum
 
 ######### Function Definitions ####################################################################
@@ -80,7 +80,7 @@ def upload_file(file_desc, ill_chars, pattern, check_devpar='', nk_file_list = [
                     msg_pattern = 'File content does not meet the required pattern. \n'
 
         # Filename lengthand secure the filename.
-        file_name = secure_filename(uploaded_file.name)
+        file_name = uploaded_file.name
         if len(file_name) > 50:
             print('filename too long. Max 50 characters')
             chk_filename = 1
@@ -112,7 +112,7 @@ def upload_file(file_desc, ill_chars, pattern, check_devpar='', nk_file_list = [
             st.markdown('<hr>', unsafe_allow_html=True)
             return False
 
-def prepare_results_download(session_path, id_session, sim_type, exp_type=''):
+def prepare_results_download(session_path, id_session, sim_type, exp_type):
     """Gather all the relevant files for the simulation and store them into a tmp directory to ZIP them. 
     Whether a file is needed is determined btVG.txtased on the state parameter, which has been set when running a simulation.
 
@@ -125,18 +125,26 @@ def prepare_results_download(session_path, id_session, sim_type, exp_type=''):
     sim_type : string
         which simulation has been run, either 'simss' or 'zimt'
     exp_type : str, optional
-        state the type of experiment run, to collect additional files, by default ''
+        state the type of experiment run, to collect additional files, must be SS_JV, Transient_JV, Impedance, IMPS, or CV
     """
-    # When a previous temp folder already exists remove it first.
-    if os.path.exists(os.path.join(session_path, 'tmp')):
-        shutil.rmtree(os.path.join(session_path, 'tmp'))
 
+    if sim_type not in ('simss', 'zimt'):
+        st.error('Wrong simulation type provided, must be either "simss" or "zimt"')
+        return
+        
+    elif exp_type not in ('SS_JV', 'Transient_JV', 'Impedance', 'IMPS','CV'):
+        st.error('Wrong experiment type provided, must be SS_JV, Transient_JV, Impedance, IMPS, or CV')
+        return
+    
+    tmp_folder_path = os.path.join(session_path, 'tmp')
+    # When a previous temp folder already exists remove it first.
+    if os.path.exists(tmp_folder_path):
+        shutil.rmtree(tmp_folder_path)
     # Create the temp folder inside the session folder
-    os.makedirs(os.path.join(session_path, 'tmp'))
+    os.makedirs(tmp_folder_path)
 
     # The relevant files for the simulation are selected by reading their corresponding session state variable. 
-    # If not 'none' the file must be copied to the temp folder to be downloaded. # Can probably be done in s smarter/faster way?
-    target_path = os.path.join(session_path, 'tmp')
+    # If not 'none' the file must be copied to the temp folder to be downloaded.
     state = st.session_state
 
     # Files to copy based on conditions
@@ -152,80 +160,60 @@ def prepare_results_download(session_path, id_session, sim_type, exp_type=''):
     if state['genProfile'] not in {'none', 'calc'}:
         files_to_copy.add(state['genProfile'])
 
-    # SimSS specific files
-    if sim_type == 'simss':
-        files_to_copy.update({
-            state['simss_devpar_file'], 
-            state['JVFile'], 
-            state['scParsFile']
-        })
-        if state['expJV'] != 'none':
-            files_to_copy.add(state['expJV'])
 
-    # ZimT specific files (including experiments)
+    # Simulation-specific files
+    sim_files_map = {
+        'simss': ['simss_devpar_file', 'JVFile', 'scParsFile', 'expJV'],
+        'zimt': ['zimt_devpar_file', 'tJFile', 'tVGFile']}
+
+    for key in sim_files_map.get(sim_type, []):
+        value = state.get(key)
+        if value and value != 'none':
+            files_to_copy.add(value)
+
+    # Experiment-specific files for ZimT
     if sim_type == 'zimt':
-        files_to_copy.update({
-            state['zimt_devpar_file'], 
-            state['tJFile'], 
-            state['tVGFile']
-        })
-        if exp_type == 'hysteresis':
-            files_to_copy.add(state['hystPars'])
-            if state["expObject"]['UseExpData'] == 1:
-                files_to_copy.update({
-                    state["expObject"]['expJV_Vmin_Vmax'], 
-                    state["expObject"]['expJV_Vmax_Vmin']
-                })
-        if exp_type == 'impedance':
-            files_to_copy.update({
-                state['impedancePars'], 
-                state['freqZFile']
-            })
-        if exp_type == 'imps':
-            files_to_copy.update({
-                state['IMPSPars'], 
-                state['freqYFile']
-            })
-        if exp_type == 'CV':
-            files_to_copy.update({
-                state['CVPars'], 
-                state['CapVolFile']
-            })
+        exp_files_map = {
+            'Transient_JV': ['transientPars'],
+            'Impedance': ['impedancePars', 'freqZFile'],
+            'IMPS': ['IMPSPars', 'freqYFile'],
+            'CV': ['CVPars', 'CapVolFile']
+        }
+        for key in exp_files_map.get(exp_type, []):
+            value = state.get(key)
+            if value:
+                files_to_copy.add(value)
 
-    # Walk through the directory and copy files
-    for dirpath, dirnames, files in os.walk(session_path):
-        for file in files:
-            if file in files_to_copy:
-                shutil.copy(os.path.join(session_path, file), target_path)
+        # Include experimental data if used
+        if exp_type == 'Transient_JV' and state["expObject"].get('UseExpData') == 1:
+            files_to_copy.update([
+                state["expObject"].get('expJV_Vmin_Vmax'),
+                state["expObject"].get('expJV_Vmax_Vmin')])
+
+    # Copy main files
+    for file in files_to_copy:
+        src = os.path.join(session_path, file)
+        if os.path.isfile(src):
+            shutil.copy(src, tmp_folder_path)
 
     # When a calculated generation profile is used, retrieve the used nk data and spectrum files as well
-    if st.session_state['genProfile'] == 'calc':
-        # Create sub-directories to store the files
-        os.makedirs(os.path.join(session_path,'tmp','Data_nk'))
-        os.makedirs(os.path.join(session_path,'tmp','Data_spectrum'))
+    if state['genProfile'] == 'calc':
+        for subdir in ['Data_nk', 'Data_spectrum']:
+            src_dir = os.path.join(session_path, subdir)
+            dst_dir = os.path.join(tmp_folder_path, subdir)
+            os.makedirs(dst_dir, exist_ok=True)
+            for file in os.listdir(src_dir):
+                if os.path.join(subdir, file) in state['opticsFiles']:
+                    shutil.copy(os.path.join(src_dir, file), dst_dir)
 
-        # nk files
-        for dirpath, dirnames, files in os.walk(os.path.join(session_path, 'Data_nk')):
-            for file in files:
-                if os.path.join('Data_nk',file) in st.session_state['opticsFiles']:
-                    shutil.copy(os.path.join(session_path, 'Data_nk', file),os.path.join(session_path,'tmp','Data_nk'))
-
-        # spectrum file
-        for dirpath, dirnames, files in os.walk(os.path.join(session_path, 'Data_spectrum')):
-            for file in files:
-                if os.path.join('Data_spectrum',file) in st.session_state['opticsFiles']:
-                    shutil.copy(os.path.join(session_path, 'Data_spectrum', file),os.path.join(session_path,'tmp','Data_spectrum'))
-
-
-    # Create the summary and citation file
-    if st.session_state['genProfile'] == 'calc':
-        utils_sum.create_summary_and_cite(os.path.join(session_path,'tmp'),True)
+        # Create the summary and citation file
+        utils_sum.create_summary_and_cite(tmp_folder_path, True)
     else:
-        utils_sum.create_summary_and_cite(os.path.join(session_path,'tmp'),False)
+        utils_sum.create_summary_and_cite(tmp_folder_path, False)
 
     # Create a ZIP file from the tmp results folder
-    shutil.make_archive('simulation_results_' + id_session, 'zip', os.path.join(session_path, 'tmp'))
-    zip_file_name = 'simulation_results_' + id_session + '.zip'
+    shutil.make_archive(f'simulation_results_{id_session}','zip', tmp_folder_path)
+    zip_file_name = f'simulation_results_{id_session}.zip'
 
     # If the ZIP archive already exists for this id in the Simulations folder, remove it first.
     if os.path.isfile(os.path.join('Simulations', zip_file_name)):
@@ -254,57 +242,6 @@ def exchangeDevPar(session_path, source , target):
     
     result = run(['./exchangeDevPar', source, target], cwd=session_path, stdout=PIPE, check=False)
     return result.returncode
-
-def upload_single_file_to_folder(uploaded_file, session_path, is_dev_par = False, dev_par_name = ''):
-    """ Read and decode the uploaded file and write to a file in the session folder.
-
-    Parameters
-    ----------
-    uploaded_file : UploadedFile
-        Object with the contents of the uploaded file
-    session_path : string
-        Path of the simulation folder for this session
-    is_dev_par : boolean
-        True when a  device parameters file is uploaded
-    dev_par_name : string
-        Fixed name of the device parameters file
-    """
-    # Decode the uploaded file (utf-8)
-    data = uploaded_file.getvalue().decode('utf-8')
-
-    # Setup the write directory. When a device parameters file is uplaoded, use the fixed/pre-set name, otherwise use the name of the uploaded file.
-    if is_dev_par == True:
-        target_path = os.path.join(session_path, dev_par_name)
-    else:
-        target_path = os.path.join(session_path, uploaded_file.name)
-
-    # Write the contents of the uploaded file to a file in the SimSS folder
-    destination_file = open(target_path, "w", encoding='utf-8')
-    destination_file.write(data)
-    destination_file.close()
-
-def upload_multiple_files_to_folder(uploaded_files, session_path):
-    """ Read and decode the uploaded file and write to a file in the session folder.
-
-    Parameters
-    ----------
-    uploaded_files : List
-        List object with each element being the contents of a uploaded file
-    session_path : string
-        Path of the simulation folder for this session
-    """
-            
-    for i in range(len(uploaded_files)):
-        # Decode the uploaded file (utf-8)
-        data = uploaded_files[i].getvalue().decode('utf-8')
-
-        # Setup the write directory
-        target_path = os.path.join(session_path, uploaded_files[i].name)
-
-        # Write the contents of the uploaded file to a file in the SimSS folder
-        destination_file_nk = open(target_path, "w", encoding='utf-8')
-        destination_file_nk.write(data)
-        destination_file_nk.close()
 
 def create_zip(session_path, layers):
     """ Create a ZIP archive from a list of filenames
@@ -346,3 +283,125 @@ def create_zip(session_path, layers):
             zipf.write(file, arcname=os.path.join(dir_name,os.path.basename(file)))
 
     return zip_filename
+
+
+def safe_index(value, options, default=0, strip_prefixes=('../',)):
+    """Return a safe index of value in options.
+    Attempts (in order): exact match, stripped prefixes, basename match. Returns default when no match is found.
+
+    Parameters
+    ----------
+    value: str
+        the value to look up
+    options: list 
+        list of option strings
+    default: int 
+        value to return when not found
+    strip_prefixes: tuple 
+        prefixes to strip from value before matching
+
+    Returns
+    -------
+    int
+        index of value in options, or default
+    """
+    try:
+        # exact match
+        if value in options:
+            return options.index(value)
+    except Exception:
+        # if options is not a sequence or similar error, fall back
+        return default
+
+    # try stripping known prefixes
+    if isinstance(value, str):
+        v = value
+        for p in strip_prefixes:
+            if v.startswith(p):
+                v = v[len(p):]
+        if v in options:
+            return options.index(v)
+
+    # try basename match
+    try:
+        basename = os.path.basename(value)
+        for i, opt in enumerate(options):
+            if os.path.basename(opt) == basename:
+                return i
+    except Exception:
+        pass
+
+    return default
+
+
+def save_parameters(dev_par, layers, session_path, dev_par_file, exchange_target=None, show_toast=False):
+    """Save device parameters and update the other devpar file.
+
+    Parameters
+    ----------
+    dev_par : List
+        Device parameters as a list of nested lists
+    layers : List
+        List with all layers in the device.
+    session_path : string
+        Path to the session folder
+    dev_par_file : string
+        Name of the device parameters file to save
+    exchange_target : string, optional
+        Name of the paired device parameters file to update, by default None
+    show_toast : bool, optional
+        Whether to show a toast notification when saving is complete, by default False
+
+    Returns
+    -------
+    None
+    """
+
+    layersAvail = [dev_par_file]
+    layersAvail.extend(st.session_state['availableLayerFiles'])
+    # Delegate to the existing device-parameters writer
+    utils_devpar_UI.write_pars_txt(dev_par, layers, session_path, dev_par_file)
+
+    # Keep the paired device-parameters file in sync when requested
+    if exchange_target:
+        try:
+            exchangeDevPar(session_path, dev_par_file, exchange_target)
+        except Exception:
+            # Non-fatal; the exchange step is best-effort
+            pass
+
+    if show_toast:
+        st.toast('Saved device parameters', icon='✔️')
+
+def format_func(option):
+    """Format function to split a string containing a /
+
+    Parameters
+    ----------
+    option : string
+        To be formatted string
+
+    Returns
+    -------
+    string
+        Last part of formatted string
+    """
+    filename_split = os.path.split(option)
+    return filename_split[1]
+
+def prepare_results(session_path, id_session, sim_type, exp_type):
+    """Create a ZIP file with the relevant results.Update the session state variable to show/hide the download button when preparing is complete
+    Show a spinner icon, to indicate that the process is running.
+    Parameters
+    ----------
+    session_path : string
+        Path to folder with the simulation results
+    id_session : string
+        Current session id
+    sim_type : string
+        Type of simulation, either 'simss' or 'zimt'
+    """
+    # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
+    with st.spinner('Preparing results...'):
+            prepare_results_download(session_path, id_session, sim_type, exp_type) # Will check whether sim_type and exp_type are part of the defined list
+    st.session_state['runSimulation'] = False

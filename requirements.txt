@@ -2,5 +2,5 @@ streamlit == 1.36.0
 pandas
 matplotlib
 numpy
-werkzeug
 scipy
+pytest

@@ -6,7 +6,7 @@ def menu():
     if not st.session_state['pagename'] == 'Simulation results':
         st.sidebar.page_link("SIMsalabim.py", label="SIMsalabim")
         st.sidebar.page_link("pages/Steady_State_JV.py", label="Steady State JV & EQE")
-        st.sidebar.page_link("pages/Hysteresis_JV.py", label="Hysteresis JV")
+        st.sidebar.page_link("pages/Transient_JV.py", label="Transient JV")
         st.sidebar.page_link("pages/Impedance.py", label="Impedance")
         st.sidebar.page_link("pages/IMPS.py", label="IMPS")
         st.sidebar.page_link("pages/CV.py", label="CV")

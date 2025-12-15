@@ -146,23 +146,24 @@ def store_file_names(dev_par, sim, dev_par_name, layers):
 
     retval = utils_devpar.store_file_names(dev_par, sim, dev_par_name, layers, run_mode=True)
 
-    st.session_state['LayersFiles'] = retval[0]
-    st.session_state['opticsFiles'] = retval[1]
-    st.session_state['genProfile'] = retval[2]
-    st.session_state['traps_int'] = retval[3]
-    st.session_state['traps_bulk'] = retval[4]
-    st.session_state['varFile'] = retval[6]
-    st.session_state['logFile'] = retval[7]
+    # Common session state keys # Index 5 must be skipped as this is the expJV file!
+    shared_keys = ['LayersFiles', 'opticsFiles', 'genProfile', 'traps_int', 'traps_bulk', None, 'varFile', 'logFile']
+    for key, value in zip(shared_keys, retval):
+        if key is not None:
+            st.session_state[key] = value
 
+    # Handle Simulation-specific keys
     if sim == 'simss':
-        st.session_state['expJV'] = retval[5]
-        st.session_state['JVFile'] = retval[8]
-        st.session_state['scParsFile'] = retval[9]
-    else:
-        st.session_state['tVGFile'] = retval[10]
-        st.session_state['tJFile'] = retval[11]
+        sim_keys = ['expJV', 'JVFile', 'scParsFile']
+        sim_indices = [5, 8, 9]
+    else:  # zimt
+        sim_keys = ['tVGFile', 'tJFile']
+        sim_indices = [10, 11]
 
-def save_parameters(dev_par, layers, session_path, dev_par_file):
+    for key, idx in zip(sim_keys, sim_indices):
+        st.session_state[key] = retval[idx]
+
+def write_pars_txt(dev_par, layers, session_path, dev_par_file):
     """Write device parameters to the txt file.
 
     Parameters
@@ -237,3 +238,115 @@ def getLayersFromSetup(data):
     
     return tmp_layers
 
+def create_nk_spectrum_file_array(session_path):
+    """Create lists containing the names of the available nk and spectrum files.
+
+    Parameters
+    ----------
+    session_path : string
+        Path of the current simulation session
+
+    Returns
+    -------
+    List,List
+        Lists with nk file names and spectrum file names
+    """
+    nk_file_list = []
+    spectrum_file_list = []
+    # Placeholder item when nk/spectrum file is not found
+    nk_file_list.append('--none--')
+    spectrum_file_list.append('--none--')
+    for dirpath, dirnames, filenames in os.walk(os.path.join(session_path,'Data_nk')):
+        for filename in filenames:
+            nk_file_list.append(os.path.join('Data_nk',filename))
+    for dirpath, dirnames, filenames in os.walk(os.path.join(session_path,'Data_spectrum')):
+        for filename in filenames:
+            spectrum_file_list.append(os.path.join('Data_spectrum',filename))
+    return nk_file_list,spectrum_file_list
+
+def read_exp_parameters(exp_par, dev_par_list, param_keys, extract_keys):
+    """Read the parameters from the device parameters needed for the experiments and return them as a dictionary.
+
+    Parameters
+    ----------
+    exp_par : dict
+        Dictionary with the experiment specific parameters
+    dev_par_list : List
+        Nested List object containing all device parameters
+    param_keys : List
+        List with the names of the required experiment specific parameters
+    extract_keys : List
+        List with the names of the parameters to extract from the "User interface" section
+
+    Returns
+    -------
+    dict
+        Dictionary with all experiment specific parameters
+    """
+    # Construct dictionary with parameters
+    exp_par_obj = {name: row[1] for row, name in zip(exp_par, param_keys)}
+
+    # Find the "User interface" section
+    ui_section = next((section for section in dev_par_list if section[0] == "User interface"), [])
+
+    # # Extract parameters and update
+    exp_par_obj.update({name: value for _, name, value,_ in ui_section[1:] if name in extract_keys})
+
+    return exp_par_obj
+
+def read_exp_file(session_path, expParsFile, expPars, skip_keys={},int_keys={},string_keys={}):
+    """ Read the experiment parameter file and update the experiment parameters object. 
+    Interpret the parameters as float, unless specified different.
+
+    Parameters
+    ----------
+    session_path : string
+        Path of the current simulation session
+    expParsFile : string
+        Name of the experiment parameter file
+    expPars : List
+        Nested List object containing all experiment specific parameters
+    skip_keys : set, optional
+        Set with the names of parameters to skip when reading the file, by default {}
+    int_keys : set, optional
+        Set with the names of parameters to interpret as integers, by default {}
+    string_keys : set, optional
+        Set with the names of parameters to interpret as strings, by default {}
+
+    Returns
+    -------
+    List
+        Updated nested List object containing all experiment specific parameters
+    """
+    # Build a lookup dictionary
+    lookup_dict = {item[0]: item for item in expPars}
+
+    with open(os.path.join(session_path, expParsFile), encoding="utf-8") as fp:
+        for line in fp:
+            if "=" not in line:
+                continue  # ignore lines that do not contain a parameter
+
+            key, value = line.split("=", 1)
+            key = key.strip()
+
+            if key in skip_keys:
+                continue # Skip the ignored paraemters
+
+            if key not in lookup_dict:
+                continue  # Skip unknown parameters
+
+            # Convert typed values
+            value = value.strip()
+
+            # Convert typed values
+            value = value.strip()
+            if key in int_keys: # integers
+                parsed = int(value)
+            elif key in string_keys: # strings
+                parsed = value
+            else: # floats
+                parsed = float(value)
+
+            lookup_dict[key][1] = parsed
+
+    return expPars

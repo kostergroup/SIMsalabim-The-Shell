@@ -2,6 +2,10 @@
 ######### Package Imports #########################################################################
 
 import streamlit as st
+from pySIMsalabim.experiments import JV_steady_state as JV_exp
+import os
+from datetime import datetime
+from utils import device_parameters_UI as utils_devpar_UI
 
 ######### Function Definitions ####################################################################
 
@@ -72,6 +76,8 @@ def write_scpars(item, solar_cell_param, solar_cell):
         String containing a solar cell parameter
     solar_cell_param : dict
         The dict object to hold the solar cell parameters
+    solar_cell : boolean
+        True if a solar cell has been simulated, False if not
 
     Returns
     -------
@@ -110,8 +116,8 @@ def store_scPar_state(sc_par, solar_cell, dev_par, dev_par_name):
         Dict object with the solar cell parameters from the terminal
     solar_cell : boolean
         True if a solar cell has been simulated, False if not
-    dev_par : dict
-        Dict object with all parameters and comments.
+    dev_par : List
+        Device parameters as a list of nested lists
     dev_par_name : string
         Name of the device parameter file
     """
@@ -140,6 +146,8 @@ def read_scPar(console_output_decoded, dev_par, dev_par_name, run_mode=True):
         complete console output from running the executable
     dev_par : dict
         List object with all parameters and comments.
+    dev_par_name : string
+        Name of the device parameter file
     run_mode : boolean
         True if function is called as part of The Shell, False when called directly. 
         Prevents using streamlit components outside of The Shell.
@@ -166,3 +174,88 @@ def read_scPar(console_output_decoded, dev_par, dev_par_name, run_mode=True):
         if solar_cell is False:
             sc_par = {}
         return sc_par  
+
+
+def run_SS_JV(simss_device_parameters, session_path, dev_par, layers, id_session, G_fracs=None, varFile=None):
+    """Run the CV simulation with the saved device parameters. 
+    Display an error message (From SIMsalabim or a generic one) when the simulation did not succeed. 
+    Save the used file names in global states to use them in the results.
+    Read and store the solar cell parameters from the console output if present. 
+       
+    Parameters
+    ----------
+    zimt_device_parameters : str
+        The device parameter file name
+    session_path : str
+        The path to the session folder
+    dev_par : list
+        The device parameters as a list of nested lists
+    layers : List
+        List with all layers in the device.
+    id_session : str
+        Session ID string.
+    G_fracs : list, optional
+        List of generation fractions for steady state JV, by default None
+    varFile : str, optional
+        Name of the variable file for steady state JV, by default None
+
+    Returns
+    -------
+    str
+        'SUCCESS' if the simulation succeeded, 'FAILED' if it failed due to known issues (like creating tVG file), 
+        'ERROR' for other errors.    
+    """
+    # We need to ge the varFile name to prevent it from being init as none
+    if varFile is None and dev_par is not None:
+        try:
+            for section in dev_par[simss_device_parameters][1:]:
+                if section[0] == 'User interface':
+                    for param in section:
+                        if param[1] == 'varFile':
+                            varFile = param[2]
+                            break
+                    if varFile is not None:
+                        break
+        except Exception:
+            # If dev_par is malformed, keep varFile_local as None, this will never be reached
+            varFile = None
+
+    # Check if there is an old scPars file, and if so, remove it to correctly update the result page
+    if dev_par is not None:
+        # Find the "User interface" section
+        ui_section = next((s for s in dev_par[simss_device_parameters][1:] if s[0] == 'User interface'), [])
+        
+        # Find the scParsFile parameter
+        scParsFile = next((param[2] for param in ui_section if param[1] == 'scParsFile'), None)
+    
+    # Remove old scParsFile if it exists
+    if scParsFile:
+        scPars_path = os.path.join(session_path, scParsFile)
+        if os.path.isfile(scPars_path):
+            os.remove(scPars_path)
+
+    with st.toast('Simulation started'):
+
+        # Call the SS simulation
+        result, message = JV_exp.run_SS_JV(simss_device_parameters, session_path, G_fracs=G_fracs, varFile=varFile)
+
+    if result == 0 or result == 95:
+        # Simulation succeeded, continue with the process
+        st.success(message)
+        st.session_state['simulation_results'] = 'Steady State JV' # Init the results page to display Steady State results
+        
+        # Set the state variable to true to indicate that a new simulation has been run and a new ZIP file with results must be created
+        st.session_state['runSimulation'] = True
+
+        # Store the assigned file names from the saved device parameters in session state variables.
+        utils_devpar_UI.store_file_names(dev_par, 'simss', simss_device_parameters, layers)
+
+        res = 'SUCCESS'
+    else:
+        # Simulation failed, show the error message
+        st.error(message)
+        res = 'ERROR'
+
+    # Log the simulation result in the log file
+    with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:
+        f.write(str(id_session) + ' Steady_State ' + res + ' ' + str(datetime.now()) + '\n')

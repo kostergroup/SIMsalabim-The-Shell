@@ -13,7 +13,7 @@ from utils import plot_def
 ######### Page configuration ######################################################################
 
 def show_results_Steady_State(session_path, id_session):
-    """Display the results from a Steady State (1) JV simulation.
+    """Display the results from a Steady State JV simulation.
 
     Parameters
     ----------
@@ -24,21 +24,6 @@ def show_results_Steady_State(session_path, id_session):
     """
 
     ######### Function Definition #################################################################
-
-    def prepare_results(session_path, id_session):
-        """Create a ZIP file with the relevant results.Update the session state variable to show/hide the download button when preparing is complete
-
-        Parameters
-        ----------
-        session_path : string
-            Path to folder with the simulation results
-        id_session : string
-            Current session id
-        """
-        # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
-        with st.spinner('Preparing results...'):
-            utils_gen_UI.prepare_results_download(session_path, id_session, 'simss', '')
-        st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
 
@@ -63,7 +48,7 @@ def show_results_Steady_State(session_path, id_session):
                 # JV file is empty (can occur under certain specific conditions) initialize an empty dict to continue
                 showJV = False
 
-
+            # If the scPars have been calculate by SimSS, read them from the file
             if (st.session_state['scParsFile'] in os.listdir(session_path) )and (os.path.getsize(os.path.join(session_path,st.session_state['scParsFile'])) != 0):
                 data_scPars = pd.read_csv(os.path.join(session_path,st.session_state['scParsFile']), sep=r'\s+')
                 showscPars = True
@@ -84,7 +69,7 @@ def show_results_Steady_State(session_path, id_session):
             with st.sidebar:
                 st.subheader('Plots')
 
-                #  List of checkboxes to show/hide different plotsz
+                #  List of checkboxes to show/hide different plots
                 chk_potential = st.toggle('Potential')
                 chk_QFLS = st.toggle('Quasi-Fermi level splitting')
                 chk_energy = st.toggle('Energy band diagram')
@@ -100,12 +85,13 @@ def show_results_Steady_State(session_path, id_session):
                 st.markdown('<h4>Voltage (Vext) to plot variables at</h4>', unsafe_allow_html=True)
                 choice_voltage = st.select_slider('Voltage to plot variables at', voltages, label_visibility='collapsed')
 
+                # Before downloading, prepare the results package into a ZIP file. This is executed upon loading the page.
                 st.write('<strong>Download Simulation results</strong>', unsafe_allow_html=True)
                 if st.button("Prepare result package", key='prep_result'):
                     # Create a ZIP file with all relevant files and folders. 
-                    prepare_results(session_path, id_session)
+                    utils_gen_UI.prepare_results(session_path, id_session, 'simss', 'SS_JV')
 
-                # Button to download the ZIP file
+                # Button to download the ZIP file. Only appears after the Prepare Result Package button has been pressed.
                 if not st.session_state['runSimulation']:
                     with open('Simulations/simulation_results_' + id_session + '.zip', 'rb') as ff:
                         id_to_time_string = datetime.fromtimestamp(float(id_session) / 1e6).strftime("%Y-%d-%mT%H-%M-%SZ")
@@ -257,13 +243,13 @@ def show_results_Steady_State(session_path, id_session):
 
             if chk_QFLS:
                 # Init plot parameters
-                # print all column names from data_jv dataframe
+                # Thisb data does not come from the Var file, but from the JV file.
                 JV_cols = data_jv.columns.values
                 # Only keep the columns that contain 'QFLS' in the name
-                JV_cols = [col for col in JV_cols if 'QLFS' in col]
+                JV_cols = [col for col in JV_cols if 'QFLS' in col]
 
                 # Put a space between QFLS and layer number for display purposes
-                JV_cols = {col:col.replace('QLFS', 'QFLS ') for col in JV_cols}
+                JV_cols = {col:col.replace('QFLS', 'QFLS ') for col in JV_cols}
 
                 pars_QFLS = JV_cols
                 par_x_QFLS = 'Vext'

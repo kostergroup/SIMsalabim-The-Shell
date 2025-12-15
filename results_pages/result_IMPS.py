@@ -13,7 +13,7 @@ from utils import plot_def
 ######### Page configuration ######################################################################
 
 def show_results_imps(session_path, id_session):
-    """Display the results from an IMPS (4) simulation.
+    """Display the results from an IMPS simulation.
 
     Parameters
     ----------
@@ -24,21 +24,6 @@ def show_results_imps(session_path, id_session):
     """
 
     ######### Function Definition #################################################################
-
-    def prepare_results(session_path, id_session):
-        """Create a ZIP file with the relevant results.Update the session state variable to show/hide the download button when preparing is complete
-
-        Parameters
-        ----------
-        session_path : string
-            Path to folder with the simulation results
-        id_session : string
-            Current session id
-        """
-        # Because this can take sme time show a spinner to indicate that something is being done and the program did not freeze
-        with st.spinner('Preparing results...'):
-            utils_gen_UI.prepare_results_download(session_path, id_session, 'zimt', 'imps')
-        st.session_state['runSimulation'] = False
 
     ######### Parameter Initialisation #############################################################
 
@@ -60,12 +45,13 @@ def show_results_imps(session_path, id_session):
             plot_type = [plt.plot, plt.scatter]
 
             with st.sidebar:
+                # Before downloading, prepare the results package into a ZIP file. This is executed upon loading the page.
                 st.write('<strong>Download Simulation results</strong>', unsafe_allow_html=True)
                 if st.button("Prepare result package", key='prep_result'):
                     # Create a ZIP file with all relevant files and folders. 
-                    prepare_results(session_path, id_session)
+                    utils_gen_UI.prepare_results(session_path, id_session, 'zimt', 'IMPS')
 
-                # Button to download the ZIP file
+                # Button to download the ZIP file. Only appears after the Prepare Result Package button has been pressed.
                 if not st.session_state['runSimulation']:
                     with open('Simulations/simulation_results_' + id_session + '.zip', 'rb') as ff:
                         id_to_time_string = datetime.fromtimestamp(float(id_session) / 1e6).strftime("%Y-%d-%mT%H-%M-%SZ")
