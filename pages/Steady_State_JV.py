@@ -141,7 +141,7 @@ else:
     spectrum_file_list.sort(key=str.casefold)
 
     # Load the device_parameters file and create a List object.
-    dev_par, layers = utils_devpar.load_device_parameters(session_path, simss_device_parameters, simss_path, availLayers = st.session_state['availableLayerFiles'][:-3])
+    dev_par, layers = utils_devpar.load_device_parameters(session_path, simss_device_parameters, simss_path, availLayers = st.session_state['availableLayerFiles'][:-3],run_mode=True)
 
     ## Create the sidebar with apges and buttons
     with st.sidebar:

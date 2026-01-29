@@ -2,6 +2,11 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.19] - 29-01-2025 - SH
+Small bug fixes: 
+- Upon loading/reading the parameters, the parameter files that were not defined in the device setup are now read properly. Previously this could give an error in some cases because of a missing argument
+- Removed the warning which would show up when the lower axis limit was <=0 when switching to logarithmic scale
+
 ## [1.18] - 15-12-2025 - SH
 - Placed fileupload functions + dialogs into single file
 - cleaned pages of duplicate code

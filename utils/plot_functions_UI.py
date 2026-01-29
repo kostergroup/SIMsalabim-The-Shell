@@ -276,10 +276,13 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
 
                     # Use 5% of the interval
                     y_5p = abs((yup_init - ylow_init) * 0.05)
-
                     # In a log plot, the lower limit should be above zero
                     if yscale == 'log' and ylow_init - y_5p <= 0:
-                        ylow_init = ylow_init
+                        ylow_init = min(num for num in data[options[0]] if num > 0) if any(num > 0 for num in data[options[0]]) else 0
+                        for par in options:
+                            smallest_pos_value = min(num for num in data[par] if num > 0) if any(num > 0 for num in  data[par]) else 1
+
+                            ylow_init = min(ylow_init, smallest_pos_value)
                     else:
                         # Subtract this value from the lower limit
                         ylow_init -= y_5p
