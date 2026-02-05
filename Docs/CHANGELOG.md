@@ -2,6 +2,12 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.20] - 03-02-2025 - SH
+Small bug fixes:
+- It was not possible to simulate a SS JV curve with a single applied voltage, as this would break the results page. Now, when simulating a single voltage, the voltage slider is replaced with a fixed text.
+- When simulating a device with not trap states, the figure 'Filling levels' would fail to initialize due to missing data for the y-axis range initilization. If there is no data to display, the axis range will default to 0,1.
+- The experimental JV curve would not show for SS JV, when the scPars file was not present. It will now always show when experimental data has been supplied (useExpData = 1)
+
 ## [1.19] - 29-01-2025 - SH
 Small bug fixes: 
 - Upon loading/reading the parameters, the parameter files that were not defined in the device setup are now read properly. Previously this could give an error in some cases because of a missing argument

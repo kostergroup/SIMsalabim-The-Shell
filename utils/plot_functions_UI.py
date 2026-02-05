@@ -266,7 +266,7 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
                     xup = st.number_input('X-range', value=xup_init, key = str(plot_no) + '-xrange_up',label_visibility="collapsed", format=xrange_format)
 
             if show_yrange:
-                if yrange_val is None:
+                if yrange_val is None and not len(options) == 0:
                     # Get the lowest and highest value of the selected parameters
                     ylow_init = data[options[0]].min()
                     yup_init = data[options[0]].max()
@@ -288,6 +288,9 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
                         ylow_init -= y_5p
                     # Add this value to the upper limit
                     yup_init += y_5p
+                else:
+                    ylow_init = 0
+                    yup_init = 1
 
                 st.text('Set the y-axis range:')
                 col1_y, col2_y, = st.columns([1,1])

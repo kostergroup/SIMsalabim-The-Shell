@@ -82,9 +82,16 @@ def show_results_Steady_State(session_path, id_session):
                 # Slider for Vext to update the parameter plots and show curves for the selected Vext. Using the slider updates the plots automatically.
                 voltages = list(set(data_var['Vext']))
                 voltages.sort()
-                st.markdown('<h4>Voltage (Vext) to plot variables at</h4>', unsafe_allow_html=True)
-                choice_voltage = st.select_slider('Voltage to plot variables at', voltages, label_visibility='collapsed')
+                if len(voltages) == 1:
+                    # In case we simulated only a single voltage, do not use a slider but just show the single value.
+                    choice_voltage = voltages[0]
+                    volt_str = f'<h4>Voltage (Vext) to plot variables at: {choice_voltage} V</h4>'
+                    st.markdown(volt_str, unsafe_allow_html=True)
+                else:
+                    st.markdown('<h4>Voltage (Vext) to plot variables at</h4>', unsafe_allow_html=True)
+                    choice_voltage = st.select_slider('Voltage to plot variables at', voltages, label_visibility='collapsed')
 
+                st.markdown('<hr>', unsafe_allow_html=True)
                 # Before downloading, prepare the results package into a ZIP file. This is executed upon loading the page.
                 st.write('<strong>Download Simulation results</strong>', unsafe_allow_html=True)
                 if st.button("Prepare result package", key='prep_result'):
@@ -131,7 +138,7 @@ def show_results_Steady_State(session_path, id_session):
             else:
                 # No ScPars data at all, use the default column layout with a wide column for the header title.
                 col1_head, col2_head = st.columns([4, 2])
-                exp_jv = False
+                # exp_jv = False
                 with col1_head:
                     st.title("Simulation Results")
                     st.subheader(str(st.session_state['simulation_results']))
