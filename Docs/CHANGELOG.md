@@ -2,13 +2,20 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
-## [1.20] - 03-02-2025 - SH
+## [1.21] - 20-02-2026 - SH
+- Updated to SIMsalabim v5.27
+- Updated to pySIMsalabim v1.04
+- Adjusted setup of The Shell, to include the dependencies from pySIMsalabim in the virtual environment, to avoid potential issues when pySIMsalabim folders are included directly
+- Updated the default numerical parameters, to greatly speed up the simulation time. This is made possible with the new SIMsalabim versions
+- Changed the voltage range for Steady State JV, to start at -40 mV instead at -50 mV, as this makes 0V being simulated given the voltage step size of 20 mV, which would otherwise skip 0V
+
+## [1.20] - 03-02-2026 - SH
 Small bug fixes:
 - It was not possible to simulate a SS JV curve with a single applied voltage, as this would break the results page. Now, when simulating a single voltage, the voltage slider is replaced with a fixed text.
 - When simulating a device with not trap states, the figure 'Filling levels' would fail to initialize due to missing data for the y-axis range initilization. If there is no data to display, the axis range will default to 0,1.
 - The experimental JV curve would not show for SS JV, when the scPars file was not present. It will now always show when experimental data has been supplied (useExpData = 1)
 
-## [1.19] - 29-01-2025 - SH
+## [1.19] - 29-01-2026 - SH
 Small bug fixes: 
 - Upon loading/reading the parameters, the parameter files that were not defined in the device setup are now read properly. Previously this could give an error in some cases because of a missing argument
 - Removed the warning which would show up when the lower axis limit was <=0 when switching to logarithmic scale

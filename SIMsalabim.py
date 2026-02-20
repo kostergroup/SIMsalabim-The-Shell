@@ -16,8 +16,8 @@ utils_gen_UI.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.20' # The Shell version
-version_simsalabim = '5.25' # SIMsalabim version
+version_theshell = '1.21' # The Shell version
+version_simsalabim = '5.27' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
 simulation_path = os.path.join(os.getcwd(),'Simulations')

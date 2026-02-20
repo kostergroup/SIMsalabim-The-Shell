@@ -49,6 +49,19 @@ if [ "$?" -ne 0 ]; then
     exit 1
 fi
 
+# pip install the requirements for pySIMsalabim
+if [ -f "pySIMsalabim/requirements.txt" ]; then
+    echo "Installing the required packages for pySIMsalabim..."
+    pip install -r pySIMsalabim/requirements.txt
+    if [ "$?" -ne 0 ]; then
+        echo "Failed to install the required packages for pySIMsalabim"
+        exit 1
+    else
+        echo
+        echo "Finished installing the required packages for pySIMsalabim."
+    fi
+fi
+
 echo # Add empty line for readability
 
 python3 get_SIMsalabim.py

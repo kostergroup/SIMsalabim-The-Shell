@@ -99,6 +99,11 @@ def get_pySIMsalabim_source(cwd, folder_name='kostergroup-pySIMsalabim-',verbose
                     if dirname.startswith(folder_name):
                         # Rename folder
                         shutil.move(os.path.join(cwd, dirname, 'pySIMsalabim'), os.path.join(cwd, 'pySIMsalabim'))
+
+                        # Check if the requirements.txt file exists in the pySIMsalabim folder
+                        if os.path.exists(os.path.join(cwd, dirname, 'requirements.txt')):
+                            shutil.copy(os.path.join(cwd, dirname,'requirements.txt'), os.path.join(cwd, 'pySIMsalabim'))
+
                         shutil.rmtree(os.path.join(cwd, dirname))
                         print("\nGot the latest release of pySIMsalabim")
                         return 0
@@ -122,6 +127,11 @@ def get_pySIMsalabim_source(cwd, folder_name='kostergroup-pySIMsalabim-',verbose
                     # print(f"Found a folder named {dirname}")
                     # Rename folder
                     shutil.move(os.path.join(cwd, dirname,'pySIMsalabim'), os.path.join(cwd, 'pySIMsalabim'))
+
+                    # Check if the requirements.txt file exists in the pySIMsalabim folder
+                    if os.path.exists(os.path.join(cwd, dirname, 'requirements.txt')):
+                            shutil.copy(os.path.join(cwd, dirname,'requirements.txt'), os.path.join(cwd, 'pySIMsalabim'))
+
                     shutil.rmtree(os.path.join(cwd, dirname))
                     print("\nGot the latest release of pySIMsalabim")
                     return 0
