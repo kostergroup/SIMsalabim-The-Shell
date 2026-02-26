@@ -6,6 +6,7 @@ from pySIMsalabim.experiments import JV_steady_state as JV_exp
 import os
 from datetime import datetime
 from utils import device_parameters_UI as utils_devpar_UI
+from utils import general_UI as utils_gen_UI
 
 ######### Function Definitions ####################################################################
 
@@ -205,6 +206,8 @@ def run_SS_JV(simss_device_parameters, session_path, dev_par, layers, id_session
         'SUCCESS' if the simulation succeeded, 'FAILED' if it failed due to known issues (like creating tVG file), 
         'ERROR' for other errors.    
     """
+    exp_type = 'Steady State JV'
+
     # We need to ge the varFile name to prevent it from being init as none
     if varFile is None and dev_par is not None:
         try:
@@ -255,6 +258,9 @@ def run_SS_JV(simss_device_parameters, session_path, dev_par, layers, id_session
         # Simulation failed, show the error message
         st.error(message)
         res = 'ERROR'
+
+    # Get the SIMsalabim log file and store in session state for display
+    utils_gen_UI.get_SIMsalabim_log(simss_device_parameters, session_path, dev_par, exp_type)
 
     # Log the simulation result in the log file
     with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:

@@ -99,6 +99,15 @@ else:
         -------
         None
         """
+        # Force scroll to top of the page when running a new simulation, so the user sees the simulation log and results from the start.
+        st.markdown(
+        """
+        <script>
+        window.scrollTo(0, 0);
+        </script>
+        """,
+        unsafe_allow_html=True
+        )
         return utils_imps.run_IMPS(zimt_device_parameters, session_path, dev_par, layers, id_session, imps_par, imps_pars_file)
 
     def save_parameters_local():
@@ -129,6 +138,16 @@ else:
         utils_gen_UI.save_parameters(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters, show_toast=True)
         # Draw the band diagram
         utils_bd.get_param_band_diagram(dev_par, layers, zimt_device_parameters)
+
+        # Force scroll to top of the page when saving the parameters, so the user sees the plotted band diagram.
+        st.markdown(
+        """
+        <script>
+        window.scrollTo(0, 0);
+        </script>
+        """,
+        unsafe_allow_html=True
+        )
 
     # Dialog window wrappers. Placed within each page file due to the decorator.
     # Dialog window to upload a file.
@@ -188,6 +207,13 @@ else:
         utils_gen_UI.save_parameters(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters)
 
     with main_container_imps.container():
+        # Popover window to show the latest SIMsalabim log file
+        if 'simulation_log' in st.session_state:
+            # get the key from the dict
+            if list(st.session_state['simulation_log'].keys())[0] == 'IMPS':
+                with st.popover("**View SIMsalabim log file**"):
+                    st.text(st.session_state['simulation_log']['IMPS'])
+                    
     # Start building the UI for the actual page
         st.title("Intensity Modulated PhotoSpectroscopy (IMPS)")
         st.write("""

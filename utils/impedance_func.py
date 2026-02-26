@@ -6,6 +6,7 @@ from datetime import datetime
 import streamlit as st
 from pySIMsalabim.experiments import impedance as imp_exp
 from utils import device_parameters_UI as utils_devpar_UI
+from utils import general_UI as utils_gen_UI
 
 ######### Function Definitions ####################################################################    
 
@@ -37,6 +38,8 @@ def run_Impedance(zimt_device_parameters, session_path, dev_par, layers, id_sess
         'SUCCESS' if the simulation succeeded, 'FAILED' if it failed due to known issues (like creating tVG file), 
         'ERROR' for other errors.
     """
+    exp_type = 'Impedance'
+
     with st.toast('Simulation started'):
         # Store all impedance specific parameters into a single object.
         impedance_keys = ["fmin", "fmax", "fstep", "V0", "delV", "G_frac"]
@@ -83,6 +86,9 @@ def run_Impedance(zimt_device_parameters, session_path, dev_par, layers, id_sess
             st.error(message)
 
             res = 'ERROR'
+
+    # Get the SIMsalabim log file and store in session state for display
+    utils_gen_UI.get_SIMsalabim_log(zimt_device_parameters, session_path, dev_par, exp_type)
 
     # Log the simulation result in the log file
     with open(os.path.join('Statistics', 'log_file.txt'), 'a') as f:

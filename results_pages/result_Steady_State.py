@@ -9,6 +9,7 @@ from datetime import datetime
 from utils import plot_functions_UI as utils_plot_UI
 from utils import general_UI as utils_gen_UI
 from utils import plot_def
+from pySIMsalabim.aux_funcs import JV_funcs
 
 ######### Page configuration ######################################################################
 
@@ -115,26 +116,43 @@ def show_results_Steady_State(session_path, id_session):
                 # Experimental JV data file is present, so experimental data must have been used.
                 exp_jv = True
                 df_exp_jv = pd.read_csv(os.path.join(session_path, st.session_state['expJV']), sep=r'\s+')
+                scPars_exp_jv = JV_funcs.Find_Solar_Cell_Parameters(df_exp_jv['Vext'], df_exp_jv['Jext'])
             else:
                 exp_jv = False
 
             # Initialize the columns to display the results. Adjust based onthe solar cell parameters.
             if showscPars:
-                col1_head, col2_head = st.columns([4, 2])
+                # Add the scPars to the dict
+                dict_scPars = {'Simulated': {'Jsc [Am\u207b\u00b2]': f'{data_scPars['Jsc'][0]}+/-{data_scPars["ErrJsc"][0]}', 'Vmpp [V]': f'{data_scPars["Vmpp"][0]}+/-{data_scPars["ErrVmpp"][0]}', 'MPP [Wm\u207b\u00b2]': f'{data_scPars["MPP"][0]}+/-{data_scPars["ErrMPP"][0]}', 'Voc [V]': f'{data_scPars["Voc"][0]}+/-{data_scPars["ErrVoc"][0]}', 'FF ': f'{data_scPars["FF"][0]}+/-{data_scPars["ErrFF"][0]}'}}
+                if not exp_jv:
+                    col1_head, col2_head = st.columns([4, 2])
+                else:
+                    # Add the experimental parameters to the dict
+                    dict_scPars['Experimental'] = {'Jsc [Am\u207b\u00b2]': f'{scPars_exp_jv["Jsc"]:.4f}+/-{scPars_exp_jv["ErrJsc"]:.4f}', 'Vmpp [V]': f'{scPars_exp_jv["Vmpp"]:.4f}+/-{scPars_exp_jv["ErrVmpp"]:.4f}', 'MPP [Wm\u207b\u00b2]': f'{scPars_exp_jv["MPP"]:.4f}+/-{scPars_exp_jv["ErrMPP"]:.4f}', 'Voc [V]': f'{scPars_exp_jv["Voc"]:.4f}+/-{scPars_exp_jv["ErrVoc"]:.4f}', 'FF ': f'{scPars_exp_jv["FF"]:.4f}+/-{scPars_exp_jv["ErrFF"]:.4f}'}
+                    # Add the deviation as well
+                    dict_scPars['Deviation'] = {'Jsc [Am\u207b\u00b2]': f'{data_scPars["Jsc"][0] - scPars_exp_jv["Jsc"]:.4f}', 'Vmpp [V]': f'{data_scPars["Vmpp"][0] - scPars_exp_jv["Vmpp"]:.4f}', 'MPP [Wm\u207b\u00b2]': f'{data_scPars["MPP"][0] - scPars_exp_jv["MPP"]:.4f}', 'Voc [V]': f'{data_scPars["Voc"][0] - scPars_exp_jv["Voc"]:.4f}', 'FF ': f'{data_scPars["FF"][0] - scPars_exp_jv["FF"]:.4f}'}
+                    col1_head, col2_head = st.columns([3, 3])
+
+                # Convert the dict to a DataFrame for display in the table
+                df = pd.DataFrame.from_dict(dict_scPars, orient='columns')
+
                 # Header title column
                 with col1_head:
                     st.title("Simulation Results")
                     st.subheader(str(st.session_state['simulation_results']))
 
-                # Header ScPars column
+                    st.markdown('<br>', unsafe_allow_html=True) # Add some space between the title and the log file button
+                    # Popover window to show the latest SIMsalabim log file
+                    if 'simulation_log' in st.session_state:
+                        # get the key from the dict
+                        if list(st.session_state['simulation_log'].keys())[0] == 'Steady State JV':
+                            with st.popover("**View SIMsalabim log file**"):
+                                st.text(st.session_state['simulation_log']['Steady State JV'])
+
+                # Header ScPars column with table
                 with col2_head:
-                    st.subheader('Solar cell parameters')
-                    # Show the solar cell parameters 
-                    dict_scPars = {'Simulated': {'Jsc [Am\u207b\u00b2]': f'{data_scPars['Jsc'][0]}+/-{data_scPars["ErrJsc"][0]}', 'Vmpp [V]': f'{data_scPars["Vmpp"][0]}+/-{data_scPars["ErrVmpp"][0]}', 'MPP [Wm\u207b\u00b2]': f'{data_scPars["MPP"][0]}+/-{data_scPars["ErrMPP"][0]}', 'Voc [V]': f'{data_scPars["Voc"][0]}+/-{data_scPars["ErrVoc"][0]}', 'FF ': f'{data_scPars["FF"][0]}+/-{data_scPars["ErrFF"][0]}'}}
-                    # put the dict in a st.table
-                    df = pd.DataFrame.from_dict(dict_scPars, orient='columns')
-                    st.table(df)
-            
+                        st.subheader('Solar cell parameters')
+                        st.table(df)
             else:
                 # No ScPars data at all, use the default column layout with a wide column for the header title.
                 col1_head, col2_head = st.columns([4, 2])

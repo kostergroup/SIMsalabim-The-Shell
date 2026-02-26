@@ -405,3 +405,22 @@ def prepare_results(session_path, id_session, sim_type, exp_type):
     with st.spinner('Preparing results...'):
             prepare_results_download(session_path, id_session, sim_type, exp_type) # Will check whether sim_type and exp_type are part of the defined list
     st.session_state['runSimulation'] = False
+
+def get_SIMsalabim_log(simss_device_parameters, session_path, dev_par, exp_type):
+
+    if dev_par is not None and simss_device_parameters in dev_par:
+        dev_par_data = dev_par[simss_device_parameters]
+        # Only process if dev_par_data is a list (expected structure)
+        if isinstance(dev_par_data, list) and len(dev_par_data) > 0:
+            # Find the "User interface" section
+            ui_section = next((s for s in dev_par_data[1:] if s[0] == 'User interface'), [])
+            
+            # Find the logFile parameter
+            logFile = next((param[2] for param in ui_section if param[1] == 'logFile'), None)
+        
+            if logFile:
+                logFile_path = os.path.join(session_path, logFile)
+                if os.path.isfile(logFile_path):
+                    with open(logFile_path, 'r') as f:
+                        # Store the log content in the session state to be displayed on the UI
+                        st.session_state['simulation_log'] = {exp_type:f.read()}

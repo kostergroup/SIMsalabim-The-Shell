@@ -65,6 +65,14 @@ def show_results_imps(session_path, id_session):
             st.title("Simulation Results")
             st.subheader(str(st.session_state['simulation_results']))
 
+            st.markdown('<br>', unsafe_allow_html=True) # Add some space between the title and the log file button
+            # Popover window to show the latest SIMsalabim log file
+            if 'simulation_log' in st.session_state:
+                # get the key from the dict
+                if list(st.session_state['simulation_log'].keys())[0] == 'IMPS':
+                    with st.popover("**View SIMsalabim log file**"):
+                        st.text(st.session_state['simulation_log']['IMPS'])
+
             # Show the plots, add a horizontal line first to separate the title section from the plot section
             st.markdown('<hr>', unsafe_allow_html=True)
 

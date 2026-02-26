@@ -2,6 +2,13 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.22] - 26-02-2026 - SH
+- Added option to view the logfile of SIMsalabim directly on the UI. This provides direct information to the user when a simulation has partially converged or failed. The logfile can be viewed directly after a simulation has finished on the 'experiment' page and also on the simulation results page.
+- For the carrier densities plot in a steady state JV experimnet, the y-axis does no longer automatically scale based on the min/max value, as this would result in a very large y-range due to the low carrier densities at the interfaces/transport layers. The initial scaling is now fixed at the range (max*1E-9,max), thus a range of 9 orders of magntiude with respect to the maximum value is shown.
+- When pressing the 'Run simulation' or 'Save device parameters' button, the page automatically scrolls to the top, such that either the result message or the plotted band digram is immediatly within focus.
+- Updated the default parameters to have only one mobile ionic species, as this resembles better real-world devices and behaviour. 
+- In steady state JV, solar cell metrics are now also given for the experimental curve if one is uploaded, including the deviation between the simulated and experimental values
+
 ## [1.21] - 20-02-2026 - SH
 - Updated to SIMsalabim v5.27
 - Updated to pySIMsalabim v1.04
