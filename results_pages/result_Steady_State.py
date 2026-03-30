@@ -79,6 +79,7 @@ def show_results_Steady_State(session_path, id_session):
                 chk_transport = st.toggle('Transport')
                 chk_gen_recomb = st.toggle('Generation and recombination')
                 chk_current = st.toggle('Current densities')
+                chk_JVrec = st.toggle('Recombination current densities')
 
                 # Slider for Vext to update the parameter plots and show curves for the selected Vext. Using the slider updates the plots automatically.
                 voltages = list(set(data_var['Vext']))
@@ -385,3 +386,25 @@ def show_results_Steady_State(session_path, id_session):
                                 title_current, 8, fig8, ax8, plot_type[0], [col8_1, col8_2, col8_3], choice_voltage, source_type = 'Var',yrange_format="%.2e")
                 with col8_2:
                     st.pyplot(fig8, format='png')
+
+            # Recombination current densities [9]
+            if chk_JVrec:
+                # Init plot parameters
+                # Thisb data does not come from the Var file, but from the JV file.
+                JV_cols = data_jv.columns.values
+                # Only keep the columns that contain 'Jdir', 'Jbulk' or 'JintL' in the name
+                JV_cols = [col for col in JV_cols if ('Jdir' in col) or ('Jbulk' in col) or ('JintL' in col)]
+                # Put JV_cols in a dict with col:col
+                JV_cols = {col:col for col in JV_cols}
+                pars_JVrec = JV_cols
+                par_x_JVrec = 'Vext'
+                xlabel_JVrec = '$V_{ext}$ [V]'
+                ylabel_JVrec = 'Recombination current density [Am$^{-2}$]'
+                title_JVrec = 'Recombination current densities'
+                fig9, ax9 = plt.subplots()
+                col9_1, col9_2, col9_3 = st.columns([1, 6, 3])
+
+                fig9, ax9 = utils_plot_UI.create_UI_component_plot(data_jv, pars_JVrec, par_x_JVrec, xlabel_JVrec, ylabel_JVrec, 
+                                title_JVrec, 9, fig9, ax9, plot_type[0], [col9_1, col9_2, col9_3],yrange_format="%.2e", yscale_init=1)
+                with col9_2:
+                    st.pyplot(fig9, format='png')

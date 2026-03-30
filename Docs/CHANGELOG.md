@@ -2,6 +2,14 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software itself.
 
+## [1.23] - XX-XX-XXXX - SH
+- Upon changing any of the input fields, the whole page would reload and refresh. This became more severe with newer versions of Streamlit. All input fields are now wrapped in a fragment object. This will prevent the whole page from reloading when an element within that fragement is changed. The only excepetion is the selectbox to select a file to edit. This cannot be placed inside a fragment, as it depends on functions that are defined outside of the container it is placed in.
+- Changed st.experimental_dialog to st.dialog to comply with the new streamlit version
+- Changed the way the +/- buttons are removed for number inputs, as the old method did not work anymore
+- Minor changes regarding text spacing
+- Updated to SIMsalabim v5.30
+- In Steady State JV, the recombination current densities (read from the JV file) can now also be plotted
+
 ## [1.22] - 26-02-2026 - SH
 - Added option to view the logfile of SIMsalabim directly on the UI. This provides direct information to the user when a simulation has partially converged or failed. The logfile can be viewed directly after a simulation has finished on the 'experiment' page and also on the simulation results page.
 - For the carrier densities plot in a steady state JV experimnet, the y-axis does no longer automatically scale based on the min/max value, as this would result in a very large y-range due to the low carrier densities at the interfaces/transport layers. The initial scaling is now fixed at the range (max*1E-9,max), thus a range of 9 orders of magntiude with respect to the maximum value is shown.

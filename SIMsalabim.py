@@ -16,8 +16,8 @@ utils_gen_UI.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.22' # The Shell version
-version_simsalabim = '5.27' # SIMsalabim version
+version_theshell = '1.23' # The Shell version
+version_simsalabim = '5.30' # SIMsalabim version
 
 # Folder name where simulations are executed and data is stored
 simulation_path = os.path.join(os.getcwd(),'Simulations')
@@ -89,18 +89,23 @@ if 'id' not in st.session_state:
 # st.warning('''PLACEHOLDER''')
 
 st.title("SIMsalabim - The Shell")
+st.markdown('<br>', unsafe_allow_html=True)
 
 st.text('The Shell v' + version_theshell + ' | ' + 'SIMsalabim v' + version_simsalabim)
+st.markdown('<br>', unsafe_allow_html=True)
 
 st.write('An easy-to-use web interface for open source SIMsalabim drift-diffusion simulation package.')
+st.markdown('<br>', unsafe_allow_html=True)
 
 #st.warning('''Note! The Shell will be down temporarly on PLACEHOLDER due to maintenance. ''')
+# st.markdown('<br>', unsafe_allow_html=True)
 
 st.warning('''Note: The Shell does not support all features and functionality that SIMsalabim has to offer. 
 To use all functionality, download and run the SIMsalabim project on your machine as described in the 
 [SIMsalabim Project readme](https://github.com/kostergroup/SIMsalabim). 
 For a full overview of the functionality of SIMsalabim, refer to the 
 [SIMsalabim manual](http://simsalabim-online.com/manual).''')
+st.markdown('<br>', unsafe_allow_html=True)
 
 st.write('''Currently supported functionality in The Shell is:
 - Define your device via the device parameters on a template or upload your own device parameters.
@@ -118,12 +123,16 @@ st.write('''Currently supported functionality in The Shell is:
 - Simulate a capacitance-voltage experiment
 ''')
 st.text(' ')
+st.markdown('<br>', unsafe_allow_html=True)
 
 st.write('To cite this work and SIMsalabim refer to the open-source version of the code published as:')
+st.markdown('<br>', unsafe_allow_html=True)
 
 st.info('M. Koopmans, V.M. Le Corre, and L.J.A. Koster, SIMsalabim: An open-source drift-diffusion simulator for semiconductor devices, J. Open Source Softw. 7, 3727 (2022).')
+st.markdown('<br>', unsafe_allow_html=True)
 
 st.write('The paper can be viewed [here](https://joss.theoj.org/papers/10.21105/joss.03727)')
+st.markdown('<br>', unsafe_allow_html=True)
 
 st.text('''
 

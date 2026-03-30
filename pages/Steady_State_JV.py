@@ -27,13 +27,6 @@ st.query_params.from_dict({'session':st.session_state['id']})
 # Load custom CSS
 utils_gen_UI.local_css('./utils/style.css')
 
-# Remove the +/- toggles on number inputs
-st.markdown("""<style>
-                button.step-up {display: none;}
-                button.step-down {display: none;}
-                div[data-baseweb] {border-radius: 4px;}
-                </style>""",unsafe_allow_html=True)
-
 # Session states for page navigation
 st.session_state['pagename'] = 'Steady State JV'
 st.session_state['def_pagename'] = 'Steady State JV'
@@ -137,17 +130,17 @@ else:
 
     # Dialog window wrappers. Placed within each page file due to the decorator.
     # Dialog window to upload a file.
-    @st.experimental_dialog("Upload a file")
+    @st.dialog("Upload a file")
     def uploadFileDialogWrapper(session_path, dev_par, layers, simss_device_parameters, zimt_device_parameters,simtype):
         dev_par, layers = utils_dialog_UI.uploadFileDialog(session_path, dev_par, layers, simss_device_parameters, zimt_device_parameters,simtype)
 
     # Dialog window to add a new layer to the device
-    @st.experimental_dialog("Add a layer")
+    @st.dialog("Add a layer")
     def addLayerDialogWrapper(session_path, dev_par, layers, resource_path, simss_device_parameters, zimt_device_parameters):
         dev_par, layers = utils_dialog_UI.addLayerDialog(session_path, dev_par, layers, resource_path, simss_device_parameters, zimt_device_parameters)
 
     # Dialog window to remove a layer from the device
-    @st.experimental_dialog("Remove a layer")
+    @st.dialog("Remove a layer")
     def removeLayerDialogWrapper(dev_par, layers, session_path, simss_device_parameters, zimt_device_parameters):
         dev_par, layers = utils_dialog_UI.removeLayerDialog(dev_par, layers, session_path, simss_device_parameters, zimt_device_parameters)
 
@@ -204,43 +197,56 @@ else:
                     st.text(st.session_state['simulation_log']['Steady State JV'])
 
         st.title("Steady State JV & EQE")
+
+        st.markdown('<br>', unsafe_allow_html=True)
         for par_section in dev_par[simss_device_parameters]:
             if par_section[0] == 'Description': 
                 # The first section of the page is a 'special' section and must be treated seperately.
                 # The SIMsalabim version number and general remarks to show on top of the page
                 version = [i for i in par_section if i[1].startswith('version:')]
                 st.write("SIMsalabim " + version[0][1])
+                st.markdown('<br>', unsafe_allow_html=True)
+
                 # Reference to the SIMsalabim manual
                 st.write("""For more information about the device parameters or SIMsalabim itself, refer to the
                                 [Manual](http://simsalabim-online.com/manual)""")
-       
+                st.markdown('<br>', unsafe_allow_html=True)
         st.info("Go to: [External quantum efficiency (EQE)](#external-quantum-efficiency-eqe)")
 
         # Device layer setup        
         st.subheader("Device setup")
-
-        # Show the Ddd layer button
-        if st.button('Add a layer'):
-            addLayerDialogWrapper(session_path, dev_par, layers, resource_path, simss_device_parameters, zimt_device_parameters)
+        st.markdown('<br>', unsafe_allow_html=True)
+        
+        @st.fragment # Fragment for SS device, this will not automatically reload the page
+        def fragment_SS_device():
+            # Show the Ddd layer button
+            if st.button('Add a layer'):
+                addLayerDialogWrapper(session_path, dev_par, layers, resource_path, simss_device_parameters, zimt_device_parameters)
             
-        # Display the layers
-        for layer in layers:
-            if not layer[1] == 'setup':
-                col_par, col_val, col_desc = st.columns([2, 4, 8]) 
-                with col_par:
-                    st.text_input(layer[1], value=layer[1], key=layer[1], disabled=True, label_visibility="collapsed")
-                with col_val:
-                    # create a list with the layer names to choose from
-                    layer_names = st.session_state['availableLayerFiles'][:-3]
-                    selected_layer = utils_gen_UI.safe_index(layer[2], layer_names, default=0)
-                    layer[2] = st.selectbox(layer[2],key=layer[1] + ' ' + layer[2], options=layer_names,index = selected_layer,format_func=lambda x: x, label_visibility="collapsed")
-                with col_desc:
-                    st.text_input(layer[3], value=layer[3],key=layer[1] + ' ' + layer[3], disabled=True, label_visibility="collapsed")
+            st.markdown('<br>', unsafe_allow_html=True)
+            
+            # Display the layers
+            for layer in layers:
+                if not layer[1] == 'setup':
+                    col_par, col_val, col_desc = st.columns([2, 4, 8]) 
+                    with col_par:
+                        st.text_input(layer[1], value=layer[1], key=layer[1], disabled=True, label_visibility="collapsed")
+                    with col_val:
+                        # create a list with the layer names to choose from
+                        layer_names = st.session_state['availableLayerFiles'][:-3]
+                        selected_layer = utils_gen_UI.safe_index(layer[2], layer_names, default=0)
+                        layer[2] = st.selectbox(layer[2],key=layer[1] + ' ' + layer[2], options=layer_names,index = selected_layer,format_func=lambda x: x, label_visibility="collapsed")
+                    with col_desc:
+                        st.text_input(layer[3], value=layer[3],key=layer[1] + ' ' + layer[3], disabled=True, label_visibility="collapsed")
 
-        # Show the remove layer button. Only when more than 1 layer is present!
-        if len(layers) >2:
-            if st.button('Remove a layer'):
-                removeLayerDialogWrapper(dev_par, layers, session_path, simss_device_parameters, zimt_device_parameters)
+            st.markdown('<br>', unsafe_allow_html=True)
+
+            # Show the remove layer button. Only when more than 1 layer is present!
+            if len(layers) >2:
+                if st.button('Remove a layer'):
+                    removeLayerDialogWrapper(dev_par, layers, session_path, simss_device_parameters, zimt_device_parameters)
+
+        fragment_SS_device()
 
         st.markdown('<hr>', unsafe_allow_html=True)
 
@@ -251,78 +257,81 @@ else:
 
         # Selectbox to choose which layer to edit
         selected_layer = st.selectbox('Select a file to edit', filesDisplay, on_change=save_parameters_local)
-
         st.markdown('<br>', unsafe_allow_html=True)
-
-        # Build the UI components for the various sections
-        for par_section in dev_par[selected_layer]:
-
-            # Skip the first section, this is the description section and is already shown at the top of the page.
-            # Skip the layers section, this is already shown in the layer_container_SS container.
-            if not par_section[0] == 'Layers' and not par_section[0] == 'Description':
-                # Initialize expander components for each section
-                if (par_section[0]== 'Optics'):
-                    # Do not expand the optics section by default and add a custom description string
-                    expand=False
-                    section_title = par_section[0] + ' (Optional, use only when calculating the generation profile i.e. Gen_profile=calc)'
-                elif (par_section[0]== 'Numerical Parameters' or par_section[0]== 'Voltage range of simulation' or par_section[0]== 'User interface'):
-                    # Do not expand these sections by default but use the section name as section title
-                    expand = False
-                    section_title = par_section[0]
-                else:
-                    # Expand all other sections and use the section name as section title
-                    expand = True
-                    section_title = par_section[0]
-                
-                # Fill the expanders/sections with the parameters
-                with st.expander(section_title, expanded=expand):
-                    # Split component into three columns [name, value, description]
-                    col_par, col_val, col_desc = st.columns([2, 2, 8],)
-                    
-                    for item in par_section[1:]:
-                        if item[0] == 'comm': # Item is just a comment, do not use column layout for this.
-                            st.write(item[1])
-                            # Reset the column layout layout to force a break between the parameters to place the comment in the correct position. 
-                            # Otherwise all comments will be placed at either the top or bottom of the components 
-                            col_par, col_val, col_desc = st.columns([2, 2, 8]) 
-
-                        if item[0] == 'par': # Item contains a parameter, fill all three columns
-                            # Parameter name
-                            with col_par:
-                                st.text_input(item[1], value=item[1], disabled=True, label_visibility="collapsed")
-
-                            # Parameter value
-                            with col_val:
-                                # Handle exceptions/special cases.
-                                if item[1].startswith('nk'): # nk file name, use a selectbox.
-                                    if item[2] not in nk_file_list:
-                                        item[2] = '--none--'
-                                    nk_idx = utils_gen_UI.safe_index(item[2], nk_file_list, default=0)
-                                    item[2] = st.selectbox(selected_layer + item[1] + '_val', options=nk_file_list, format_func=utils_gen_UI.format_func, index=nk_idx, label_visibility="collapsed")
-                                elif item[1] == 'spectrum': # spectrum file name, use a selectbox.
-                                    if item[2] not in spectrum_file_list:
-                                        item[2] = '--none--'
-                                    spec_idx = utils_gen_UI.safe_index(item[2], spectrum_file_list, default=0)
-                                    item[2] = st.selectbox(selected_layer + item[1] + '_val', options=spectrum_file_list, format_func=utils_gen_UI.format_func, index=spec_idx, label_visibility="collapsed")
-                                elif item[1]== 'pauseAtEnd':
-                                    # This parameter must not be editable and forced to 0, otherwise the program will not exit/complete and hang forever.
-                                    item[2] = 0
-                                    item[2] = st.text_input(selected_layer + item[1] + '_val', value=item[2], disabled=True, label_visibility="collapsed")
-                                elif (item[1] == 'intTrapFile') or (item[1] == 'bulkTrapFile'):
-                                    # This could be uploaded trap files,so display a list of available ones. 
-                                    if item[2] not in st.session_state['trapFiles']:
-                                        # Value from file is not recognized, replace with none
-                                        st.toast(f'Could not find file "{item[2]}" for parameter {item[1]} and has been set to none. If you want to use this file, please upload it using the "Upload trap distribution" option and associate it with the {item[1]} parameter.')
-                                        item[2] = 'none'
-                                    trap_idx = utils_gen_UI.safe_index(item[2], st.session_state['trapFiles'], default=0)
-                                    item[2] = st.selectbox(selected_layer + item[1]+ '_val', options=st.session_state['trapFiles'], index=trap_idx, label_visibility="collapsed")
-                                else:
-                                    item[2] = st.text_input(selected_layer + item[1] + '_val', value=item[2], label_visibility="collapsed")
-                            
-                            # Parameter description
-                            with col_desc:
-                                st.text_input(item[1] + '_desc', value=item[3], disabled=True, label_visibility="collapsed")
         
+        @st.fragment # Fragment for parameters, this will not automatically reload the page
+        def fragment_SS():
+            # Build the UI components for the various sections
+            for par_section in dev_par[selected_layer]:
+
+                # Skip the first section, this is the description section and is already shown at the top of the page.
+                # Skip the layers section, this is already shown in the layer_container_SS container.
+                if not par_section[0] == 'Layers' and not par_section[0] == 'Description':
+                    # Initialize expander components for each section
+                    if (par_section[0]== 'Optics'):
+                        # Do not expand the optics section by default and add a custom description string
+                        expand=False
+                        section_title = par_section[0] + ' (Optional, use only when calculating the generation profile i.e. Gen_profile=calc)'
+                    elif (par_section[0]== 'Numerical Parameters' or par_section[0]== 'Voltage range of simulation' or par_section[0]== 'User interface'):
+                        # Do not expand these sections by default but use the section name as section title
+                        expand = False
+                        section_title = par_section[0]
+                    else:
+                        # Expand all other sections and use the section name as section title
+                        expand = True
+                        section_title = par_section[0]
+                    
+                    # Fill the expanders/sections with the parameters
+                    with st.expander(section_title, expanded=expand):
+                        # Split component into three columns [name, value, description]
+                        col_par, col_val, col_desc = st.columns([2, 2, 8],)
+                        
+                        for item in par_section[1:]:
+                            if item[0] == 'comm': # Item is just a comment, do not use column layout for this.
+                                st.write(item[1])
+                                # Reset the column layout layout to force a break between the parameters to place the comment in the correct position. 
+                                # Otherwise all comments will be placed at either the top or bottom of the components 
+                                col_par, col_val, col_desc = st.columns([2, 2, 8]) 
+
+                            if item[0] == 'par': # Item contains a parameter, fill all three columns
+                                # Parameter name
+                                with col_par:
+                                    st.text_input(item[1], value=item[1], disabled=True, label_visibility="collapsed")
+
+                                # Parameter value
+                                with col_val:
+                                    # Handle exceptions/special cases.
+                                    if item[1].startswith('nk'): # nk file name, use a selectbox.
+                                        if item[2] not in nk_file_list:
+                                            item[2] = '--none--'
+                                        nk_idx = utils_gen_UI.safe_index(item[2], nk_file_list, default=0)
+                                        item[2] = st.selectbox(selected_layer + item[1] + '_val', options=nk_file_list, format_func=utils_gen_UI.format_func, index=nk_idx, label_visibility="collapsed")
+                                    elif item[1] == 'spectrum': # spectrum file name, use a selectbox.
+                                        if item[2] not in spectrum_file_list:
+                                            item[2] = '--none--'
+                                        spec_idx = utils_gen_UI.safe_index(item[2], spectrum_file_list, default=0)
+                                        item[2] = st.selectbox(selected_layer + item[1] + '_val', options=spectrum_file_list, format_func=utils_gen_UI.format_func, index=spec_idx, label_visibility="collapsed")
+                                    elif item[1]== 'pauseAtEnd':
+                                        # This parameter must not be editable and forced to 0, otherwise the program will not exit/complete and hang forever.
+                                        item[2] = 0
+                                        item[2] = st.text_input(selected_layer + item[1] + '_val', value=item[2], disabled=True, label_visibility="collapsed")
+                                    elif (item[1] == 'intTrapFile') or (item[1] == 'bulkTrapFile'):
+                                        # This could be uploaded trap files,so display a list of available ones. 
+                                        if item[2] not in st.session_state['trapFiles']:
+                                            # Value from file is not recognized, replace with none
+                                            st.toast(f'Could not find file "{item[2]}" for parameter {item[1]} and has been set to none. If you want to use this file, please upload it using the "Upload trap distribution" option and associate it with the {item[1]} parameter.')
+                                            item[2] = 'none'
+                                        trap_idx = utils_gen_UI.safe_index(item[2], st.session_state['trapFiles'], default=0)
+                                        item[2] = st.selectbox(selected_layer + item[1]+ '_val', options=st.session_state['trapFiles'], index=trap_idx, label_visibility="collapsed")
+                                    else:
+                                        item[2] = st.text_input(selected_layer + item[1] + '_val', value=item[2], label_visibility="collapsed")
+                                
+                                # Parameter description
+                                with col_desc:
+                                    st.text_input(item[1] + '_desc', value=item[3], disabled=True, label_visibility="collapsed")
+
+    fragment_SS() 
+
     #  Show the SIMsalabim logo in the sidebar
     with st.sidebar:
         st.markdown('<hr>', unsafe_allow_html=True)
@@ -341,21 +350,17 @@ else:
                 for par in section[1:]:
                     if par[1] == 'spectrum':
                         spectrum_file = par[2]
-
-    # Set up UI to adjust input parameters for the EQE calculation
-    col_left, col_right = st.columns([1,1],)
-    with col_left:
-        lambda_min = st.number_input('Lower wavelength bound [nm]', value=280.0, disabled=False, label_visibility="visible", format="%f")
-        lambda_step = st.number_input('Wavelength step [nm]', value=20.0, disabled=False, label_visibility="visible", format="%f")
-    with col_right:
-        lambda_max = st.number_input('Upper wavelength bound [nm]', value=1000.0, disabled=False, label_visibility="visible", format="%f")
-        applied_voltage = st.number_input('Applied voltage [V]', value=0.0, disabled=False, label_visibility="visible", format="%f")
-    
-    # Run the EQE calculation
-    if st.button('Calculate EQE'):
-        # Check if the output file already exists and if so remove it
-        if os.path.isfile(os.path.join(session_path,'output.dat')):
-            os.remove(os.path.join(session_path,'output.dat'))
+                        
+    @st.fragment # Fragment for EQE, this will not automatically reload the page
+    def fragment_EQE():
+        # Set up UI to adjust input parameters for the EQE calculation
+        col_left, col_right = st.columns([1,1],)
+        with col_left:
+            lambda_min = st.number_input('Lower wavelength bound [nm]', value=280.0, disabled=False, label_visibility="visible", format="%f")
+            lambda_step = st.number_input('Wavelength step [nm]', value=20.0, disabled=False, label_visibility="visible", format="%f")
+        with col_right:
+            lambda_max = st.number_input('Upper wavelength bound [nm]', value=1000.0, disabled=False, label_visibility="visible", format="%f")
+            applied_voltage = st.number_input('Applied voltage [V]', value=0.0, disabled=False, label_visibility="visible", format="%f")
 
         # Check the EQE input values
         if lambda_min < 280.0:
@@ -364,17 +369,32 @@ else:
             st.error('The lower wavelength bound can not be larger than the upper wavelength bound.')
         elif lambda_max > 4000.0: 
             st.error('The upper wavelength bound can at most 4000 nm.')
-        elif lambda_step < 0.5:
-            st.error('The wavelength step must be at least 0.5 nm.')
+        elif lambda_step < 1.0:
+            st.error('The wavelength step must be at least 1 nm.')
         elif lambda_step > (lambda_max - lambda_min) and not (lambda_min == lambda_max):
             st.error('The wavelength step cannot be larger than the difference between the lower and upper wavelength bounds.')
         else:
-            if lambda_min == lambda_max:
-                # Show an info message when a single wavelength is used
-                st.info('Calculating the EQE for a single wavelength. Wavelength step parameter is ignored.')
+            st.session_state['EQE_input'] = {'lambda_min': lambda_min, 'lambda_max': lambda_max, 'lambda_step': lambda_step, 'applied_voltage': applied_voltage}
+
+        if lambda_min == lambda_max:
+            # Show an info message when a single wavelength is used
+            st.info('Calculating the EQE for a single wavelength. Wavelength step parameter is ignored.')
+
+    fragment_EQE()
+
+    # Run the EQE calculation
+    if st.button('Calculate EQE'):
+        # Check if the output file already exists and if so remove it
+        if os.path.isfile(os.path.join(session_path,'output.dat')):
+            os.remove(os.path.join(session_path,'output.dat'))
+            
         # Run the EQE script
         with st.spinner('Calculating EQE...'):
-        
+            lambda_min = st.session_state['EQE_input']['lambda_min']
+            lambda_max = st.session_state['EQE_input']['lambda_max']
+            lambda_step = st.session_state['EQE_input']['lambda_step']
+            applied_voltage = st.session_state['EQE_input']['applied_voltage']
+                
             result, msg_list = eqe_exp.run_EQE(simss_device_parameters,session_path,spectrum_file,lambda_min,lambda_max,lambda_step,applied_voltage,'output.dat',remove_dirs=True,run_mode=True)
             
             if result != 0:

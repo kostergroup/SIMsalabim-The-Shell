@@ -22,13 +22,6 @@ st.query_params.from_dict({'session':st.session_state['id']})
 # Load custom CSS
 utils_gen_UI.local_css('./utils/style.css')
 
-# Remove the +/- toggles on number inputs
-st.markdown("""<style>
-                button.step-up {display: none;}
-                button.step-down {display: none;}
-                div[data-baseweb] {border-radius: 4px;}
-                </style>""",unsafe_allow_html=True)
-
 # Session states for page navigation
 st.session_state['pagename'] = 'IMPS'
 st.session_state['def_pagename'] = 'IMPS'
@@ -151,17 +144,17 @@ else:
 
     # Dialog window wrappers. Placed within each page file due to the decorator.
     # Dialog window to upload a file.
-    @st.experimental_dialog("Upload a file")
+    @st.dialog("Upload a file")
     def uploadFileDialogWrapper(session_path, dev_par, layers, zimt_device_parameters, simss_device_parameters,simtype):
         dev_par, layers = utils_dialog_UI.uploadFileDialog(session_path, dev_par, layers, zimt_device_parameters, simss_device_parameters,simtype)
 
     # Dialog window to add a new layer to the device
-    @st.experimental_dialog("Add a layer")
+    @st.dialog("Add a layer")
     def addLayerDialogWrapper(session_path, dev_par, layers, resource_path, zimt_device_parameters, simss_device_parameters):
         dev_par, layers = utils_dialog_UI.addLayerDialog(session_path, dev_par, layers, resource_path, zimt_device_parameters, simss_device_parameters)
 
     # Dialog window to remove a layer from the device
-    @st.experimental_dialog("Remove a layer")
+    @st.dialog("Remove a layer")
     def removeLayerDialogWrapper(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters):
         dev_par, layers = utils_dialog_UI.removeLayerDialog(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters)    
 
@@ -216,11 +209,14 @@ else:
                     
     # Start building the UI for the actual page
         st.title("Intensity Modulated PhotoSpectroscopy (IMPS)")
+        st.markdown('<br>', unsafe_allow_html=True)
+
         st.write("""
             Simulate an IMPS experiment with SIMsalabim. The admittance is calculated at the applied voltage. 
             A small one time pertubation in light intensity at t=0 is introduced, defined as a fraction with which the generation rate is increased. 
             The admittance is calculated using Fourier decomposition, based on the method desrcibed in *S.E. Laux, IEEE Trans. Electron Dev. 32 (10), 2028 (1985)*.
         """)
+        st.markdown('<br>', unsafe_allow_html=True)
 
         for par_section in dev_par[zimt_device_parameters]: # ToDo check if correct
             if par_section[0] == 'Description': 
@@ -228,59 +224,76 @@ else:
                 # The SIMsalabim version number and general remarks to show on top of the page
                 version = [i for i in par_section if i[1].startswith('version:')]
                 st.write("SIMsalabim " + version[0][1])
+                st.markdown('<br>', unsafe_allow_html=True)
+
                 # Reference to the SIMsalabim manual
                 st.write("""For more information about the device parameters or SIMsalabim itself, refer to the
                                 [Manual](http://simsalabim-online.com/manual)""")
                 
         with container_imps_par.container():
-            st.subheader('IMPS parameters')
-            col_par_imps, col_val_imps, col_desc_imps = st.columns([2, 2, 8],)
-            for imps_item in imps_par:
-                with col_par_imps:
-                    st.text_input(imps_item[0], value=imps_item[0], disabled=True, label_visibility="collapsed")
+            @st.fragment # Fragment for IMPS parameters, this will not automatically reload the page
+            def fragment_IMPS_pars():
+                st.subheader('IMPS parameters')
+                st.markdown('<br>', unsafe_allow_html=True)
 
-                 # Parameter value
-                with col_val_imps:
-                    if imps_item[0] == 'fstep':
-                        # Show these parameters as a float
-                        imps_item[1] = st.number_input(imps_item[0] + '_val', value=imps_item[1], label_visibility="collapsed")
-                    elif imps_item[0] == 'V0' or imps_item[0] == 'fracG' or imps_item[0] == 'G_frac':
-                        # Show these parameters as a float
-                        imps_item[1] = st.number_input(imps_item[0] + '_val', value=imps_item[1], label_visibility="collapsed", format="%f")
-                    else:
-                        # Show all other parameters in scientific notation e.g. 1e+2
-                        imps_item[1] = st.number_input(imps_item[0] + '_val', value=imps_item[1], label_visibility="collapsed", format="%e")
-                # Parameter description
-                with col_desc_imps:
-                    st.text_input(imps_item[0] + '_desc', value=imps_item[2], disabled=True, label_visibility="collapsed")
+                col_par_imps, col_val_imps, col_desc_imps = st.columns([2, 2, 8],)
+                for imps_item in imps_par:
+                    with col_par_imps:
+                        st.text_input(imps_item[0], value=imps_item[0], disabled=True, label_visibility="collapsed")
+
+                    # Parameter value
+                    with col_val_imps:
+                        if imps_item[0] == 'fstep':
+                            # Show these parameters as a float
+                            imps_item[1] = st.number_input(imps_item[0] + '_val', value=imps_item[1], label_visibility="collapsed")
+                        elif imps_item[0] == 'V0' or imps_item[0] == 'fracG' or imps_item[0] == 'G_frac':
+                            # Show these parameters as a float
+                            imps_item[1] = st.number_input(imps_item[0] + '_val', value=imps_item[1], label_visibility="collapsed", format="%f")
+                        else:
+                            # Show all other parameters in scientific notation e.g. 1e+2
+                            imps_item[1] = st.number_input(imps_item[0] + '_val', value=imps_item[1], label_visibility="collapsed", format="%e")
+                    # Parameter description
+                    with col_desc_imps:
+                        st.text_input(imps_item[0] + '_desc', value=imps_item[2], disabled=True, label_visibility="collapsed")
+            
+            fragment_IMPS_pars()
+            
             st.markdown('<hr>', unsafe_allow_html=True)
 
         with layer_container_imps.container():
             # Device layer setup        
             st.subheader("Device setup")
+            st.markdown('<br>', unsafe_allow_html=True)
 
-            # Show the Ddd layer button
-            if st.button('Add a layer'):
-                addLayerDialogWrapper(session_path, dev_par, layers, resource_path, zimt_device_parameters, simss_device_parameters)
+            @st.fragment # Fragment for IMPS device, this will not automatically reload the page
+            def fragment_IMPS_device():
+
+                # Show the Ddd layer button
+                if st.button('Add a layer'):
+                    addLayerDialogWrapper(session_path, dev_par, layers, resource_path, zimt_device_parameters, simss_device_parameters)
+                st.markdown('<br>', unsafe_allow_html=True)
+
+                # Display the layers
+                for layer in layers:
+                    if not layer[1] == 'setup':
+                        col_par, col_val, col_desc = st.columns([2, 4, 8]) 
+                        with col_par:
+                            st.text_input(layer[1], value=layer[1], key=layer[1], disabled=True, label_visibility="collapsed")
+                        with col_val:
+                            # create a list with the layer names to choose from
+                            layer_names = st.session_state['availableLayerFiles'][:-3]
+                            selected_layer = utils_gen_UI.safe_index(layer[2], layer_names, default=0)
+                            layer[2] = st.selectbox(layer[2],key=layer[1] + ' ' + layer[2], options=layer_names,index = selected_layer,format_func=lambda x: x, label_visibility="collapsed")
+                        with col_desc:
+                            st.text_input(layer[3], value=layer[3],key=layer[1] + ' ' + layer[3], disabled=True, label_visibility="collapsed")
+                st.markdown('<br>', unsafe_allow_html=True)
                 
-            # Display the layers
-            for layer in layers:
-                if not layer[1] == 'setup':
-                    col_par, col_val, col_desc = st.columns([2, 4, 8]) 
-                    with col_par:
-                        st.text_input(layer[1], value=layer[1], key=layer[1], disabled=True, label_visibility="collapsed")
-                    with col_val:
-                        # create a list with the layer names to choose from
-                        layer_names = st.session_state['availableLayerFiles'][:-3]
-                        selected_layer = utils_gen_UI.safe_index(layer[2], layer_names, default=0)
-                        layer[2] = st.selectbox(layer[2],key=layer[1] + ' ' + layer[2], options=layer_names,index = selected_layer,format_func=lambda x: x, label_visibility="collapsed")
-                    with col_desc:
-                        st.text_input(layer[3], value=layer[3],key=layer[1] + ' ' + layer[3], disabled=True, label_visibility="collapsed")
+                # Show the remove layer button. Only when more than 1 layer is present!
+                if len(layers) >2:
+                    if st.button('Remove a layer'):
+                        removeLayerDialogWrapper(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters)
 
-            # Show the remove layer button. Only when more than 1 layer is present!
-            if len(layers) >2:
-                if st.button('Remove a layer'):
-                    removeLayerDialogWrapper(dev_par, layers, session_path, zimt_device_parameters, simss_device_parameters)
+            fragment_IMPS_device()
 
             st.markdown('<hr>', unsafe_allow_html=True)
 
@@ -291,78 +304,80 @@ else:
 
             # Selectbox to choose which layer to edit
             selected_layer = st.selectbox('Select a file to edit', filesDisplay, on_change=save_parameters_local)
-
             st.markdown('<br>', unsafe_allow_html=True)
 
-            # Build the UI components for the various sections
-            for par_section in dev_par[selected_layer]:
+            @st.fragment # Fragment for parameters, this will not automatically reload the page 
+            def fragment_IMPS():
+                # Build the UI components for the various sections
+                for par_section in dev_par[selected_layer]:
 
-                # Skip the first section, this is the description section and is already shown at the top of the page.
-                # Skip the layers section, this is already shown in the layer container.
-                if not par_section[0] == 'Layers' and not par_section[0] == 'Description':
-                    # Initialize expander components for each section
-                    if (par_section[0]== 'Optics'):
-                        # Do not expand the optics section by default and add a custom description string
-                        expand=False
-                        section_title = par_section[0] + ' (Optional, use only when calculating the generation profile i.e. genProfile=calc)'
-                    elif (par_section[0]== 'Numerical Parameters' or par_section[0]== 'Voltage range of simulation' or par_section[0]== 'User interface'):
-                        # Do not expand these sections by default but use the section name as section title
-                        expand = False
-                        section_title = par_section[0]
-                    else:
-                        # Expand all other sections and use the section name as section title
-                        expand = True
-                        section_title = par_section[0]
-                    
-                    # Fill the expanders/sections with the parameters
-                    with st.expander(section_title, expanded=expand):
-                        # Split component into three columns [name, value, description]
-                        col_par, col_val, col_desc = st.columns([2, 2, 8],)
+                    # Skip the first section, this is the description section and is already shown at the top of the page.
+                    # Skip the layers section, this is already shown in the layer container.
+                    if not par_section[0] == 'Layers' and not par_section[0] == 'Description':
+                        # Initialize expander components for each section
+                        if (par_section[0]== 'Optics'):
+                            # Do not expand the optics section by default and add a custom description string
+                            expand=False
+                            section_title = par_section[0] + ' (Optional, use only when calculating the generation profile i.e. genProfile=calc)'
+                        elif (par_section[0]== 'Numerical Parameters' or par_section[0]== 'Voltage range of simulation' or par_section[0]== 'User interface'):
+                            # Do not expand these sections by default but use the section name as section title
+                            expand = False
+                            section_title = par_section[0]
+                        else:
+                            # Expand all other sections and use the section name as section title
+                            expand = True
+                            section_title = par_section[0]
                         
-                        for item in par_section[1:]:
-                            if item[0] == 'comm': # Item is just a comment, do not use column layout for this.
-                                st.write(item[1])
-                                # Reset the column layout layout to force a break between the parameters to place the comment in the correct position. 
-                                # Otherwise all comments will be placed at either the top or bottom of the components 
-                                col_par, col_val, col_desc = st.columns([2, 2, 8]) 
+                        # Fill the expanders/sections with the parameters
+                        with st.expander(section_title, expanded=expand):
+                            # Split component into three columns [name, value, description]
+                            col_par, col_val, col_desc = st.columns([2, 2, 8],)
+                            
+                            for item in par_section[1:]:
+                                if item[0] == 'comm': # Item is just a comment, do not use column layout for this.
+                                    st.write(item[1])
+                                    # Reset the column layout layout to force a break between the parameters to place the comment in the correct position. 
+                                    # Otherwise all comments will be placed at either the top or bottom of the components 
+                                    col_par, col_val, col_desc = st.columns([2, 2, 8]) 
 
-                            if item[0] == 'par': # Item contains a parameter, fill all three columns
-                                # Parameter name
-                                with col_par:
-                                    st.text_input(item[1], value=item[1], disabled=True, label_visibility="collapsed")
+                                if item[0] == 'par': # Item contains a parameter, fill all three columns
+                                    # Parameter name
+                                    with col_par:
+                                        st.text_input(item[1], value=item[1], disabled=True, label_visibility="collapsed")
 
-                                # Parameter value
-                                with col_val:
-                                    # Handle exceptions/special cases.
-                                    if item[1].startswith('nk'): # nk file name, use a selectbox.
-                                        if item[2] not in nk_file_list:
-                                            item[2] = '--none--'
-                                        nk_idx = utils_gen_UI.safe_index(item[2], nk_file_list, default=0)
-                                        item[2] = st.selectbox(selected_layer + item[1] + '_val', options=nk_file_list, format_func=utils_gen_UI.format_func, index=nk_idx, label_visibility="collapsed")
-                                    elif item[1] == 'spectrum': # spectrum file name, use a selectbox.
-                                        if item[2] not in spectrum_file_list:
-                                            item[2] = '--none--'
-                                        spec_idx = utils_gen_UI.safe_index(item[2], spectrum_file_list, default=0)
-                                        item[2] = st.selectbox(selected_layer + item[1] + '_val', options=spectrum_file_list, format_func=utils_gen_UI.format_func, index=spec_idx, label_visibility="collapsed")
-                                    elif item[1]== 'pauseAtEnd':
-                                        # This parameter must not be editable and forced to 0, otherwise the program will not exit/complete and hang forever.
-                                        item[2] = 0
-                                        item[2] = st.text_input(selected_layer + item[1] + '_val', value=item[2], disabled=True, label_visibility="collapsed")
-                                    elif (item[1] == 'intTrapFile') or (item[1] == 'bulkTrapFile'):
-                                        # This could be uploaded trap files,so display a list of available ones. 
-                                        if item[2] not in st.session_state['trapFiles']:
-                                            # Value from file is not recognized, replace with none
-                                            st.toast(f'Could not find file "{item[2]}" for parameter {item[1]} and has been set to none. If you want to use this file, please upload it using the "Upload trap distribution" option and associate it with the {item[1]} parameter.')
-                                            item[2] = 'none'
-                                        trap_idx = utils_gen_UI.safe_index(item[2], st.session_state['trapFiles'], default=0)
-                                        item[2] = st.selectbox(selected_layer + item[1]+ '_val', options=st.session_state['trapFiles'], index=trap_idx, label_visibility="collapsed")
-                                    else:
-                                        item[2] = st.text_input(selected_layer + item[1] + '_val', value=item[2], label_visibility="collapsed")
-                                
-                                # Parameter description
-                                with col_desc:
-                                    st.text_input(item[1] + '_desc', value=item[3], disabled=True, label_visibility="collapsed")
-            
+                                    # Parameter value
+                                    with col_val:
+                                        # Handle exceptions/special cases.
+                                        if item[1].startswith('nk'): # nk file name, use a selectbox.
+                                            if item[2] not in nk_file_list:
+                                                item[2] = '--none--'
+                                            nk_idx = utils_gen_UI.safe_index(item[2], nk_file_list, default=0)
+                                            item[2] = st.selectbox(selected_layer + item[1] + '_val', options=nk_file_list, format_func=utils_gen_UI.format_func, index=nk_idx, label_visibility="collapsed")
+                                        elif item[1] == 'spectrum': # spectrum file name, use a selectbox.
+                                            if item[2] not in spectrum_file_list:
+                                                item[2] = '--none--'
+                                            spec_idx = utils_gen_UI.safe_index(item[2], spectrum_file_list, default=0)
+                                            item[2] = st.selectbox(selected_layer + item[1] + '_val', options=spectrum_file_list, format_func=utils_gen_UI.format_func, index=spec_idx, label_visibility="collapsed")
+                                        elif item[1]== 'pauseAtEnd':
+                                            # This parameter must not be editable and forced to 0, otherwise the program will not exit/complete and hang forever.
+                                            item[2] = 0
+                                            item[2] = st.text_input(selected_layer + item[1] + '_val', value=item[2], disabled=True, label_visibility="collapsed")
+                                        elif (item[1] == 'intTrapFile') or (item[1] == 'bulkTrapFile'):
+                                            # This could be uploaded trap files,so display a list of available ones. 
+                                            if item[2] not in st.session_state['trapFiles']:
+                                                # Value from file is not recognized, replace with none
+                                                st.toast(f'Could not find file "{item[2]}" for parameter {item[1]} and has been set to none. If you want to use this file, please upload it using the "Upload trap distribution" option and associate it with the {item[1]} parameter.')
+                                                item[2] = 'none'
+                                            trap_idx = utils_gen_UI.safe_index(item[2], st.session_state['trapFiles'], default=0)
+                                            item[2] = st.selectbox(selected_layer + item[1]+ '_val', options=st.session_state['trapFiles'], index=trap_idx, label_visibility="collapsed")
+                                        else:
+                                            item[2] = st.text_input(selected_layer + item[1] + '_val', value=item[2], label_visibility="collapsed")
+                                    
+                                    # Parameter description
+                                    with col_desc:
+                                        st.text_input(item[1] + '_desc', value=item[3], disabled=True, label_visibility="collapsed")
+            fragment_IMPS()
+
     #  Show the SIMsalabim logo in the sidebar
     with st.sidebar:
         st.markdown('<hr>', unsafe_allow_html=True)

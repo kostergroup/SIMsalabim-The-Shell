@@ -26,8 +26,18 @@
     }
 }
 
-[data-testid=column] [data-testid=stVerticalBlock] {
-    gap: 0.1rem;
+/* Hide the +/- buttons on number input*/
+[data-testid="stNumberInputStepUp"]{
+    display: none !important;
+}
+
+[data-testid="stNumberInputStepDown"]{
+    display: none !important;
+}
+
+.stElementContainer {
+    margin-bottom: -0.4rem !important;
+    margin-top: -0.4rem !important;
 }
 
 .st-cb {
@@ -52,23 +62,14 @@ footer {
     visibility: hidden;
 }
 
-/* Increase main Font Sizes for readability */
-h3 {
-    font-size: 2rem !important;
-}
-
-h4 {
-    font-size: 1.3rem !important;
-}
-
 p {
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
 }
 
 li {
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
 }
 
 input {
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
 }
