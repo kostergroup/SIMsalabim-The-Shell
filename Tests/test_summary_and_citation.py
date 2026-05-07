@@ -17,6 +17,7 @@ def clear_state(monkeypatch):
     # provide required state keys used by create_summary_and_cite
     st.session_state['SIMsalabim_version'] = 'vX.Y'
     st.session_state['TheShell_version'] = 'vA.B'
+    st.session_state['pySIMsalabim_version'] = 'vC.D'
     yield
 
 
@@ -94,8 +95,6 @@ def test_create_summary_and_cite_with_optics_and_impedance(monkeypatch, tmp_path
 
     # Impedance-specific lines
     assert 'Frequency range' in text and 'Applied Voltage' in text
-    # Fourier decomposition citation must appear for impedance
-    assert 'Fourier Decomposition' in text and sac.fourier_decomp_cite.split(',')[0] in text
 
     # references: nk_known and sp_known resolved; unknown should show '-No reference provided-'
     assert '* nk_known: Ref NK' in text

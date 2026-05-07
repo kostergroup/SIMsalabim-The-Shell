@@ -1,8 +1,13 @@
 # Change Log
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
-Note: This does not include changes to the SIMsalabim simulation software itself.
+Note: This does not include changes to the SIMsalabim simulation software or pySIMsalabim package.
 
-## [1.23] - XX-XX-XXXX - SH
+## [1.24] - 07-05-2026 - SH
+- Update to SIMsalabim v5.32
+- Updated references for citing The Shell (Readme, The Shell homepage, and citation summary). When using The Shell for published work, three references must be cited: The Shell website, pySIMsalabim package, and the SIMsalabim software.
+- Revised list of references for nk_values (utils/ref_optics.py) to all have the same format.
+
+## [1.23] - 30-03-2026 - SH
 - Upon changing any of the input fields, the whole page would reload and refresh. This became more severe with newer versions of Streamlit. All input fields are now wrapped in a fragment object. This will prevent the whole page from reloading when an element within that fragement is changed. The only excepetion is the selectbox to select a file to edit. This cannot be placed inside a fragment, as it depends on functions that are defined outside of the container it is placed in.
 - Changed st.experimental_dialog to st.dialog to comply with the new streamlit version
 - Changed the way the +/- buttons are removed for number inputs, as the old method did not work anymore

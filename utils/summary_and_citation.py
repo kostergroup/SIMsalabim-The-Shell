@@ -3,13 +3,19 @@
 
 import os
 import streamlit as st
+from datetime import datetime
 from utils.ref_optics import nk_ref_dict, spectrum_ref_dict
 
 ######### Function Definitions ####################################################################    
 
+# Try to see if st.session_state['TheShell_version'] exists, if not, set it to unknown
+if 'TheShell_version' not in st.session_state:
+    st.session_state['TheShell_version'] = 'unknown'
+
 # Fixed references
+TheShell_cite = f'S. Heester, V.M. Le Corre, M. Koopmans, and L.J.A. Koster ({datetime.today().strftime('%Y, %B %d')}). SIMsalabim-The-Shell: An open-source web interface for SIMsalabim (version: {st.session_state['TheShell_version']}), http://www.simsalabim-online.com.'
 SIMsalabim_cite = 'M. Koopmans, V.M. Le Corre, and L.J.A. Koster, SIMsalabim: An open-source drift-diffusion simulator for semiconductor devices, J. Open Source Softw. 7, 3727 (2022).'
-fourier_decomp_cite = 'S.E. Laux, IEEE Trans. Electron Dev. 32 (10), 2028 (1985)'
+pySIMsalabim_cite = 'S. Heester, F.D. Elhorst, P. Martin Fernandez, V.M. Le Corre, M. Koopmans, and L.J.A. Koster, pySIMsalabim: a Python package to extend drift-diffusion modelling with SIMsalabim, Comput. Phys. Commun. 323, 110096 (2026).'
 
 # File name
 summary_file_name = 'SUMMARY_AND_HOW_TO_CITE.txt'
@@ -33,6 +39,8 @@ def create_summary_and_cite(session_path, used_optics):
     fp.write('Source code available at: https://github.com/kostergroup/SIMsalabim\n')
     fp.write('The Shell version: ' + st.session_state['TheShell_version'] + '\n')
     fp.write('Source code available at: https://github.com/kostergroup/SIMsalabim-The-Shell\n')
+    fp.write('pySIMsalabim version: ' + st.session_state['pySIMsalabim_version'] + '\n')
+    fp.write('Source code available at: https://github.com/kostergroup/pySIMsalabim\n')
     fp.write('\n')
 
     # Used SimSS or ZimT
@@ -112,20 +120,26 @@ def create_summary_and_cite(session_path, used_optics):
             fp.write('\n')
 
     # Citation
-    fp.write('HOW TO CITE:\n\n')
+    fp.write('HOW TO CITE:\n')
+    fp.write('Note: When referring to The Shell, all three of the following items must be cited:')
+    fp.write('\n\n')
+    # The Shell
+    fp.write('* The Shell: \n')
+    fp.write(TheShell_cite)
+    fp.write('\n\n')
     # SIMsalabim
     fp.write('* SIMsalabim: \n')
     fp.write(SIMsalabim_cite)
     fp.write('\n\n')
-
-    # In case of impedance or IMPS, cite the Laux (1985) paper
-    if st.session_state['simulation_results'] == 'Impedance' or st.session_state['simulation_results'] == 'IMPS':
-        fp.write('* Fourier Decomposition (' + st.session_state['simulation_results'] +')\n')
-        fp.write(fourier_decomp_cite + '\n\n')
+    # pySIMsalabim
+    fp.write('* pySIMsalabim: \n')
+    fp.write(pySIMsalabim_cite)
+    fp.write('\n\n\n')
 
     # When the transfer matrix method has been used, provide references to the used nk and spectrum files. 
     # If the reference is not known, e.g. when the user uploads a file, indicate that no reference has been provided
     if used_optics:
+        fp.write('References for nk and spectrum files used in the transfer matrix method:\n')
         for dirpath, dirnames, filenames in os.walk(os.path.join(session_path,'Data_nk')):
                 # nk files
                 for filename in filenames:

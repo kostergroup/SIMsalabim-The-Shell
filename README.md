@@ -5,8 +5,9 @@ An easy-to-use graphical user (GUI) interface for SIMsalabim, build on the Strea
 1. [Introduction](#Introduction)
 2. [Installation instructions](#installation-instructions)
 3. [How to use The Shell](#how-to-use-the-shell)
-4. [Copyright and license](#copyrigth-and-license)
-5. [How to contribute](#how-to-contribute)
+4. [How to cite](#how-to-cite)
+5. [Copyright and license](#copyrigth-and-license)
+6. [How to contribute](#how-to-contribute)
 
 ## Introduction
 
@@ -81,12 +82,17 @@ Note: The Shell is designed to run on a Linux machine, and has not been prepared
 - Run the simulation
 - Inspect the results through the 'Simulation Results' page
 
+## How to cite
+To cite this work refer to [the open-source version of the code](https://github.com/kostergroup/SIMsalabim-The-Shell), and to SIMsalabim and pySIMsalabim published as:
+
+M. Koopmans, V.M. Le Corre, and L.J.A. Koster, SIMsalabim: An open-source drift-diffusion simulator for semiconductor devices, J. Open Source Softw. 7, 3727 (2022) [View paper](https://doi.org/10.21105/joss.03727)
+
+S. Heester, F.D. Elhorst, P. Martin Fernandez, V.M. Le Corre, M. Koopmans, and L.J.A. Koster, pySIMsalabim: a Python package to extend drift-diffusion modelling with SIMsalabim, Comput. Phys. Commun. 323, 110096 (2026) [View paper](https://doi.org/10.1016/j.cpc.2026.110096)
+
 ## Copyright and License
 The Shell is licensed under the GNU Lesser General Public Licence version 3. The details of this licence can be found in the files COPYING.txt and COPYING.LESSER.txt. Several authors have contributed to the code:
 
 - S. (Sander) Heester (University of Groningen)
-- F.D. (Fransien) Elhorst (University of Groningen)
-- P. (Patricia) Martin Fernandez (University of Groningen)
 - Dr. M. (Marten) Koopmans (University of Groningen)
 - Dr. V.M. (Vincent) Le Corre (University of Southern Denmark)
 - Prof. Dr. L.J.A. (Jan Anton) Koster (University of Groningen)

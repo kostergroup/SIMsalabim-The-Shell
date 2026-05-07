@@ -16,8 +16,9 @@ utils_gen_UI.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.23' # The Shell version
-version_simsalabim = '5.30' # SIMsalabim version
+version_theshell = '1.24' # The Shell version
+version_simsalabim = '5.32' # SIMsalabim version
+version_pySIMsalabim = '1.04' # pySIMsalabim version
 
 # Folder name where simulations are executed and data is stored
 simulation_path = os.path.join(os.getcwd(),'Simulations')
@@ -36,6 +37,7 @@ zimt_devpar_file = 'simulation_setup_zimt.txt'
 # Note: When changing the name of the key of a session state, process the changed name in all occurences of the session state key
 st.session_state['SIMsalabim_version'] = version_simsalabim
 st.session_state['TheShell_version'] = version_theshell
+st.session_state['pySIMsalabim_version'] = version_pySIMsalabim
 st.session_state['simulation_path'] = simulation_path
 st.session_state['resource_path'] = resource_path
 st.session_state['simss_path'] = simss_path
@@ -100,43 +102,39 @@ st.markdown('<br>', unsafe_allow_html=True)
 #st.warning('''Note! The Shell will be down temporarly on PLACEHOLDER due to maintenance. ''')
 # st.markdown('<br>', unsafe_allow_html=True)
 
-st.warning('''Note: The Shell does not support all features and functionality that SIMsalabim has to offer. 
-To use all functionality, download and run the SIMsalabim project on your machine as described in the 
-[SIMsalabim Project readme](https://github.com/kostergroup/SIMsalabim). 
+st.warning('''Note: The Shell does not support all features and functionality that SIMsalabim and pySIMsalabim have to offer. 
+To use all functionality, download and run the SIMsalabim project and/or pySIMsalabim package on your machine as described in the 
+[SIMsalabim Project](https://github.com/kostergroup/SIMsalabim) and [pySIMsalabim package](https://github.com/kostergroup/pySIMsalabim). 
 For a full overview of the functionality of SIMsalabim, refer to the 
 [SIMsalabim manual](http://simsalabim-online.com/manual).''')
 st.markdown('<br>', unsafe_allow_html=True)
 
-st.write('''Currently supported functionality in The Shell is:
+st.subheader('''Currently supported functionality in The Shell:
 - Define your device via the device parameters on a template or upload your own device parameters.
 - Full flexibility in defining the number of layers and their parameters
-- Use optics (based on the Transfermatrix method) to calculate a generation profile
+- Use optics (based on the Transfermatrix method) to calculate a generation profile, or upload your own profile
 - Upload an experimental JV curve and compare it to a simulated JV curve
-- Upload and use a generation profile
 - Upload and use a definition of multiple trap levels
 - Plot, analyze and download the simulation results
-- Simulate Steady State JV curves
-- Simulate the EQE of a device
-- Simulate a Transient JV experiment and compare it to an experimental JV curve
-- Simulate an impedance spectroscopy experiment
-- Simulate an IMPS experiment
-- Simulate a capacitance-voltage experiment
+- Simulate various experiments: **Steady State JV**, **Transient JV**, **EQE**, **Impedance Spectroscopy**, **IMPS** and **Capacitance-Voltage**.
 ''')
 st.text(' ')
 st.markdown('<br>', unsafe_allow_html=True)
 
-st.write('To cite this work and SIMsalabim refer to the open-source version of the code published as:')
+st.subheader('How to cite The Shell:')
+
+st.write('To cite this work refer to [the open-source version of the code](https://github.com/kostergroup/SIMsalabim-The-Shell), and to SIMsalabim and pySIMsalabim published as:')
 st.markdown('<br>', unsafe_allow_html=True)
 
-st.info('M. Koopmans, V.M. Le Corre, and L.J.A. Koster, SIMsalabim: An open-source drift-diffusion simulator for semiconductor devices, J. Open Source Softw. 7, 3727 (2022).')
+st.info('[M. Koopmans, V.M. Le Corre, and L.J.A. Koster, SIMsalabim: An open-source drift-diffusion simulator for semiconductor devices, J. Open Source Softw. 7, 3727 (2022)](https://doi.org/10.21105/joss.03727)')
 st.markdown('<br>', unsafe_allow_html=True)
 
-st.write('The paper can be viewed [here](https://joss.theoj.org/papers/10.21105/joss.03727)')
+st.info('[S. Heester, F.D. Elhorst, P. Martin Fernandez, V.M. Le Corre, M. Koopmans, and L.J.A. Koster, pySIMsalabim: a Python package to extend drift-diffusion modelling with SIMsalabim, Comput. Phys. Commun. 323, 110096 (2026)](https://doi.org/10.1016/j.cpc.2026.110096)')
 st.markdown('<br>', unsafe_allow_html=True)
 
 st.text('''
 
-Copyright Ⓒ 2023 - 2026 | S. Heester, F.D. Elhorst, P. Martin Fernandez, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.
+Copyright Ⓒ 2023 - 2026 | S. Heester, Dr. M. Koopmans, Dr. V.M. Le Corre and Prof. Dr. L.J.A. Koster, University of Groningen.
 ''')
         
 #  Show the SIMsalabim logo in the sidebar
