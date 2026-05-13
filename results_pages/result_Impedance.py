@@ -36,7 +36,7 @@ def show_results_impedance(session_path, id_session):
         else:
             # Results data is present, or at least the files are there. 
 
-            # Read the main files/data (tJFile)
+            # Read the main files/data (freqZFile)
             data_freqZ = pd.read_csv(os.path.join(session_path,st.session_state['freqZFile']), sep=r'\s+')
             data_freqZ["ImZ"] = data_freqZ["ImZ"]*-1
 
@@ -54,12 +54,32 @@ def show_results_impedance(session_path, id_session):
                         filename = 'simulation_result_' + id_to_time_string
                         btn = st.download_button(label="Download Simulation Results (ZIP)", data=ff, file_name=filename, mime="application/zip")
 
+                st.markdown('<hr>', unsafe_allow_html=True) # Add a horizontal line to separate the download section from the navigation section
+
+                # Create quick navigation links to the different figures on the page
+                st.write('<strong>Navigate to figure: ', unsafe_allow_html=True)
+                st.markdown(
+                    '<ul>'
+                    '<li><a href="#Bode">Bode</a></li>'
+                    '<li><a href="#Nyquist">Nyquist </a></li>'
+                    '<li><a href="#MagPhase">Magnitude-phase</a></li>'
+                    '<li><a href="#CapCond">Conductance & Capacitance</a></li>'
+                    '</ul>',
+                    unsafe_allow_html=True
+                )
+
                 #  Show the SIMsalabim logo in the sidebar
                 st.markdown('<hr>', unsafe_allow_html=True)
                 st.image('./Figures/SIMsalabim_logo_cut_trans.png')
 
             st.title("Simulation Results")
             st.subheader(str(st.session_state['simulation_results']))
+
+            # # Create a link at the top of the page
+            # st.markdown(
+            #     'Go to: <a href="#Nyquist">Jump to Figure</a><a href="#my-figure">Jump to Figure</a><a href="#my-figure">Jump to Figure</a><a href="#my-figure">Jump to Figure</a>',
+            #     unsafe_allow_html=True
+            # )
 
             st.markdown('<br>', unsafe_allow_html=True) # Add some space between the title and the log file button
             # Popover window to show the latest SIMsalabim log file
@@ -73,6 +93,15 @@ def show_results_impedance(session_path, id_session):
             st.markdown('<hr>', unsafe_allow_html=True)
 
             # Bode [1]
+            # Set the navigation id for the plot, so that it can be navigated to from the sidebar
+            st.markdown(
+                '<span id="Bode"></span>',
+                unsafe_allow_html=True
+            )
+
+            # Add double break between the plots to ensure that quick navigation shows the complete plot
+            st.markdown('<br><br>', unsafe_allow_html=True) # Add a horizontal line to separate the plots
+
             col1_1, col1_2, col1_3 = st.columns([1, 6, 3])
 
             with col1_2:
@@ -93,6 +122,15 @@ def show_results_impedance(session_path, id_session):
                                                           ylabel_2_bode, title_bode,fig1, ax11, ax12, [col1_1, col1_2, col1_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2)
 
             # Nyquist [1]
+            # Set the navigation id for the plot, so that it can be navigated to from the sidebar
+            st.markdown(
+                '<span id="Nyquist"></span>',
+                unsafe_allow_html=True
+            )
+
+            # Add double break between the plots to ensure that quick navigation shows the complete plot
+            st.markdown('<br><br>', unsafe_allow_html=True) # Add a horizontal line to separate the plots
+
             col2_1, col2_2, col2_3 = st.columns([1, 6, 3])
 
             with col2_2:
@@ -112,12 +150,50 @@ def show_results_impedance(session_path, id_session):
                                 weight_key=par_weight_nyq, weight_label=weightlabel_nyq, weight_norm=weight_norm_nyq, xrange_format = "%.2e",yrange_format="%.2e")
                 st.pyplot(fig2, format='png')
 
-            # Capacitance & Conductance 
+            # Magnitude-phase [3]
+            # Set the navigation id for the plot, so that it can be navigated to from the sidebar
+            st.markdown(
+                '<span id="MagPhase"></span>',
+                unsafe_allow_html=True
+            )
+
+            # Add double break between the plots to ensure that quick navigation shows the complete plot
+            st.markdown('<br><br>', unsafe_allow_html=True) # Add a horizontal line to separate the plots
+
             col3_1, col3_2, col3_3 = st.columns([1, 6, 3])
 
             with col3_2:
                 fig3, ax31 = plt.subplots()
                 ax32 = ax31.twinx()
+                pars_magphase = {'magZ' : 'Magnitude [Ohm m$^2$]', 'phaseZ' : 'Phase [deg.]' }
+                selected_1_magphase = ['magZ']
+                selected_2_magphase = ['phaseZ']
+                y_error_1 = data_freqZ["errMagZ"]
+                y_error_2 = data_freqZ["errPhaseZ"]
+                par_x_magphase = 'freq'
+                xlabel_magphase = 'frequency [Hz]'
+                ylabel_1_magphase = 'Magnitude [Ohm m$^2$]'
+                ylabel_2_magphase = 'Phase [deg.]'
+                title_magphase = 'Magnitude-phase plot'
+
+                utils_plot_UI.create_UI_component_plot_twinx(data_freqZ, pars_magphase, selected_1_magphase, selected_2_magphase, par_x_magphase, xlabel_magphase, ylabel_1_magphase, 
+                                                          ylabel_2_magphase, title_magphase,fig3, ax31, ax32, [col3_1, col3_2, col3_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2)
+
+            # Capacitance & Conductance [4]
+            # Set the navigation id for the plot, so that it can be navigated to from the sidebar
+            st.markdown(
+                '<span id="CapCond"></span>',
+                unsafe_allow_html=True
+            )
+
+            # Add double break between the plots to ensure that quick navigation shows the complete plot
+            st.markdown('<br><br>', unsafe_allow_html=True) # Add a horizontal line to separate the plots
+
+            col4_1, col4_2, col4_3 = st.columns([1, 6, 3])
+
+            with col4_2:
+                fig4, ax41 = plt.subplots()
+                ax42 = ax41.twinx()
                 pars_cap_cond = {'G' : 'G [S m$^{-2}$]', 'C' : 'C [F m$^{-2}$]', }
                 selected_1_cap_cond = ['G']
                 selected_2_cap_cond = ['C']
@@ -130,4 +206,4 @@ def show_results_impedance(session_path, id_session):
                 title_cap_cond = 'Conductance & Capacitance'
 
                 utils_plot_UI.create_UI_component_plot_twinx(data_freqZ, pars_cap_cond, selected_1_cap_cond, selected_2_cap_cond, par_x_cap_cond, xlabel_cap_cond, ylabel_1_cap_cond, 
-                                                          ylabel_2_cap_cond, title_cap_cond,fig3, ax31, ax32, [col3_1, col3_2, col3_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2,show_errors=True, yscale_init_2 = 1)
+                                                          ylabel_2_cap_cond, title_cap_cond,fig4, ax41, ax42, [col4_1, col4_2, col4_3], show_plot_param=False, yerror_1 = y_error_1, yerror_2 = y_error_2,show_errors=True, yscale_init_2 = 1)

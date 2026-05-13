@@ -2,6 +2,10 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software or pySIMsalabim package.
 
+## [1.25] - 13-05-2026 - SH
+- On the results page of the impedance experiment, added the magnitude-phase plot and navigation links to the different plots in the sidebar
+- Similar to logarithmic y-axis scaling, a check is performed to prevent setting either zero and negative numbers on a logarithmic x-axis
+
 ## [1.24] - 07-05-2026 - SH
 - Update to SIMsalabim v5.32
 - Updated references for citing The Shell (Readme, The Shell homepage, and citation summary). When using The Shell for published work, three references must be cited: The Shell website, pySIMsalabim package, and the SIMsalabim software.

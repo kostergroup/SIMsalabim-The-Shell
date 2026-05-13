@@ -244,8 +244,15 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
 
                     # Use 5% of the interval
                     x_5p = abs((xup_init - xlow_init) * 0.05)
-                    # Subtract this value from the lower limit
-                    xlow_init -= x_5p
+
+                    # Subtract this value from the lower limit. 
+                    # In case of a log plot, the lower limit should be above zero, so only subtract if this does not result in a negative value. 
+                    # Otherwise, set the lower limit to the lowest value in the data that is above zero.
+                    if xscale == 'log' and xlow_init - x_5p <= 0:
+                        xlow_init = min(num for num in data[x_key] if num > 0) if any(num > 0 for num in data[x_key]) else 0
+                    else:
+                        xlow_init -= x_5p
+
                     # Add this value to the upper limit
                     xup_init += x_5p
 
