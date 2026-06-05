@@ -2,6 +2,11 @@
 All changes to the The Shell | SIMsalabim web application are documented here. <br>
 Note: This does not include changes to the SIMsalabim simulation software or pySIMsalabim package.
 
+## [1.26] - XX-XX-XXXX - SH
+Minor bug fixes:
+- When making a plot of the Var data in a steady state JV, the initial scaling of the y-axis would depend on the min/max values at the chosen applied voltage. This would mean that after the initial visualization of the graph, the limits would remain fixed on these values upon changing the applied voltage, leading to potential data-cutoff. The inital x- and y limits are now set to the min/max value of the column over all voltages.
+- The experiment specific parameters (Transient JV, Impedance, IMPS, CV) would revert back to default values upon changing more than one parameter at the same time. These values are now stored in a session state, to ensure the initialization only occurs when the page is loaded for the first time.
+
 ## [1.25] - 13-05-2026 - SH
 - On the results page of the impedance experiment, added the magnitude-phase plot and navigation links to the different plots in the sidebar
 - Similar to logarithmic y-axis scaling, a check is performed to prevent setting either zero and negative numbers on a logarithmic x-axis

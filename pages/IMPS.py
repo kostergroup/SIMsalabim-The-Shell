@@ -42,13 +42,16 @@ else:
     session_path = os.path.join(str(st.session_state['simulation_path']), id_session)
     imps_pars_file = 'imps_pars.txt'
     
-    # default IMPS parameters
-    imps_par = [['fmin', 1E-1, 'Hz, Minimum frequency'],
-                ['fmax', 5E+06, 'Hz, Maximum frequency'],
-                ['fstep', 20, 'Number of frequency steps'],
-                ['V0', 0.3, 'V, Applied voltage'],
-                ['fracG', 5e-2, 'Fraction to increase the intensity/generation rate with. Sets the size of the initial pertubation'],
-                ['G_frac',1.0, 'Fractional generation rate']]
+    # Initialize the IMPS parameters with default values. If the parameters have already been loaded and/or edited, load them from the session state to not overwrite them when re-rendering the page.
+    if not 'imps_par' in st.session_state:
+        imps_par = [['fmin', 1E-1, 'Hz, Minimum frequency'],
+                    ['fmax', 5E+06, 'Hz, Maximum frequency'],
+                    ['fstep', 20, 'Number of frequency steps'],
+                    ['V0', 0.3, 'V, Applied voltage'],
+                    ['fracG', 5e-2, 'Fraction to increase the intensity/generation rate with. Sets the size of the initial pertubation'],
+                    ['G_frac',1.0, 'Fractional generation rate']]
+    else:
+        imps_par = st.session_state['imps_par']
 
     # Object to hold device parameters and IMPS specific parameters (with defaults)
     dev_par = {}
@@ -255,6 +258,9 @@ else:
                     # Parameter description
                     with col_desc_imps:
                         st.text_input(imps_item[0] + '_desc', value=imps_item[2], disabled=True, label_visibility="collapsed")
+            
+                # Store the parameters in a session state to keep track of them and prevent them from being overwritten by the default ones
+                st.session_state['imps_par'] = imps_par
             
             fragment_IMPS_pars()
             

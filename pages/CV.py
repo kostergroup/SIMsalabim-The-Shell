@@ -42,13 +42,16 @@ else:
     session_path = os.path.join(str(st.session_state['simulation_path']), id_session)
     CV_pars_file = 'CV_pars.txt'
     
-    # default CV parameters
-    CV_par = [['freq', 1E4, 'Hz, Frequency at which CV is performed'],
-                     ['Vmin',0.5, 'V, Initial voltage'],
-                     ['Vmax', 1.0, 'V, Maximum voltage'],
-                     ['delV', 1E-2, 'V, Voltage step that is applied directly after t=0'],
-                     ['Vstep', 0.1, 'V, Voltage difference, sets the interval at which the capacitance is determined'],
-                     ['G_frac',0.0, 'Fractional generation rate']]
+    # Initialize the CV parameters with default values. If the parameters have already been loaded and/or edited, load them from the session state to not overwrite them when re-rendering the page.
+    if not 'CV_par' in st.session_state:
+        CV_par = [['freq', 1E4, 'Hz, Frequency at which CV is performed'],
+                        ['Vmin',0.5, 'V, Initial voltage'],
+                        ['Vmax', 1.0, 'V, Maximum voltage'],
+                        ['delV', 1E-2, 'V, Voltage step that is applied directly after t=0'],
+                        ['Vstep', 0.1, 'V, Voltage difference, sets the interval at which the capacitance is determined'],
+                        ['G_frac',0.0, 'Fractional generation rate']]
+    else:
+        CV_par = st.session_state['CV_par']
 
     # Object to hold device parameters and CV specific parameters (with defaults)
     dev_par = {}
@@ -253,6 +256,9 @@ else:
                     # Parameter description
                     with col_desc_CV:
                         st.text_input(CV_item[0] + '_desc', value=CV_item[2], disabled=True, label_visibility="collapsed")
+            
+                # Store the parameters in a session state to keep track of them and prevent them from being overwritten by the default ones
+                st.session_state['CV_par'] = CV_par
             
             fragment_CV_pars()
 

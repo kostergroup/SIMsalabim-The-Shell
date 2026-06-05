@@ -1,4 +1,4 @@
-SIMsalabim/*
+SIMsalabim/
 pySIMsalabim/*
 *.zip
 Simulations/*
@@ -9,3 +9,4 @@ Simulations/*
 Pipfile
 Pipfile.lock
 /venv_TheShell/*
+**/__pycache__/

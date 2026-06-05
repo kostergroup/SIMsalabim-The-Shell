@@ -42,17 +42,20 @@ else:
     session_path = os.path.join(str(st.session_state['simulation_path']), id_session)
     transient_pars_file = 'transient_pars.txt'
 
-    # default transient parameters
-    transient_par = [['scan_speed', 10.0, 'V/s, Scan speed'],
-                ['direction', 1, 'Voltage sweep order, 1 for [ Vmin-Vmax | Vmax-Vmin ], -1 for [ Vmax-Vmin | Vmin-Vmax ]'], 
-                ['G_frac',1.0,'Fractional Generation rate.'],
-                ['UseExpData',0,'If 1, use experimental JV data as specified in expJV_Vmin_Vmax, expJV_Vmax_Vmin.'],
-                ['Vmin', 0.0, 'V, Lower voltage boundary. Ignored when UseExpData = 1'], 
-                ['Vmax',1.2, 'V, Higher voltage boundary. Ignored when UseExpData = 1'], 
-                ['steps',200, 'Number of time steps. Ignored when UseExpData = 1'],
-                ['expJV_Vmin_Vmax','none', 'Name of experimental JV file with sweep from low to high voltage. Ignored when UseExpData = 0'],
-                ['expJV_Vmax_Vmin','none', 'Name of experimental JV file with sweep from high to low voltage. Ignored when UseExpData = 0']]
-    
+    # Initialize the transient JV parameters with default values. If the parameters have already been loaded and/or edited, load them from the session state to not overwrite them when re-rendering the page.
+    if not 'transient_par' in st.session_state:
+        transient_par = [['scan_speed', 10.0, 'V/s, Scan speed'],
+                    ['direction', 1, 'Voltage sweep order, 1 for [ Vmin-Vmax | Vmax-Vmin ], -1 for [ Vmax-Vmin | Vmin-Vmax ]'], 
+                    ['G_frac',1.0,'Fractional Generation rate.'],
+                    ['UseExpData',0,'If 1, use experimental JV data as specified in expJV_Vmin_Vmax, expJV_Vmax_Vmin.'],
+                    ['Vmin', 0.0, 'V, Lower voltage boundary. Ignored when UseExpData = 1'], 
+                    ['Vmax',1.2, 'V, Higher voltage boundary. Ignored when UseExpData = 1'], 
+                    ['steps',200, 'Number of time steps. Ignored when UseExpData = 1'],
+                    ['expJV_Vmin_Vmax','none', 'Name of experimental JV file with sweep from low to high voltage. Ignored when UseExpData = 0'],
+                    ['expJV_Vmax_Vmin','none', 'Name of experimental JV file with sweep from high to low voltage. Ignored when UseExpData = 0']]
+    else:
+        transient_par = st.session_state['transient_par']
+
     # Init the rms error parameter
     rms_error = 0.0
 
@@ -259,6 +262,9 @@ else:
                     # Parameter description
                     with col_desc_transient:
                         st.text_input(transient_item[0] + '_desc', value=transient_item[2], disabled=True, label_visibility="collapsed")
+            
+                # Store the parameters in a session state to keep track of them and prevent them from being overwritten by the default ones
+                st.session_state['transient_par'] = transient_par
             
             fragment_Transient_pars()
             

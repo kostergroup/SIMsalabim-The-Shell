@@ -16,7 +16,7 @@ utils_gen_UI.local_css('./utils/style.css')
 
 ######### Parameter Initialisation ################################################################
 
-version_theshell = '1.25' # The Shell version
+version_theshell = '1.26' # The Shell version
 version_simsalabim = '5.32' # SIMsalabim version
 version_pySIMsalabim = '1.04' # pySIMsalabim version
 

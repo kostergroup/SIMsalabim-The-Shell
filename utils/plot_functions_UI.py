@@ -241,29 +241,29 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
                     # Use the min and max values of the selected parameter as limits with a margin of 5% of the range to prevent the data from merging with the axis
                     xlow_init = data[x_key].min()
                     xup_init = data[x_key].max()
-
-                    # Use 5% of the interval
-                    x_5p = abs((xup_init - xlow_init) * 0.05)
-
-                    # Subtract this value from the lower limit. 
-                    # In case of a log plot, the lower limit should be above zero, so only subtract if this does not result in a negative value. 
-                    # Otherwise, set the lower limit to the lowest value in the data that is above zero.
-                    if xscale == 'log' and xlow_init - x_5p <= 0:
-                        xlow_init = min(num for num in data[x_key] if num > 0) if any(num > 0 for num in data[x_key]) else 0
-                    else:
-                        xlow_init -= x_5p
-
-                    # Add this value to the upper limit
-                    xup_init += x_5p
-
-                    # round to two decimals to not display the full float
-                    if 'f' in xrange_format:
-                        xlow_init = round(xlow_init,2)
-                        xup_init = round(xup_init,2)
                 else:
-                    # Limit values provided by the user as arguments
+                    # Use the provided limits as initial values
                     xlow_init = xrange_val[0]
                     xup_init = xrange_val[1]
+
+                # Use 5% of the interval
+                x_5p = abs((xup_init - xlow_init) * 0.05)
+
+                # Subtract this value from the lower limit. 
+                # In case of a log plot, the lower limit should be above zero, so only subtract if this does not result in a negative value. 
+                # Otherwise, set the lower limit to the lowest value in the data that is above zero.
+                if xscale == 'log' and xlow_init - x_5p <= 0:
+                    xlow_init = min(num for num in data[x_key] if num > 0) if any(num > 0 for num in data[x_key]) else 0
+                else:
+                    xlow_init -= x_5p
+
+                # Add this value to the upper limit
+                xup_init += x_5p
+
+                # round to two decimals to not display the full float
+                if 'f' in xrange_format:
+                    xlow_init = round(xlow_init,2)
+                    xup_init = round(xup_init,2)
   
                 st.text('Set the x-axis range:')
                 col1_x, col2_x, = st.columns([1,1])
@@ -280,32 +280,33 @@ def create_UI_component_plot(data_org, pars, x_key, xlabel, ylabel, title, plot_
                     for par in options:
                         ylow_init = min(ylow_init, data[par].min())
                         yup_init = max(yup_init, data[par].max())
-
-                    # Treat the carrier density plot differently, by setting a forced initial lower limit
-                    # This prevents the auto amic scaling of the y axis to the very low carrier densities near the transport layers
-                    if title == 'Carrier Densities':
-                        ylow_init = yup_init * 1E-9
-
-                    # Use 5% of the interval
-                    y_5p = abs((yup_init - ylow_init) * 0.05)
-                    # In a log plot, the lower limit should be above zero
-
-                    if not title == 'Carrier Densities':
-                        if yscale == 'log' and ylow_init - y_5p <= 0:
-                            ylow_init = min(num for num in data[options[0]] if num > 0) if any(num > 0 for num in data[options[0]]) else 0
-                            for par in options:
-                                smallest_pos_value = min(num for num in data[par] if num > 0) if any(num > 0 for num in  data[par]) else 1
-
-                                ylow_init = min(ylow_init, smallest_pos_value)
-                        else:
-                            # Subtract this value from the lower limit
-                            ylow_init -= y_5p
-
-                    # Add this value to the upper limit
-                    yup_init += y_5p
                 else:
-                    ylow_init = 0
-                    yup_init = 1
+                    ylow_init = yrange_val[0]
+                    yup_init = yrange_val[1]
+
+                # Treat the carrier density plot differently, by setting a forced initial lower limit
+                # This prevents the auto scaling of the y axis to the very low carrier densities near the transport layers
+                if title == 'Carrier Densities':
+                    ylow_init = yup_init * 1E-9
+
+                # Use 5% of the interval
+                y_5p = abs((yup_init - ylow_init) * 0.05)
+                # In a log plot, the lower limit should be above zero
+
+                if not title == 'Carrier Densities':
+                    if yscale == 'log' and ylow_init - y_5p <= 0:
+                        ylow_init = min(num for num in data[options[0]] if num > 0) if any(num > 0 for num in data[options[0]]) else 0
+                        for par in options:
+                            smallest_pos_value = min(num for num in data[par] if num > 0) if any(num > 0 for num in  data[par]) else 1
+
+                            ylow_init = min(ylow_init, smallest_pos_value)
+                    else:
+                        # Subtract this value from the lower limit
+                        ylow_init -= y_5p
+
+                # Add this value to the upper limit
+                yup_init += y_5p
+
 
                 st.text('Set the y-axis range:')
                 col1_y, col2_y, = st.columns([1,1])
@@ -534,3 +535,30 @@ def create_UI_component_plot_twinx(data_org, pars, selected_1, selected_2, x_key
         ax_2.set_ylim(ylow_right, yup_right)
             
         st.pyplot(fig, format='png')
+
+def get_xy_range(data_var, par_x, pars_y):
+    '''Get the x and y range for the parameters in the 'Var' file from the min/max values in the data.
+        
+    Parameters
+    ----------
+    data_var : DataFrame
+        DataFrame with the data from the 'Var' file
+    par_x : string
+        Key in the dataframe for the 'x' axis data
+    pars_y : dict
+        Dict with all potential parameters to plot on the y axis. Keys represent the column names in the dataframe
+    
+    Returns
+    -------
+    List, List
+        x and y range for the plot, in the format [min, max]
+    '''
+    # Get the x range from the data_var using the par_x_potential
+    xrange_val = [data_var[par_x].min(), data_var[par_x].max()]
+    # Get the y range from the data_var using the pars_potential keys
+    yrange_val = []
+    for key in pars_y.keys():
+        yrange_val.append(data_var[key].min())
+        yrange_val.append(data_var[key].max())
+    yrange_val = [min(yrange_val), max(yrange_val)]
+    return xrange_val, yrange_val

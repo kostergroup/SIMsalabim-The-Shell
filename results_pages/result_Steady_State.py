@@ -262,8 +262,12 @@ def show_results_Steady_State(session_path, id_session):
                 fig2, ax2 = plt.subplots()
                 col2_1, col2_2, col2_3 = st.columns([1, 6, 3])
 
+                # Get the initial x,y range for the figure based on the min,max values of the selected data
+                xrange_val, yrange_val = utils_plot_UI.get_xy_range(data_var, par_x_potential, pars_potential)
+
                 fig2, ax2 = utils_plot_UI.create_UI_component_plot(data_var, pars_potential, par_x_potential, xlabel_potential, ylabel_potential, 
-                                title_potential, 2, fig2, ax2, plot_type[0], [col2_1, col2_2, col2_3], choice_voltage, source_type = 'Var', yrange_format="%.2e", show_plot_param=False)
+                                title_potential, 2, fig2, ax2, plot_type[0], [col2_1, col2_2, col2_3], choice_voltage, source_type = 'Var', 
+                                xrange_val=xrange_val, yrange_val=yrange_val, yrange_format="%.2e", show_plot_param=False)
                 with col2_2:
                     st.pyplot(fig2, format='png')
 
@@ -302,8 +306,12 @@ def show_results_Steady_State(session_path, id_session):
                 fig3, ax3 = plt.subplots()
                 col3_1, col3_2, col3_3 = st.columns([1, 6, 3])
 
+                # Get the initial x,y range for the figure based on the min,max values of the selected data
+                xrange_val, yrange_val = utils_plot_UI.get_xy_range(data_var, par_x_energy, pars_energy)
+
                 fig3, ax3 = utils_plot_UI.create_UI_component_plot(data_var, pars_energy, par_x_energy, xlabel_energy, ylabel_energy, 
-                                title_energy, 3, fig3, ax3, plot_type[0], [col3_1, col3_2, col3_3],choice_voltage, source_type = 'Var',yrange_format="%.2f", show_yscale=False)
+                                title_energy, 3, fig3, ax3, plot_type[0], [col3_1, col3_2, col3_3],choice_voltage, source_type = 'Var',
+                                xrange_val=xrange_val, yrange_val=yrange_val, yrange_format="%.2f", show_yscale=False)
                 with col3_2:
                     st.pyplot(fig3, format='png')
 
@@ -334,8 +342,12 @@ def show_results_Steady_State(session_path, id_session):
                 fig5, ax5 = plt.subplots()
                 col5_1, col5_2, col5_3 = st.columns([1, 6, 3])
 
+                # Get the initial x,y range for the figure based on the min,max values of the selected data
+                xrange_val, yrange_val = utils_plot_UI.get_xy_range(data_var, par_x_fill, pars_fill)
+
                 fig5, ax5 = utils_plot_UI.create_UI_component_plot(data_var, pars_fill,par_x_fill, xlabel_fill, ylabel_fill, 
-                                title_fill, 5, fig5, ax5, plot_type[0], [col5_1, col5_2, col5_3], choice_voltage, source_type = 'Var',yrange_format="%.2e")
+                                title_fill, 5, fig5, ax5, plot_type[0], [col5_1, col5_2, col5_3], choice_voltage, source_type = 'Var',
+                                xrange_val=xrange_val, yrange_val=yrange_val, yrange_format="%.2e")
                 with col5_2:
                     st.pyplot(fig5, format='png')
 
@@ -350,8 +362,12 @@ def show_results_Steady_State(session_path, id_session):
                 fig6, ax6 = plt.subplots()
                 col6_1, col6_2, col6_3 = st.columns([1, 6, 3])
 
+                # Get the initial x,y range for the figure based on the min,max values of the selected data
+                xrange_val, yrange_val = utils_plot_UI.get_xy_range(data_var, par_x_transport, pars_transport)
+
                 fig6, ax6 = utils_plot_UI.create_UI_component_plot(data_var, pars_transport,par_x_transport, xlabel_transport, ylabel_transport, 
-                               title_transport, 6, fig6, ax6, plot_type[0], [col6_1, col6_2, col6_3],choice_voltage, source_type = 'Var',yrange_format="%.2e", yscale_init=1)
+                               title_transport, 6, fig6, ax6, plot_type[0], [col6_1, col6_2, col6_3],choice_voltage, source_type = 'Var',
+                               xrange_val=xrange_val, yrange_val=yrange_val, yrange_format="%.2e", yscale_init=1)
                 with col6_2:
                     st.pyplot(fig6, format='png')
 
@@ -381,9 +397,13 @@ def show_results_Steady_State(session_path, id_session):
                 title_current = 'Current densities'
                 fig8, ax8 = plt.subplots()
                 col8_1, col8_2, col8_3 = st.columns([1, 6, 3])
+
+                    # Get the initial x,y range for the figure based on the min,max values of the selected data
+                xrange_val, yrange_val = utils_plot_UI.get_xy_range(data_var, par_x_current, pars_current)
                 
                 fig8, ax8 = utils_plot_UI.create_UI_component_plot(data_var, pars_current, par_x_current, xlabel_current, ylabel_current, 
-                                title_current, 8, fig8, ax8, plot_type[0], [col8_1, col8_2, col8_3], choice_voltage, source_type = 'Var',yrange_format="%.2e")
+                                title_current, 8, fig8, ax8, plot_type[0], [col8_1, col8_2, col8_3], choice_voltage, source_type = 'Var',
+                                xrange_val=xrange_val, yrange_val=yrange_val, yrange_format="%.2e")
                 with col8_2:
                     st.pyplot(fig8, format='png')
 

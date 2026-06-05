@@ -42,13 +42,16 @@ else:
     session_path = os.path.join(str(st.session_state['simulation_path']), id_session)
     impedance_pars_file = 'impedance_pars.txt'
     
-    # default impedance parameters
-    impedance_par = [['fmin', 1E-1, 'Hz, Minimum frequency'],
-                     ['fmax', 1E+06, 'Hz, Maximum frequency'],
-                     ['fstep', 20, 'Number of frequency steps'],
-                     ['V0', 0.6, 'V, Applied voltage'],
-                     ['delV', 1e-2, 'V, Voltage step size. Keep this around 1 - 10 mV.'],
-                     ['G_frac',1.0, 'Fractional Generation rate']]
+    # Initialize the impedance parameters with default values. If the parameters have already been loaded and/or edited, load them from the session state to not overwrite them when re-rendering the page.
+    if not 'impedance_par' in st.session_state:
+        impedance_par = [['fmin', 1E-1, 'Hz, Minimum frequency'],
+                        ['fmax', 1E+06, 'Hz, Maximum frequency'],
+                        ['fstep', 20, 'Number of frequency steps'],
+                        ['V0', 0.6, 'V, Applied voltage'],
+                        ['delV', 1e-2, 'V, Voltage step size. Keep this around 1 - 10 mV.'],
+                        ['G_frac',1.0, 'Fractional Generation rate']]
+    else:
+        impedance_par = st.session_state['impedance_par']
 
     # Object to hold device parameters and impedance specific parameters (with defaults)
     dev_par = {}
@@ -258,6 +261,9 @@ else:
                     # Parameter description
                     with col_desc_impedance:
                         st.text_input(impedance_item[0] + '_desc', value=impedance_item[2], disabled=True, label_visibility="collapsed")
+                
+                # Store the parameters in a session state to keep track of them and prevent them from being overwritten by the default ones
+                st.session_state['impedance_par'] = impedance_par
             
             fragment_Impedance_pars()
             
